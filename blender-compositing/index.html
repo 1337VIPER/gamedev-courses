@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compositing Fast Track</title>
+<style>
+:root{
+  --bg:#17181b;--panel:#1f2125;--card:#25272c;--card2:#2c2f35;--line:#363941;--ink:#e8e9ec;--mut:#9a9ea8;--dim:#6d717b;
+  --acc:#f2c14e;--acc2:#4fb3ff;--warn:#f0a35a;--good:#5fd38d;--bad:#ef6b6b;
+  --geo:#f2c14e;--float:#a1a1a1;--int:#598c5c;--vec:#6363c7;--bool:#cca6d6;--rot:#a663c7;--menu:#7c7c7c;--obj:#ed9e5c;--str:#70b2ff;--mat:#eb7582;--col:#c7c729;--shd:#63c763;
+  --h-input:#83314a;--h-geo:#1d725e;--h-util:#2f4f86;--h-tex:#7a4a1f;--h-group:#3d3f45;--h-shader:#2b652b;--h-curve:#1d725e;--h-color:#5b5434;--h-filter:#553a7a;--h-matte:#6a4630;--h-xform:#2f5d6a;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc2)}
+kbd{font:600 .78em/1 ui-monospace,Consolas,monospace;background:#0f1012;border:1px solid #444851;border-bottom-width:2px;border-radius:4px;padding:.18em .42em;color:#f1f1f1;white-space:nowrap}
+code{font:.88em ui-monospace,Consolas,monospace;background:#0f1012;border:1px solid #33363d;border-radius:4px;padding:.05em .35em;color:#f7ecd2}
+b.n{color:var(--acc);font-weight:600}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow:auto;padding:20px 16px}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.brand svg{flex:none}
+.brand h1{font-size:1.02rem;margin:0;line-height:1.2}
+.brand small{display:block;color:var(--mut);font-weight:400;font-size:.78rem}
+.ring{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:16px 0}
+.ring svg{flex:none}
+.ring .t{font-size:.82rem;color:var(--mut);line-height:1.35}
+.ring .t b{display:block;color:var(--ink);font-size:1rem}
+nav .grp{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:18px 4px 6px}
+nav a.l{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink);padding:8px 8px;border-radius:8px;font-size:.9rem;line-height:1.25}
+nav a.l:hover{background:var(--card)}
+nav a.l.on{background:var(--card2);box-shadow:inset 3px 0 0 var(--acc)}
+nav a.l .nb{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:#2d3036;color:var(--mut)}
+nav a.l.done .nb{background:var(--acc);color:#2a1f00}
+nav a.l .bar{height:3px;background:#30333a;border-radius:2px;margin-top:5px;overflow:hidden}
+nav a.l .bar i{display:block;height:100%;background:var(--acc);width:0}
+nav .lock{display:flex;gap:10px;align-items:center;color:var(--dim);padding:6px 8px;font-size:.85rem;line-height:1.25}
+nav .lock .nb{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;border:1px dashed #444851}
+.tools{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;font:600 .85rem system-ui,sans-serif;cursor:pointer;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.btn:hover{border-color:#50545e;background:var(--card2)}
+a.btn{text-decoration:none}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#2a1f00}
+.btn.pri:hover{filter:brightness(1.08)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer;user-select:none}
+.toggle .sw{width:34px;height:20px;border-radius:10px;background:#3a3d44;position:relative;flex:none;transition:.2s}
+.toggle .sw::after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#cfd2d8;transition:.2s}
+.toggle.on .sw{background:var(--acc)}.toggle.on .sw::after{left:17px;background:#2a1f00}
+.save{font-size:.75rem;color:var(--dim);margin-top:10px;display:flex;gap:6px;align-items:center}
+.save i{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.save.ok i{background:var(--good)}.save.local i{background:var(--warn)}
+main{min-width:0;padding:34px 40px 120px;max-width:1180px}
+.hero{border:1px solid var(--line);border-radius:14px;padding:26px 28px;background:radial-gradient(1200px 300px at 0% 0%,rgba(242,193,78,.13),transparent 60%),var(--panel);margin-bottom:26px;position:relative;overflow:hidden}
+.hero .kick{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.hero h2{font-size:2rem;line-height:1.15;margin:6px 0 10px}
+.hero p{color:#c9ccd3;max-width:760px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font-size:.76rem;border:1px solid #3d4048;border-radius:999px;padding:3px 10px;color:#cdd0d6;background:#1b1d20}
+.chip.g{border-color:rgba(242,193,78,.45);color:#ffe3a3}
+.use{margin-top:14px;font-size:.88rem;color:var(--mut)}
+.use b{color:var(--ink)}
+h3.sec{font-size:1.2rem;margin:38px 0 12px;display:flex;align-items:center;gap:10px}
+h3.sec .tag{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;background:#2b2e34;color:var(--mut);border-radius:4px;padding:2px 7px}
+.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.concept{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.concept h4{margin:0 0 6px;font-size:.95rem;color:#fff}
+.concept p{margin:0;color:#c3c6cd;font-size:.9rem}
+.graphwrap{background:#1d1e21;border:1px solid var(--line);border-radius:12px;margin:14px 0 6px;overflow:hidden}
+.graphhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.88rem}
+.graphhead b{color:#fff}
+.graphhead .hint{color:var(--dim);font-size:.78rem}
+.graphscroll{overflow:auto;position:relative}
+.graph{position:relative;background-color:#1d1e21;background-image:radial-gradient(#2a2c31 1px,transparent 1px);background-size:22px 22px}
+.graph svg.links{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.node{position:absolute;background:#303236;border:1px solid #17181a;border-radius:7px;box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:12px;line-height:1;color:#e6e6e6}
+.node .nh{padding:6px 10px;border-radius:6px 6px 0 0;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.node .nb{padding:4px 0 6px}
+.node .prop{margin:3px 10px 4px;background:#222326;border:1px solid #3c3e43;border-radius:4px;padding:3px 7px;font-size:11px;color:#d7d7d7;display:flex;justify-content:space-between}
+.node .prop::after{content:"▾";color:#888;margin-left:6px}
+.node .row{position:relative;height:22px;display:flex;align-items:center;padding:0 12px;gap:6px}
+.node .row.out{justify-content:flex-end}
+.node .row span{white-space:nowrap}
+.node .row em{font-style:normal;margin-left:auto;background:#545659;border-radius:4px;padding:2px 6px;font-size:11px;color:#f2f2f2;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.node .row em.ok{background:#4772b3}
+.node .s{position:absolute;top:50%;width:11px;height:11px;margin-top:-5.5px;border-radius:50%;border:1px solid #111;background:var(--c)}
+.node .row.in .s{left:-6px}.node .row.out .s{right:-6px}
+.node .s.f{border-radius:2px;transform:rotate(45deg) scale(.88)}
+.node .s.m{height:20px;margin-top:-10px;border-radius:6px}
+.node.note{background:transparent;border:1px dashed #4a4d55;box-shadow:none;color:var(--mut);font-size:11.5px;line-height:1.35;padding:8px 10px;white-space:normal}
+.cap{font-size:.85rem;color:var(--mut);margin:0 2px 18px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--mut);padding:8px 14px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block;border:1px solid #111}
+.legend i.f{border-radius:1px;transform:rotate(45deg)}
+.steps{counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 14px;display:grid;grid-template-columns:30px 1fr;gap:10px;transition:border-color .2s,background .2s}
+.step.done{border-color:rgba(242,193,78,.4);background:linear-gradient(90deg,rgba(242,193,78,.07),transparent 40%),var(--card)}
+.cb{appearance:none;width:22px;height:22px;border-radius:6px;border:2px solid #555963;background:#1a1b1e;cursor:pointer;margin:1px 0 0;display:grid;place-items:center;transition:.15s}
+.cb:checked{background:var(--acc);border-color:var(--acc)}
+.cb:checked::after{content:"";width:6px;height:11px;border:solid #2a1f00;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.cb:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.step .st{font-weight:650;color:#fff;cursor:pointer}
+.step .st small{color:var(--acc);font-weight:700;margin-right:8px}
+.step .sd{color:#c6c9d0;font-size:.92rem;margin-top:6px}
+.step .sd p{margin:.4em 0}
+.step .sd ul{margin:.3em 0;padding-left:20px}
+.why{margin-top:8px;border-left:3px solid var(--acc2);background:rgba(79,179,255,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#c9dcef}
+.why b{color:#8fcbff}
+.pro{margin-top:8px;border-left:3px solid var(--warn);background:rgba(240,163,90,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#ecd9c6}
+.pro b{color:#ffc58f}
+.check{background:linear-gradient(135deg,rgba(242,193,78,.1),rgba(79,179,255,.06));border:1px solid rgba(242,193,78,.3);border-radius:10px;padding:14px 16px;color:#efe6cf;font-size:.92rem}
+.check b{color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.fc{perspective:900px;min-height:150px;cursor:pointer}
+.fc .in{position:relative;width:100%;height:100%;min-height:150px;transition:transform .45s;transform-style:preserve-3d}
+.fc.flip .in{transform:rotateY(180deg)}
+.fc .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;border:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;font-size:.9rem}
+.fc .front{background:var(--card)}
+.fc .back{background:#2a2618;border-color:rgba(242,193,78,.35);transform:rotateY(180deg);color:#f3ead2}
+.fc .q{font-weight:600;color:#fff}
+.fc .lab{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.fc .back .lab{color:#e8c46a}
+.fc .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--dim);padding-top:8px}
+.fc .knew{display:flex;gap:6px;align-items:center;color:#f0d58a;cursor:pointer}
+.fc .knew .cb{width:18px;height:18px}
+.fc.known .front{border-color:rgba(242,193,78,.45)}
+.boss{background:radial-gradient(600px 200px at 100% 0%,rgba(240,163,90,.14),transparent 60%),var(--card);border:1px solid rgba(240,163,90,.4);border-radius:12px;padding:18px 18px 8px}
+.boss h4{margin:0 0 4px;color:#ffd2a6;font-size:1.05rem}
+.boss .brief{color:#d8cfc6;font-size:.92rem;margin-bottom:10px}
+.ck{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:7px 0;border-top:1px solid #3a3530;font-size:.92rem;color:#e8e1da}
+.ck:first-of-type{border-top:0}
+.ck label{cursor:pointer}
+.ck small{display:block;color:#a89e93;font-size:.82rem;margin-top:2px}
+.timer{display:flex;align-items:center;gap:10px;margin:6px 0 12px;flex-wrap:wrap}
+.timer .clock{font:700 1.3rem ui-monospace,Consolas,monospace;color:#ffd2a6;min-width:84px}
+textarea.notes{width:100%;min-height:110px;background:#141518;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:14px/1.5 system-ui,sans-serif;resize:vertical}
+textarea.notes:focus{outline:none;border-color:var(--acc)}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:40px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.road{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.mod .mk{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.mod.lockd .mk{color:var(--dim)}
+.mod h4{margin:4px 0 6px;font-size:1rem}
+.mod ul{margin:0;padding-left:18px;color:#c3c6cd;font-size:.88rem}
+.mod.lockd{opacity:.78;border-style:dashed}
+.mod a{text-decoration:none}
+table.keys{width:100%;border-collapse:collapse;font-size:.9rem}
+table.keys td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+table.keys td:first-child{white-space:nowrap;width:1%}
+table.keys tr:first-child td{border-top:0}
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.loop div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.88rem;color:#c3c6cd}
+.loop b{display:block;color:#fff;margin-bottom:3px}
+.loop i{font-style:normal;color:var(--acc);font-weight:800;margin-right:6px}
+/* literal steps */
+.goal{color:#e9ebef;margin:2px 0 8px}
+.goal b{color:var(--acc)}
+ol.do{margin:6px 0 4px;padding-left:24px;display:flex;flex-direction:column;gap:7px}
+ol.do li{padding-left:4px;line-height:1.55}
+ol.do li::marker{color:var(--acc);font-weight:700}
+ol.do li > b:first-child{color:#fff}
+ol.do u{text-decoration:none;border-bottom:1px dashed #8fcbff;color:#d7ebff}
+.so,.si{display:inline-block;border-radius:4px;padding:0 6px;font-size:.86em;font-weight:600;line-height:1.5}
+.so{background:#33301c;color:#ffe3a3;border:1px solid #5a5030}
+.si{background:#262a3a;color:#c3c9ff;border:1px solid #3d4466}
+ol.do small{color:var(--dim)}
+.see{margin-top:8px;border-left:3px solid var(--good);background:rgba(95,211,141,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#d3efdd}
+.see b{color:#8fe6b0}
+.btn.where{font-size:.78rem;padding:5px 10px;margin:2px 0 6px;font-weight:600}
+.node.hl{outline:3px solid #ffd166;outline-offset:2px;box-shadow:0 0 0 8px rgba(255,209,102,.18),0 6px 18px rgba(0,0,0,.35);z-index:3;animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{box-shadow:0 0 0 14px rgba(255,209,102,.05),0 6px 18px rgba(0,0,0,.35)}}
+.backbtn{position:fixed;right:20px;bottom:20px;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+details.basics{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:0 0 14px;padding:0 14px}
+details.basics summary{cursor:pointer;padding:12px 0;font-weight:650;color:#fff}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:0 0 14px}
+.bcard{background:#1d1f23;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:#c6c9d0}
+.bcard > b{display:block;color:#fff;margin-bottom:4px}
+.bcard > b i{font-style:normal;color:var(--acc);margin-right:6px}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.shots figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.shots img{display:block;width:100%;height:auto}
+.shots figcaption{font-size:.82rem;color:var(--mut);padding:8px 12px}
+@media (max-width:900px){.shots{grid-template-columns:1fr}}
+/* memory mode */
+body.memory .mem{filter:blur(7px) saturate(.4);opacity:.55;cursor:pointer;transition:filter .25s,opacity .25s;user-select:none}
+body.memory .mem.peek{filter:none;opacity:1;user-select:auto}
+body.memory .graphwrap .mem{pointer-events:auto}
+.memnote{display:none;background:#2a2433;border:1px solid #574a6b;color:#dccbf3;border-radius:10px;padding:10px 14px;font-size:.88rem;margin:0 0 18px}
+body.memory .memnote{display:block}
+/* review modal */
+.modal{position:fixed;inset:0;background:rgba(5,6,8,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:560px;width:100%;padding:22px}
+.mbox .from{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.mbox .q{font-size:1.15rem;font-weight:650;margin:8px 0 14px}
+.mbox .a{background:#2a2618;border:1px solid rgba(242,193,78,.35);border-radius:10px;padding:12px 14px;color:#f3ead2;display:none}
+.mbox.show .a{display:block}
+.mbox .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.mbox .cnt{font-size:.8rem;color:var(--dim);margin-right:auto;align-self:center}
+.mtop{display:none;position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;align-items:center;justify-content:space-between;gap:10px}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  aside{position:fixed;inset:0 auto 0 0;width:290px;z-index:40;transform:translateX(-100%);transition:transform .25s}
+  aside.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.5)}
+  .mtop{display:flex}
+  main{padding:20px 16px 100px}
+  .hero{padding:20px}.hero h2{font-size:1.55rem}
+  .grid2,.loop{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="mtop"><button class="btn" id="menuBtn">☰ Lessons</button><span id="mtopPct" style="font-size:.85rem;color:var(--mut)"></span></div>
+<div class="app">
+<aside id="side">
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="8" fill="#5b5434"/><rect x="6" y="8" width="10" height="8" rx="2" fill="#c7c729"/><rect x="18" y="18" width="10" height="8" rx="2" fill="#f2c14e"/><path d="M16 12 C21 12 13 22 18 22" stroke="#c7c729" stroke-width="2" fill="none"/></svg>
+    <h1>Compositing<small>Fast Track · Blender 5.3</small></h1>
+  </div>
+  <div class="ring">
+    <svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" stroke="#30333a" stroke-width="6" fill="none"/><circle id="ringArc" cx="27" cy="27" r="22" stroke="#00d6a3" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 27 27)"/><text id="ringTxt" x="27" y="31" text-anchor="middle" fill="#e8e9ec" font-size="12" font-weight="700">0%</text></svg>
+    <div class="t"><b id="ringCount">0 / 0</b>tasks, cards and challenges ticked</div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="tools">
+    <div class="toggle" id="memToggle" role="switch" aria-checked="false" tabindex="0"><span>🧠 Memory mode<br><small style="color:var(--dim)">blur the answers, recall first</small></span><span class="sw"></span></div>
+    <button class="btn pri" id="reviewBtn">⟳ Review deck</button>
+    <button class="btn" id="resetBtn" style="color:var(--mut)">Reset progress…</button>
+  </div>
+  <div class="save" id="save"><i></i><span>connecting…</span></div>
+</aside>
+<main id="main"></main>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mq">
+  <div class="mbox" id="mbox">
+    <div class="from" id="mfrom"></div>
+    <div class="q" id="mq"></div>
+    <div class="a" id="ma"></div>
+    <div class="row">
+      <span class="cnt" id="mcnt"></span>
+      <button class="btn" id="mshow">Show answer <kbd>Space</kbd></button>
+      <button class="btn" id="magain" style="display:none">Again</button>
+      <button class="btn pri" id="mgot" style="display:none">Knew it ✓</button>
+      <button class="btn" id="mclose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+/* ===================== LITERAL STEP HELPERS ===================== */
+const K = (...k)=>k.map(x=>`<kbd>${x}</kbd>`).join("");
+// Add a node
+function A(name, search, where){
+  return `<b>Add ${name}:</b> mouse over the compositor (bottom panel) → ${K("Shift","A")} → type <code>${search}</code> → click <b>${name}</b> in the list. The node now follows your mouse: move it <u>${where}</u> and left-click to drop it.`;
+}
+// Connect two sockets
+function C(fn, fs, tn, ts){
+  return `<b>Wire:</b> press and hold on <b>${fn}</b> › <span class="so">${fs}</span> <small>(dot on its right edge)</small>, drag to <b>${tn}</b> › <span class="si">${ts}</span> <small>(dot on its left edge)</small>, let go.`;
+}
+// Type a value
+function V(node, field, val, was){
+  return `<b>Type:</b> on <b>${node}</b>, click once on the <b>${field}</b> number${was!==undefined?` (it shows <i>${was}</i>)`:""}, type <code>${val}</code>, press ${K("Enter")}.`;
+}
+// Change a dropdown
+function D(node, cur, pick){
+  return `<b>Dropdown:</b> on <b>${node}</b>, click the box that says <i>${cur}</i> and choose <b>${pick}</b>.`;
+}
+// Pick a colour
+function COL(node, field, r, g, b, hex){
+  return `<b>Colour:</b> on <b>${node}</b>, click the <b>${field}</b> colour swatch. In the picker, click <b>RGB</b> and type R <code>${r}</code>, G <code>${g}</code>, B <code>${b}</code> (or click <b>Hex</b> and type <code>${hex}</code>). Move the mouse off the picker to close it.`;
+}
+// View a node
+function VW(node, sock){
+  return `<b>Look:</b> hold ${K("Ctrl","Shift")} and left-click the title bar of <b>${node}</b>${sock?` (click again to step to its <b>${sock}</b> output)`:""}. A <b>Viewer</b> node appears and the top-left Image Editor (set to <i>Viewer Node</i>) shows that node's result.`;
+}
+
+const BASICS = [
+  ["Mouse first, then key","Blender sends a shortcut to whichever panel the <b>mouse is over</b>. For node shortcuts, move the mouse over the compositor (the wide bottom panel) first."],
+  ["Where the compositor lives (5.3)","Compositing is a stack of <b>Scene Effects</b>, like modifiers on an object. Properties editor → tab <b>Compositor &amp; Effects</b> (node-graph icon) → <b>Add Scene Effect</b> → <b>Scene Effect</b>. Each effect is one node group. The render goes into the first effect's <b>Group Input › Image</b>. Its <b>Group Output › Image</b> feeds the next effect, top to bottom."],
+  ["The Compositing workspace","Click the <b>Compositing</b> tab at the very top (scroll the tab row if it's hidden). Layout: <b>Image Editor</b> top-left (big), <b>Properties</b> top-right, <b>compositor node editor</b> across the bottom, timeline under it. The node editor shows the node group of the <b>active</b> effect: click an effect's panel in Properties to make it active."],
+  ["Seeing results","Press "+K("F12")+" once to render. After that the compositor re-runs on that render every time you change a node, so you don't need to render again. In the top-left Image Editor, click the image dropdown in its header → <b>Viewer Node</b> to see what the Viewer shows, or <b>Render Result</b> for the finished frame."],
+  ["See a node's result","Hold "+K("Ctrl","Shift")+" and click a node's title bar. A <b>Viewer</b> node is wired to it. Click the same node again to step through its other outputs. Or turn on <b>Backdrop</b> (button in the compositor's top bar) to see the Viewer behind the nodes."],
+  ["Find your way around","Scroll wheel = zoom. Hold the <b>middle mouse button</b> and drag = pan. "+K("Home")+" = fit all nodes on screen."],
+  ["Add a node",K("Shift","A")+" → start typing the name → click the node in the list → it follows your mouse → move it where you want → <b>left-click</b> to drop it."],
+  ["Move a node","Press and drag its coloured <b>title bar</b>. Or click it once, press "+K("G")+", move, click."],
+  ["Wire two nodes","<b>Outputs</b> are dots on a node's <b>right</b> edge, <b>inputs</b> on the <b>left</b> edge. Press and hold on an output, drag to an input, let go. An input takes one wire (a new one replaces the old one). An output can feed many inputs. Yellow dots carry images/colours, grey dots carry single numbers (masks, passes), purple dots carry vectors."],
+  ["Remove a wire","Hold "+K("Ctrl")+" and drag with the <b>right</b> mouse button across the wire. Or grab the wire's end at the input dot and drop it on empty space."],
+  ["Type a value","Click <b>once</b> on the number without dragging. It turns into a text box with the number selected. Type, press "+K("Enter")+". Dragging slides the value instead, so press "+K("Ctrl","Z")+" if that happens."],
+  ["Dropdowns and colours","A box with a small ▾ (like <i>Streaks</i> on Glare) is a dropdown: click and pick. A coloured rectangle is a colour swatch: click it, choose <b>RGB</b> or <b>Hex</b> in the picker, type the values."],
+  ["Mix Color","Search <code>mix color</code> and click <b>Mix Color</b>. Its first dropdown is the blend mode (<i>Mix</i>, <i>Multiply</i>, <i>Overlay</i>, <i>Add</i>…). Inputs: <b>Factor</b> (how much), <b>A</b> (bottom image), <b>B</b> (what you blend on top). Output: <b>Result</b>."],
+  ["Splice, delete, copy","Drop a node onto a wire until it lights up to plug it in between. Click a title bar and press "+K("X")+" to delete, or "+K("Ctrl","X")+" to delete and keep the wire joined. "+K("Shift","D")+" copies."],
+  ["Side panel (N)","With the mouse over the compositor press "+K("N")+". The <b>Node</b> tab shows the selected node's name, label and any settings that don't fit on the node. The <b>Group</b> tab lists the effect's inputs and outputs and its <b>Usage</b>."]
+];
+
+const STEPS = {
+/* ============================== L1 ============================== */
+l1:[
+ {t:"Build the test set: ground, pedestal and statue", goal:"Your own small scene to composite. No downloads.", do:[
+   `<b>File → New → General</b>. Mouse over the 3D viewport, click the cube, press ${K("Delete")}.`,
+   `${K("Shift","A")} → <b>Mesh → Plane</b>. Press ${K("S")}, type <code>30</code>, ${K("Enter")}. This is the ground.`,
+   `${K("Shift","A")} → <b>Mesh → Cube</b>. Press ${K("S")}, type <code>0.5</code>, ${K("Enter")}. Press ${K("G")} ${K("Z")}, type <code>0.5</code>, ${K("Enter")}. A pedestal.`,
+   `${K("Shift","A")} → <b>Mesh → Monkey</b>. Press ${K("G")} ${K("Z")}, type <code>1.6</code>, ${K("Enter")}. Right-click it → <b>Shade Smooth</b>.`,
+   `With the monkey selected press ${K("F2")}, type <code>Statue</code>, ${K("Enter")}. <b>This name matters in Lesson 2.</b>`,
+   `Give it a colour: Properties (right) → red-sphere <b>Material</b> tab → <b>New</b>. ` + COL("Principled BSDF","Base Color","0.45","0.30","0.15","B3956C")
+ ], why:`<b>Your own scene:</b> every lesson uses passes (depth, mist, object IDs) that only exist for scenes you render yourself. You can also use a terrain from the Geometry Nodes course instead, with a monkey on it.`},
+
+ {t:"A glowing crystal and a row of pillars", goal:"Something bright (for bloom and light rays) and things far away (for fog and blur).", do:[
+   `${K("Shift","A")} → <b>Mesh → Ico Sphere</b>. In the small <b>Add Ico Sphere</b> panel that opens bottom-left of the viewport (click it to expand): Subdivisions <code>1</code>, Radius <code>0.35</code>.`,
+   `Press ${K("N")} over the viewport → <b>Item</b> tab → Location X <code>1.4</code>, Y <code>-0.6</code>, Z <code>0.35</code>. Press ${K("F2")} → <code>Crystal</code>.`,
+   `Material tab → <b>New</b>. Scroll the Principled BSDF settings down to <b>Emission</b> and click it open. ` + COL("Emission","Color","0.2","0.8","1.0","7CE7FF") + ` Then Emission <b>Strength</b>: type <code>40</code>.`,
+   `${K("Shift","A")} → <b>Mesh → Cylinder</b>. In the <b>Add Cylinder</b> panel: Radius <code>0.35</code>, Depth <code>6</code>. N panel Location X <code>-3</code>, Y <code>2</code>, Z <code>3</code>. Right-click → <b>Shade Smooth</b>.`,
+   `Properties → blue wrench <b>Modifiers</b> tab → <b>Add Modifier → Generate → Array</b>. Count <code>4</code>. Untick <b>Relative Offset</b>, tick <b>Constant Offset</b>, set its Distance X <code>0</code>, Y <code>10</code>, Z <code>0</code>.`,
+   `With the pillars selected press ${K("Shift","D")}, then right-click once (the copy stays put). N panel Location X <code>3</code>, Y <code>7</code>.`
+ ], see:`Two rows of pillars running away from the front, a pedestal with the statue, a small crystal on the ground.`},
+
+ {t:"Light, sky and camera", goal:"A late-afternoon sun, a dusky sky, and a camera framing the statue.", do:[
+   `${K("Shift","A")} → <b>Light → Sun</b>. Properties → green bulb <b>Light</b> tab → Strength <code>4</code>. N panel Rotation X <code>50</code>, Y <code>0</code>, Z <code>-35</code>.`,
+   `Properties → red globe <b>World</b> tab → Surface → <b>Color</b> swatch → RGB R <code>0.08</code>, G <code>0.11</code>, B <code>0.2</code> (Hex <code>505E7C</code>).`,
+   `Click the <b>Camera</b> (it came with the General file) in the Outliner (top-right list). N panel Location X <code>0.5</code>, Y <code>-9</code>, Z <code>2</code>, Rotation X <code>85</code>, Y <code>0</code>, Z <code>0</code>.`,
+   `Mouse over the viewport, press numpad ${K("0")} (or <b>View → Cameras → Active Camera</b>) to look through the camera.`,
+   `Save: ${K("Ctrl","S")} → name it <code>compositing_set.blend</code>.`
+ ]},
+
+ {t:"Render the plain version", goal:"The 'before' picture, and the render the compositor will work on.", do:[
+   `Properties → <b>Render</b> tab (camera-back icon): Render Engine says <b>EEVEE</b>. Keep it (everything here was tested with EEVEE; Cycles works too, just slower).`,
+   `Press ${K("F12")}. A render window opens. Look at it: correct, but flat and digital.`,
+   `Close the render window (or leave it open behind Blender).`
+ ], why:`<b>Why render first?</b> The compositor works on the last render. After one ${K("F12")}, changing nodes updates the result without rendering again.`},
+
+ {t:"Create your first Scene Effect", goal:"An empty effect: Group Input › Image wired straight to Group Output › Image.", hl:{g:0,n:["gi"]}, do:[
+   `Properties → tab <b>Compositor &amp; Effects</b> (the node-graph icon in the tab column) → click <b>Add Scene Effect</b> → <b>Scene Effect</b>.`,
+   `A panel called <i>Scene Effect</i> appears. If it shows a <b>New</b> button, click it. Double-click the name and type <code>Cinematic Finish</code>, ${K("Enter")}.`,
+   `Click the <b>Compositing</b> workspace tab at the top of Blender.`,
+   `Bottom panel: <b>Group Input</b> wired to <b>Group Output</b> by a yellow wire. Drag Group Output's title bar far to the right to make room.`,
+   `Top-left Image Editor: click the image dropdown in its header → <b>Render Result</b>. You see your render.`
+ ], why:`<b>Group Input › Image</b> is the picture coming in (your render). Whatever reaches <b>Group Output › Image</b> is what this effect hands on.`},
+
+ {t:"Bloom: make the crystal glow", goal:"Light that bleeds around the brightest pixels.", hl:{g:0,n:["gl"]}, do:[
+   `${K("Shift","A")} → type <code>glare</code> → click <b>Glare</b>. Drop it <u>onto the yellow wire</u> so it splices in.`,
+   D("Glare","Streaks","Bloom"),
+   V("Glare","Threshold","0.8","1.000") + ` (only pixels brighter than this glow)`,
+   V("Glare","Strength","0.7","1.000"),
+   V("Glare","Size","0.7","0.500"),
+   VW("Glare")
+ ], see:`A soft cyan halo around the crystal. Nothing else glows, because nothing else is brighter than 0.8.`},
+
+ {t:"Lens fringing", goal:"A slight barrel bend and coloured edges, like a real lens.", hl:{g:0,n:["ld"]}, do:[
+   `${K("Shift","A")} → <code>lens distortion</code> → <b>Lens Distortion</b> → drop it on the wire between Glare and Group Output.`,
+   V("Lens Distortion","Distortion","-0.03","0.000"),
+   V("Lens Distortion","Dispersion","0.04","0.000"),
+   `Tick <b>Fit</b> (it zooms in a touch so no black corners show).`
+ ], why:`<b>Dispersion</b> splits red/green/blue at the edges of the frame (chromatic aberration). Tiny amounts read as "shot on a real camera". Big amounts read as a bug.`},
+
+ {t:"Grade: warm highlights, cool shadows", goal:"The classic film split: warm light, cool shade.", hl:{g:0,n:["cb"]}, do:[
+   `${K("Shift","A")} → <code>color balance</code> → <b>Color Balance</b> → drop it on the wire after Lens Distortion. Its type says <i>Lift/Gamma/Gain</i>. Keep it.`,
+   V("Color Balance","Gain (number)","1.15","1.000"),
+   COL("Color Balance","Gain","1.0","0.887","0.739","FFF2DF"),
+   V("Color Balance","Gamma (number)","1.08","1.000"),
+   COL("Color Balance","Gamma","0.87","0.926","1.0","F0F7FF")
+ ], why:`<b>Gain</b> pushes the bright parts, <b>Gamma</b> the midtones, <b>Lift</b> the darks. Number × colour is the push. A warm gain plus a slightly cool gamma is the most common grade in film.`},
+
+ {t:"Vignette: darken the edges", goal:"A soft oval that pulls the eye to the centre.", hl:{g:1,n:["el","bl","bw","mr","mm"]}, do:[
+   A("Ellipse Mask","ellipse mask","below Color Balance"),
+   `<b>Type:</b> Ellipse Mask Size: X <code>0.9</code>, Y <code>0.75</code> (it shows 0.2, 0.1).`,
+   A("Blur","blur","to the right of Ellipse Mask"),
+   C("Ellipse Mask","Mask","Blur","Image"),
+   `<b>Type:</b> Blur Size X <code>150</code>, Y <code>150</code> (it shows 0, 0).`,
+   A("RGB to BW","rgb to bw","to the right of Blur"),
+   C("Blur","Image","RGB to BW","Image"),
+   A("Map Range","map range","to the right of RGB to BW"),
+   C("RGB to BW","Val","Map Range","Value"),
+   V("Map Range","To Min","0.35","0.000") + ` (edges keep 35% of their brightness)`,
+   `${K("Shift","A")} → <code>mix color</code> → <b>Mix Color</b> → drop it on the wire between Color Balance and Group Output.`,
+   D("Mix Color","Mix","Multiply"),
+   V("Mix Color","Factor","1"),
+   C("Map Range","Result","Mix Color","B") + ` (Color Balance already feeds <b>A</b>)`
+ ], see:`The corners fall off smoothly into shadow. No hard oval edge (the big blur takes care of that).`},
+
+ {t:"Film grain", goal:"Fine noise that hides the 'too clean' CG look.", hl:{g:1,n:["gi2","ic","wn","mo"]}, do:[
+   A("Image Coordinates","image coordinates","below the vignette nodes"),
+   C("Group Input","Image","Image Coordinates","Image") + ` (a second wire from the same output)`,
+   A("White Noise Texture","white noise","to the right of Image Coordinates"),
+   C("Image Coordinates","Pixel","White Noise Texture","Vector") + ` (one random number per pixel)`,
+   `${K("Shift","A")} → <code>mix color</code> → <b>Mix Color</b> → drop it on the wire between the Multiply Mix and Group Output.`,
+   D("this Mix Color","Mix","Overlay"),
+   V("this Mix Color","Factor","0.08"),
+   C("White Noise Texture","Value","Overlay Mix","B")
+ ], why:`<b>Overlay</b> grain brightens the light parts and darkens the dark parts a little, like real film. 0.08 is subtle. Above 0.15 it gets dirty.`},
+
+ {t:"Render the finished frame, and compare", goal:"The 'after' picture, and a quick A/B check.", do:[
+   `Press ${K("F12")}. The render window now shows the finished, composited frame.`,
+   `Properties → Compositor &amp; Effects: on the <i>Cinematic Finish</i> panel, untick <b>Render</b>, press ${K("F12")}, look, then tick it again.`,
+   `Optional live preview: in the <b>Layout</b> workspace, click the small ▾ next to the four shading spheres (top-right of the viewport) → <b>Compositor: Camera</b>, then press ${K("Z")} → <b>Material Preview</b>. The effect now runs live in the viewport while you look through the camera.`
+ ], see:`Before: flat. After: glowing crystal, warm light, soft dark corners, grain.`}
+],
+
+/* ============================== L2 ============================== */
+l2:[
+ {t:"Turn on the Cryptomatte pass", goal:"Blender saves an 'which object is this pixel' ID map with every render.", do:[
+   `Open <code>compositing_set.blend</code>. Properties → <b>View Layer</b> tab (the stack-of-photos icon) → <b>Passes</b> → open <b>Cryptomatte</b> → tick <b>Object</b>.`,
+   `Press ${K("F12")} to render again (new passes need a new render).`
+ ], why:`<b>Cryptomatte</b> stores clean, anti-aliased masks for every object by name, so you can grade one object after the render, with no re-render and no hand-painted mask.`},
+
+ {t:"A second effect, first in the stack", goal:"A 'Hero Pop' effect that runs before the cinematic finish.", do:[
+   `Properties → Compositor &amp; Effects → <b>Add Scene Effect</b> → <b>Scene Effect</b>. Click <b>New</b> if shown. Rename it <code>Hero Pop</code>.`,
+   `The new panel sits <b>below</b> Cinematic Finish. Effects run top to bottom, and the grade should happen before bloom and grain, so move Hero Pop up: drag its panel by the grip (⋮⋮) at the right of its header above Cinematic Finish. If you can't drag it, untick Cinematic Finish's <b>Render</b> while you work.`,
+   `Click inside the <i>Hero Pop</i> panel so it's the active effect. Go to the <b>Compositing</b> workspace. The compositor shows Hero Pop's own Group Input → Group Output.`
+ ], why:`<b>Stack order:</b> checked in 5.3 with two effects. The second effect receives the first effect's output. Order matters just like modifiers.`},
+
+ {t:"Pick the statue with Cryptomatte", goal:"A white-on-black mask of just the statue.", hl:{g:0,n:["cr"]}, do:[
+   A("Cryptomatte","cryptomatte","to the right of Group Input, near the top") + ` Pick <b>Cryptomatte</b>, not <i>Cryptomatte (Legacy)</i>.`,
+   C("Group Input","Image","Cryptomatte","Image"),
+   `On the node, its source should say <b>Render</b> and its layer <b>CryptoObject</b> (defaults). Click the <b>Matte Objects</b> text box, type <code>Statue</code>, ${K("Enter")}.`,
+   VW("Cryptomatte","Matte") + ` Keep clicking until the Viewer shows the <b>Matte</b> output.`
+ ], see:`A white statue silhouette on black, with soft anti-aliased edges. Black everywhere = the name doesn't match: check the object's name in the Outliner.`,
+ pro:`<b>Picking by clicking:</b> instead of typing, click the eyedropper <b>+</b> on the node and click the object in the Image Editor. Use <b>−</b> to remove one. Comma-separated names work too: <code>Statue, Crystal</code>.`},
+
+ {t:"Grade the background down", goal:"A darker, washed-out copy of the whole image.", hl:{g:0,n:["hs"]}, do:[
+   A("Hue/Saturation/Value","hue saturation","below Cryptomatte"),
+   C("Group Input","Image","Hue/Saturation/Value","Image"),
+   V("Hue/Saturation/Value","Saturation","0.25","1.000"),
+   V("Hue/Saturation/Value","Value","0.55","1.000")
+ ]},
+
+ {t:"Grade the hero up", goal:"A warm, bright copy of the whole image.", hl:{g:0,n:["cb"]}, do:[
+   A("Color Balance","color balance","below Hue/Saturation/Value"),
+   C("Group Input","Image","Color Balance","Image"),
+   V("Color Balance","Gain (number)","1.35","1.000"),
+   COL("Color Balance","Gain","1.0","0.815","0.593","FFE9CA")
+ ]},
+
+ {t:"Combine them through the mask", goal:"Warm statue, dim grey world.", hl:{g:0,n:["mx"]}, do:[
+   A("Mix Color","mix color","to the right of the two grades") + ` Leave its blend on <b>Mix</b>.`,
+   C("Cryptomatte","Matte","Mix Color","Factor"),
+   C("Hue/Saturation/Value","Image","Mix Color","A"),
+   C("Color Balance","Image","Mix Color","B"),
+   C("Mix Color","Result","Group Output","Image"),
+   VW("Mix Color")
+ ], why:`<b>Factor as a mask:</b> where the matte is 0 you see A (the dim grade), where it's 1 you see B (the hero grade). The soft matte edge blends them smoothly.`},
+
+ {t:"Rim glow around the statue", goal:"A thin warm halo just outside the silhouette, like a key-art selection glow.", hl:{g:1,n:["de","sb","bl","bw","ad"]}, do:[
+   A("Dilate/Erode","dilate","above the Mix Color, in empty space"),
+   C("Cryptomatte","Matte","Dilate/Erode","Mask"),
+   D("Dilate/Erode","Steps","Distance"),
+   V("Dilate/Erode","Size","6","0") + ` (grows the mask 6 pixels)`,
+   A("Math","math","to the right of Dilate/Erode") + ` Pick <b>Math</b> exactly.`,
+   D("Math","Add","Subtract"),
+   C("Dilate/Erode","Mask","Subtract","Value (top)"),
+   C("Cryptomatte","Matte","Subtract","Value (bottom)") + ` Grown minus original = a thin ring.`,
+   A("Blur","blur","to the right of Subtract"),
+   C("Subtract","Value","Blur","Image"),
+   `<b>Type:</b> Blur Size X <code>6</code>, Y <code>6</code>.`,
+   A("RGB to BW","rgb to bw","to the right of Blur"),
+   C("Blur","Image","RGB to BW","Image"),
+   `${K("Shift","A")} → <code>mix color</code> → <b>Mix Color</b> → drop it on the wire between the first Mix Color and Group Output.`,
+   D("this Mix Color","Mix","Add"),
+   C("RGB to BW","Val","Add Mix","Factor"),
+   COL("Add Mix","B","1.0","0.55","0.15","FFC36C"),
+   `Press ${K("F12")}.`
+ ], see:`Checked in 5.3: a warm bronze statue with a thin orange glow line around it, in a grey, desaturated world.`}
+],
+
+/* ============================== L3 ============================== */
+l3:[
+ {t:"Turn on Depth and Mist, set the mist range", goal:"Two distance passes: raw distance (Depth) and a ready 0–1 fog ramp (Mist).", do:[
+   `Properties → <b>View Layer</b> tab → <b>Passes</b> → <b>Data</b>: tick <b>Depth</b> and <b>Mist</b>.`,
+   `Properties → <b>World</b> tab → open <b>Mist Pass</b>: Start <code>3</code> m, Depth <code>40</code> m.`,
+   `Click the Camera in the Outliner → Properties → green camera <b>Object Data</b> tab → <b>Depth of Field</b> → Focus Distance <code>9</code> m (the statue is 9 m away).`,
+   `Press ${K("F12")}.`
+ ], why:`<b>Mist</b> is 0 at <i>Start</i> and 1 at <i>Start + Depth</i>, ready to use as fog strength. <b>Depth</b> is the real distance in metres, which the Defocus node needs.`},
+
+ {t:"Third effect: Depth Atmosphere", goal:"An effect that can read the render's passes.", hl:{g:0,n:["rl","gi"]}, do:[
+   `Compositor &amp; Effects → <b>Add Scene Effect → Scene Effect</b> → <b>New</b> if shown → rename <code>Depth Atmosphere</code>. Order: Hero Pop, Depth Atmosphere, Cinematic Finish (drag panels, or untick the others' <b>Render</b> while you build).`,
+   `Click inside its panel, go to the <b>Compositing</b> workspace.`,
+   A("Render Layers","render layers","to below Group Input"),
+   `Its outputs now include <b>Depth</b>, <b>Mist</b> (and Normal / CryptoObject if those are on).`
+ ], why:`<b>Group Input</b> gives the picture as it arrives from the effect above. <b>Render Layers</b> gives the raw render <i>and its passes</i>. Checked in 5.3: it works inside a Scene Effect.`},
+
+ {t:"Shape the fog", goal:"Thin fog nearby, thick in the distance.", hl:{g:0,n:["pw","mu"]}, do:[
+   A("Math","math","to the right of Render Layers"),
+   D("Math","Add","Power") + ` Its inputs are now labelled <b>Base</b> and <b>Exponent</b>.`,
+   C("Render Layers","Mist","Power","Base"),
+   V("Power","Exponent","1.4","0.500"),
+   A("Math","math","to the right of Power"),
+   D("this Math","Add","Multiply"),
+   C("Power","Value","Multiply","Value (top)"),
+   V("Multiply","bottom Value","0.85","0.500") + ` (fog never fully hides the far pillars)`
+ ], why:`<b>Power above 1</b> keeps the foreground clear and lets the fog build up with distance, the way real haze does.`},
+
+ {t:"Paint the fog in", goal:"Blue-grey haze swallowing the far pillars.", hl:{g:0,n:["fog"]}, do:[
+   A("Mix Color","mix color","to the right of Multiply") + ` Keep <b>Mix</b>.`,
+   C("Multiply","Value","Mix Color","Factor"),
+   C("Group Input","Image","Mix Color","A"),
+   COL("Mix Color","B","0.55","0.65","0.8","C3D3E7"),
+   C("Mix Color","Result","Group Output","Image"),
+   VW("Mix Color")
+ ], see:`The pillars fade into a pale blue haze the further away they are. The statue stays clear.`},
+
+ {t:"Light rays from the crystal", goal:"God rays streaming out from the glowing crystal.", hl:{g:0,n:["gl"]}, do:[
+   `${K("Shift","A")} → <code>glare</code> → <b>Glare</b> → drop it on the wire between the fog Mix Color and Group Output.`,
+   D("Glare","Streaks","Sun Beams"),
+   `<b>Type:</b> Sun Position X <code>0.65</code>, Y <code>0.24</code>. That's where the crystal sits in the frame: X = fraction from the left edge, Y = fraction from the bottom. Adjust if your crystal is elsewhere.`,
+   V("Glare","Threshold","2","1.000") + ` (only the crystal is that bright, so only it casts rays)`,
+   V("Glare","Strength","0.6","1.000"),
+   V("Glare","Size","0.8","0.500")
+ ], why:`<b>Sun Beams</b> smears bright pixels outward from the Sun Position. Put it on the light source and keep the threshold high, or the whole sky casts rays.`},
+
+ {t:"Lens blur from the Depth pass", goal:"The statue sharp, the far pillars soft, like a real wide-aperture lens.", hl:{g:0,n:["df"]}, do:[
+   `${K("Shift","A")} → <code>defocus</code> → <b>Defocus</b> → drop it on the wire between Glare and Group Output.`,
+   C("Render Layers","Depth","Defocus","Z"),
+   `On Defocus (or ${K("N")} → <b>Node</b> tab if the settings don't show on the node): tick <b>Use Z-Buffer</b>.`,
+   V("Defocus","F-Stop","1.2","128.000") + ` (smaller = blurrier)`,
+   V("Defocus","Max Blur","32","16.000"),
+   `Press ${K("F12")}.`
+ ], see:`Checked in 5.3: haze building with distance, a burst of light rays from the crystal, and softer far pillars, with the statue in focus at 9 m.`,
+ why:`<b>Focus:</b> Defocus uses the camera's Focus Distance you set in step 1. Change it to 20 m and the statue goes soft while the pillars sharpen.`}
+],
+
+/* ============================== L4 ============================== */
+l4:[
+ {t:"Turn on Normal, smooth the pillars", goal:"The pass that outlines are drawn from, and clean surfaces to draw them on.", do:[
+   `Properties → View Layer → Passes → Data: tick <b>Normal</b> (Depth is already on from Lesson 3).`,
+   `In the viewport click a pillar, ${K("Shift")}-click the other pillar row, right-click → <b>Shade Smooth</b>. (Flat-shaded cylinders would get one line per face.)`,
+   `Untick <b>Render</b> on your three other effects, so you can see this look on its own. Press ${K("F12")}.`
+ ]},
+
+ {t:"Fourth effect: Ink Key Art", goal:"An empty effect to build the stylised look in.", do:[
+   `Compositor &amp; Effects → <b>Add Scene Effect → Scene Effect</b> → <b>New</b> if shown → rename <code>Ink Key Art</code>. Click inside its panel, go to <b>Compositing</b>.`,
+   A("Render Layers","render layers","to below Group Input")
+ ]},
+
+ {t:"Edges from the Normal pass", goal:"White lines wherever a surface turns sharply.", hl:{g:0,n:["fn","b1"]}, do:[
+   A("Filter","filter","to the right of Render Layers") + ` Pick <b>Filter</b> (the image filter).`,
+   C("Render Layers","Normal","Filter","Image"),
+   D("Filter","Soften","Sobel"),
+   A("RGB to BW","rgb to bw","to the right of Filter"),
+   C("Filter","Image","RGB to BW","Image"),
+   VW("RGB to BW")
+ ], why:`<b>Sobel</b> lights up where neighbouring pixels differ. On the Normal pass that means creases and silhouettes, the lines an inker would draw.`},
+
+ {t:"Edges from the Depth pass", goal:"Lines where one object passes in front of another.", hl:{g:0,n:["nz","fd","b2","mx"]}, do:[
+   A("Normalize","normalize","below the first Filter"),
+   C("Render Layers","Depth","Normalize","Value") + ` (squeezes metres into 0–1)`,
+   A("Filter","filter","to the right of Normalize"),
+   C("Normalize","Value","this Filter","Image"),
+   D("this Filter","Soften","Sobel"),
+   A("RGB to BW","rgb to bw","to the right of it"),
+   C("second Filter","Image","second RGB to BW","Image"),
+   A("Math","math","to the right of both RGB to BW nodes"),
+   D("Math","Add","Maximum"),
+   C("first RGB to BW","Val","Maximum","Value (top)"),
+   C("second RGB to BW","Val","Maximum","Value (bottom)")
+ ]},
+
+ {t:"Turn edges into ink", goal:"Black lines on white (1 = paper, 0 = ink).", hl:{g:0,n:["mr","ad"]}, do:[
+   A("Map Range","map range","to the right of Maximum"),
+   C("Maximum","Value","Map Range","Value"),
+   V("Map Range","From Min","0.15","0.000"),
+   V("Map Range","From Max","0.4","1.000"),
+   V("Map Range","To Min","1","0.000"),
+   V("Map Range","To Max","0","1.000") + ` (flipped, so edges become dark)`,
+   VW("Map Range")
+ ], see:`Checked in 5.3: crisp black outlines around the statue, pedestal, crystal and pillars on a white background.`},
+
+ {t:"Painterly colour", goal:"Brush-stroke smoothing plus flat colour bands.", hl:{g:1,n:["kw","po","mm"]}, do:[
+   A("Kuwahara","kuwahara","below everything, near Group Input"),
+   C("Group Input","Image","Kuwahara","Image") + ` Size shows 6 and type Anisotropic. Keep both.`,
+   A("Posterize","posterize","to the right of Kuwahara"),
+   C("Kuwahara","Image","Posterize","Image"),
+   V("Posterize","Steps","8","8.000") + ` (already 8, so just check it)`,
+   A("Mix Color","mix color","to the right of Posterize"),
+   D("Mix Color","Mix","Multiply"),
+   V("Mix Color","Factor","1"),
+   C("Posterize","Image","Mix Color","A"),
+   C("Map Range","Result","Mix Color","B"),
+   C("Mix Color","Result","Group Output","Image")
+ ]},
+
+ {t:"Expose three controls", goal:"Paint Size, Colour Steps and Line Threshold on the effect panel.", hl:{g:1,n:["gi"]}, do:[
+   `Group Input's last output is an <b>empty hollow dot</b>. Press and hold on the dot left of Kuwahara's <b>Size</b>, drag to that hollow dot, let go.`,
+   `Do the same from Posterize's <b>Steps</b>, then from Map Range's <b>From Min</b>.`,
+   A("Math","math","next to Map Range") + ` Leave it on <b>Add</b>.`,
+   C("Group Input","From Min (the new output)","Add","Value (top)"),
+   V("Add","bottom Value","0.25","0.500"),
+   C("Add","Value","Map Range","From Max") + ` Now the line window moves with the threshold.`,
+   `${K("N")} → <b>Group</b> tab: double-click each new item in the list and rename them <code>Paint Size</code>, <code>Colour Steps</code>, <code>Line Threshold</code>.`,
+   `Properties → Compositor &amp; Effects → the Ink Key Art panel now shows three fields. If any says 0, type <code>6</code>, <code>8</code>, <code>0.15</code>.`
+ ], why:`<b>Checked in 5.3:</b> inputs added to an effect start at 0 on the effect panel, which gives a black image (0 colour steps). Typing the values on the panel fixes it.`},
+
+ {t:"Make it an asset", goal:"Ink Key Art in the Add Scene Effect menu of every file.", do:[
+   `${K("N")} → <b>Group</b> tab → <b>Name</b>: <code>Ink Key Art</code>. Under <b>Usage</b> tick <b>Scene Effect</b>.`,
+   `In the Outliner (top-right in Layout) set the <b>Display Mode</b> dropdown to <b>Blender File</b>. Open <b>Node Groups</b> → right-click <b>Ink Key Art</b> → <b>Mark as Asset</b>.`,
+   `<b>Edit → Preferences → File Paths → Asset Libraries → +</b> → choose a folder for your assets (for example a new folder called <code>BlenderAssets</code>). Close Preferences.`,
+   `<b>File → Save As</b> into that folder.`
+ ], why:`<b>Usage › Scene Effect</b> (unticked by default, checked in 5.3) is what lets the group show up as a Scene Effect.`},
+
+ {t:"Use it in a brand-new file", goal:"Proof the asset works anywhere.", do:[
+   `<b>File → New → General</b>. Add a Monkey, Shade Smooth it, and tick <b>Depth</b> and <b>Normal</b> in View Layer → Passes. Press ${K("F12")}.`,
+   `Properties → Compositor &amp; Effects → <b>Add Scene Effect</b>. Your asset is listed under its catalog (or under <i>Unassigned</i>). Click <b>Ink Key Art</b>.`,
+   `Press ${K("F12")}.`
+ ], see:`The new monkey rendered as inked, painted key art with no node work, and the three sliders on the panel.`}
+]
+};
+
+const SHOTS = {
+  l1:[["00_raw","Before: the plain EEVEE render"],["L1_cinematic","After: Cinematic Finish (tested render, 5.3)"]],
+  l2:[["L2_matte","Cryptomatte › Matte for \"Statue\""],["L2_hero","Hero Pop: warm statue, rim glow, dim world"]],
+  l3:[["L3_mist","The Mist pass (0 near, 1 far)"],["L3_atmos","Depth Atmosphere: fog, crystal rays, lens blur"]],
+  l4:[["L4_lines","Ink lines from Normal + Depth"],["L4_ink","Ink Key Art: paint + posterise + ink"]]
+};
+const COURSE = {
+  title: "Compositing Fast Track",
+  blender: "5.3"
+};
+
+const LESSONS = [
+/* ---------------------------------------------------------------- L1 */
+{
+  id:"l1", num:1, short:"Cinematic finish",
+  title:"Turn a flat render into a film frame",
+  kick:"Lesson 1 · Scene Effects, glare, lens, grade, vignette, grain",
+  time:"60–75 min",
+  intro:`You'll build a small scene of your own, render it plain, then stack the finishing passes a film compositor adds to every shot: bloom on the bright crystal, a touch of lens fringing, a warm/cool grade, a soft vignette and film grain. Same render, twice the production value.`,
+  use:`<b>Used for:</b> portfolio renders, trailers, game key art and cinematics. Every final frame you show anyone goes through a finishing stack like this.`,
+  learn:["Scene Effects (5.3)","Compositing workspace","Viewer + Render Result","Glare · Bloom","Lens Distortion","Color Balance","Masks as images","Mix Color blend modes","Film grain"],
+  concepts:[
+    {h:"Effects stack like modifiers", p:"In Blender 5.3, compositing lives in <b>Properties → Compositor &amp; Effects</b>. Each <i>Scene Effect</i> is a node group. The render enters the first one, and each effect's output feeds the next."},
+    {h:"Pictures flow left → right", p:"Yellow wires carry whole images. Each node does one job to every pixel and hands the result on. Group Output is what leaves the effect."},
+    {h:"Brightness above 1 is real", p:"Renders store light, not paint. The crystal is 40× brighter than white. That's why <i>Threshold 0.8</i> catches only it, and why bloom looks physical."},
+    {h:"A mask is just a grey image", p:"Ellipse Mask, a blurred copy of it, a pass from the render: all just numbers from 0 to 1 per pixel. Plug them into a Mix Color's <b>Factor</b> or <b>B</b> to decide where an effect lands."}
+  ],
+  graphs:[
+    {title:"Graph A: bloom, lens and grade", hint:"the main chain", w:1000, h:320,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:40,w:120,o:[["Image","col"]]},
+      {id:"gl",t:"Glare",c:"filter",x:180,y:20,w:170,o:[["Image","col"],["Glare","col"],["Highlights","col"]],i:[["Image","col"],["Type","menu","Bloom"],["Quality","menu","Medium"],["Threshold","float","0.8"],["Strength","float","0.7"],["Size","float","0.7"]]},
+      {id:"ld",t:"Lens Distortion",c:"xform",x:400,y:20,w:170,o:[["Image","col"]],i:[["Image","col"],["Type","menu","Radial"],["Distortion","float","-0.03"],["Dispersion","float","0.04"],["Jitter","bool"],["Fit","bool","✓"]]},
+      {id:"cb",t:"Color Balance",c:"color",x:620,y:20,w:190,o:[["Image","col"]],i:[["Image","col"],["Factor","float","1.0"],["Type","menu","Lift/Gamma/Gain"],["Gamma","float","1.08"],["Gamma","col","cool F0F7FF"],["Gain","float","1.15"],["Gain","col","warm FFF2DF"]]},
+      {id:"n1",note:"→ Vignette + grain (Graph B)",x:850,y:40,w:120}
+     ],
+     links:[["gi.Image","gl.Image"],["gl.Image","ld.Image"],["ld.Image","cb.Image"]],
+     cap:"Glare's other two outputs (Glare, Highlights) give the glow on its own, useful for tinting it. Only the main Image output is used here."},
+    {title:"Graph B: vignette and grain", hint:"two masks, two Mix Colors", w:1250, h:440,
+     nodes:[
+      {id:"cbo",t:"Color Balance (Graph A)",c:"color",x:20,y:20,w:180,o:[["Image","col"]]},
+      {id:"el",t:"Ellipse Mask",c:"matte",x:20,y:120,w:160,o:[["Mask","float"]],i:[["Operation","menu","Add"],["Position","vec","0.5, 0.5"],["Size","vec","0.9, 0.75"]]},
+      {id:"bl",t:"Blur",c:"filter",x:210,y:120,w:150,o:[["Image","col"]],i:[["Image","col"],["Size","vec","150, 150"],["Type","menu","Gaussian"]]},
+      {id:"bw",t:"RGB to BW",c:"util",x:390,y:140,w:120,o:[["Val","float"]],i:[["Image","col"]]},
+      {id:"mr",t:"Map Range",c:"util",x:540,y:120,w:150,o:[["Result","float"]],i:[["Value","float"],["From Min","float","0"],["From Max","float","1"],["To Min","float","0.35"],["To Max","float","1"]]},
+      {id:"mm",t:"Mix Color · Multiply",c:"color",x:730,y:20,w:170,o:[["Result","col"]],i:[["Factor","float","1.0"],["A","col"],["B","col"]]},
+      {id:"gi2",t:"Group Input",c:"group",x:20,y:340,w:120,o:[["Image","col"]]},
+      {id:"ic",t:"Image Coordinates",c:"util",x:180,y:320,w:170,o:[["Uniform","vec"],["Normalized","vec"],["Pixel","vec"]],i:[["Image","col"]]},
+      {id:"wn",t:"White Noise Texture",c:"tex",x:400,y:330,w:170,p:["2D"],o:[["Value","float"],["Color","col"]],i:[["Vector","vec"]]},
+      {id:"mo",t:"Mix Color · Overlay",c:"color",x:930,y:150,w:170,o:[["Result","col"]],i:[["Factor","float","0.08"],["A","col"],["B","col"]]},
+      {id:"go",t:"Group Output",c:"group",x:1120,y:170,w:120,i:[["Image","col"]]}
+     ],
+     links:[["cbo.Image","mm.A"],["el.Mask","bl.Image"],["bl.Image","bw.Image"],["bw.Val","mr.Value"],["mr.Result","mm.B"],["gi2.Image","ic.Image"],["ic.Pixel","wn.Vector"],["mm.Result","mo.A"],["wn.Value","mo.B"],["mo.Result","go.Image"]],
+     cap:"Checked by rendering in Blender 5.3: the Group Input appears twice here only to keep the wires short. In Blender it's one node with two wires from its Image output."}
+  ],
+  steps:STEPS.l1,
+  check:`<b>You should have:</b> one Scene Effect called <i>Cinematic Finish</i>. F12 gives a frame with a blooming cyan crystal, slightly fringed edges, warm highlights over cool shadows, darkened corners and fine grain. Untick the effect's <b>Render</b> box to see the plain render again.`,
+  cards:[
+    ["Where is the compositor in Blender 5.3?","Properties → <b>Compositor &amp; Effects</b> tab → <b>Add Scene Effect</b>. Each Scene Effect is a node group, stacked top to bottom like modifiers."],
+    ["What do Group Input › Image and Group Output › Image mean inside an effect?","Input = the picture arriving (the render, or the effect above). Output = what this effect hands to the next effect or the final frame."],
+    ["Why does Glare Threshold 0.8 catch only the crystal?","Renders store light above 1. The emissive crystal is far brighter than everything else, so only it crosses the threshold."],
+    ["How do you see one node's result?","<kbd>Ctrl</kbd><kbd>Shift</kbd> + click its title bar (Viewer node), with the Image Editor set to <b>Viewer Node</b> or Backdrop on."],
+    ["Lift / Gamma / Gain push which tones?","Lift = darks, Gamma = midtones, Gain = highlights. Number × colour = the push."],
+    ["How is the vignette built?","Ellipse Mask → big Blur → RGB to BW → Map Range (To Min 0.35) → Mix Color <b>Multiply</b> into the image."],
+    ["Why Overlay for grain, at Factor 0.08?","Overlay pushes lights lighter and darks darker like film grain. Low factor keeps it subtle."],
+    ["Do you have to re-render after changing nodes?","No. After one F12 the compositor re-runs on the stored render. Only new <b>passes</b> need a new render."],
+    ["How do you A/B an effect?","Untick its <b>Render</b> checkbox in Compositor &amp; Effects, F12, tick it again."]
+  ],
+  boss:{
+    title:"Boss fight: finish a frame from memory",
+    brief:"Memory mode on, timer running. Render any scene of yours, then build the whole finishing stack without looking.",
+    goal:20,
+    items:[
+      ["Scene Effect created and named",""],
+      ["Bloom only on the brightest light",""],
+      ["Lens fringing with no black corners",""],
+      ["Warm highlights / cool midtones grade",""],
+      ["Soft vignette (no visible oval edge)",""],
+      ["Subtle grain on top",""]
+    ],
+    stretch:[
+      ["Anamorphic streaks","Add a second Glare set to <b>Streaks</b>, Streaks 2, angle 0, mixed in with Mix Color <b>Screen</b> at low Factor: the blue horizontal flare from sci-fi films."],
+      ["Tinted bloom","Use Glare's <b>Glare</b> output (glow only), tint it with Color Balance, and add it back with Mix Color <b>Add</b>."],
+      ["Live grade","Turn on <b>Compositor: Camera</b> in the viewport shading popover and grade while orbiting the scene."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L2 */
+{
+  id:"l2", num:2, short:"Hero pop with Cryptomatte",
+  title:"Regrade one object after the render",
+  kick:"Lesson 2 · Render passes, Cryptomatte, masks, effect order",
+  time:"40–50 min",
+  intro:`The art director says "make the statue pop". Instead of re-lighting and re-rendering, you'll pull a perfect mask of the statue from the Cryptomatte pass, warm it up, push everything else into a dim grey, and draw a glowing rim around it, all in the compositor in seconds.`,
+  use:`<b>Used for:</b> product shots, character key art, "hero" thumbnails, and fixing notes from a director without a re-render. Studios do this on almost every frame.`,
+  learn:["View Layer passes","Cryptomatte","Matte by object name","Two grades + one mask","Dilate/Erode","Mask maths","Effect stack order"],
+  concepts:[
+    {h:"Passes are extra pictures", p:"Besides the colour image, a render can save helper images: distance, surface direction, object IDs… You tick them in <b>View Layer → Passes</b>, then read them in the compositor."},
+    {h:"Cryptomatte = masks by name", p:"Every object gets an ID baked into the Cryptomatte pass. The Cryptomatte node turns a name like <code>Statue</code> into a clean mask with soft edges."},
+    {h:"Grade twice, mix once", p:"The trick behind every 'selective' grade: make one version for the selection and one for the rest, then let the mask choose per pixel."},
+    {h:"Masks are numbers, so do maths", p:"Grown mask − original mask = a ring. Blur it and you have a glow. Every compositor builds its outlines and edge glows this way."}
+  ],
+  graphs:[
+    {title:"Graph A: isolate and regrade", hint:"two grades, the matte picks", w:880, h:520,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:200,w:120,o:[["Image","col"]]},
+      {id:"cr",t:"Cryptomatte",c:"matte",x:190,y:10,w:190,p:["Render · CryptoObject","Matte Objects: Statue"],o:[["Image","col"],["Matte","float"],["Pick","col"]],i:[["Image","col"]]},
+      {id:"hs",t:"Hue/Saturation/Value",c:"color",x:190,y:200,w:190,o:[["Image","col"]],i:[["Image","col"],["Hue","float","0.5"],["Saturation","float","0.25"],["Value","float","0.55"],["Factor","float","1.0"]]},
+      {id:"cb",t:"Color Balance",c:"color",x:190,y:380,w:190,o:[["Image","col"]],i:[["Image","col"],["Gain","float","1.35"],["Gain","col","warm FFE9CA"]]},
+      {id:"mx",t:"Mix Color · Mix",c:"color",x:450,y:180,w:170,o:[["Result","col"]],i:[["Factor","float"],["A","col"],["B","col"]]},
+      {id:"n1",note:"→ rim glow (Graph B), then Group Output",x:660,y:200,w:170}
+     ],
+     links:[["gi.Image","cr.Image"],["gi.Image","hs.Image"],["gi.Image","cb.Image"],["cr.Matte","mx.Factor"],["hs.Image","mx.A"],["cb.Image","mx.B"]],
+     cap:"Factor = Matte: black pixels show A (the dimmed world), white pixels show B (the warm hero)."},
+    {title:"Graph B: rim glow from mask maths", hint:"grown − original = ring", w:1300, h:300,
+     nodes:[
+      {id:"crm",t:"Cryptomatte › Matte",c:"matte",x:20,y:20,w:170,o:[["Matte","float"]]},
+      {id:"de",t:"Dilate/Erode",c:"matte",x:230,y:20,w:160,o:[["Mask","float"]],i:[["Mask","float"],["Size","int","6"],["Type","menu","Distance"]]},
+      {id:"sb",t:"Math · Subtract",c:"util",x:430,y:40,w:150,o:[["Value","float"]],i:[["Value","float"],["Value","float"]]},
+      {id:"bl",t:"Blur",c:"filter",x:620,y:40,w:140,o:[["Image","col"]],i:[["Image","col"],["Size","vec","6, 6"]]},
+      {id:"bw",t:"RGB to BW",c:"util",x:800,y:60,w:120,o:[["Val","float"]],i:[["Image","col"]]},
+      {id:"mxo",t:"Mix (Graph A)",c:"color",x:800,y:180,w:140,o:[["Result","col"]]},
+      {id:"ad",t:"Mix Color · Add",c:"color",x:970,y:60,w:170,o:[["Result","col"]],i:[["Factor","float"],["A","col"],["B","col","orange FFC36C"]]},
+      {id:"go",t:"Group Output",c:"group",x:1170,y:80,w:120,i:[["Image","col"]]}
+     ],
+     links:[["crm.Matte","de.Mask"],["de.Mask","sb.Value"],["crm.Matte","sb.Value@1"],["sb.Value","bl.Image"],["bl.Image","bw.Image"],["bw.Val","ad.Factor"],["mxo.Result","ad.A"],["ad.Result","go.Image"]],
+     cap:"Checked by rendering in 5.3: a thin warm glow hugs the statue's silhouette."}
+  ],
+  steps:STEPS.l2,
+  check:`<b>You should have:</b> a <i>Hero Pop</i> effect running before <i>Cinematic Finish</i>. The statue comes out warm and bright with a thin orange rim glow, while the rest of the frame is dim and nearly grey. Type <code>Crystal</code> instead of <code>Statue</code> and the effect jumps to the crystal.`,
+  cards:[
+    ["Where do you turn on the Cryptomatte pass?","Properties → <b>View Layer</b> tab → Passes → Cryptomatte → <b>Object</b>, then render again."],
+    ["How does the Cryptomatte node know which object to mask?","Its <b>Matte Objects</b> field: type the object's name (comma-separate several) or use the + eyedropper."],
+    ["Which output gives the mask?","<b>Matte</b> (0–1 per pixel, soft edges)."],
+    ["How do you grade one object differently?","Make two graded copies, then Mix Color with <b>Factor = matte</b>, A = the rest, B = the hero."],
+    ["How do you make a ring around a mask?","Dilate/Erode (grow) the mask, then Math <b>Subtract</b> the original. Blur it for a glow."],
+    ["Do new passes need a new render?","Yes. Passes are written during rendering. Node changes don't need one."],
+    ["Why does effect order matter?","Each effect receives the one above's output. Grade before bloom and grain, or the glow and grain get graded too."]
+  ],
+  boss:{
+    title:"Boss fight: pop a different object, from memory",
+    brief:"Memory mode on. Make the <b>Crystal</b> the hero instead: everything else cold and dark, the crystal untouched, a cyan rim glow.",
+    goal:20,
+    items:[
+      ["Cryptomatte pass on and re-rendered",""],
+      ["Matte of the crystal only",""],
+      ["Background graded down, crystal graded separately",""],
+      ["Mask maths rim glow in a matching colour",""],
+      ["Effect placed before the cinematic finish",""]
+    ],
+    stretch:[
+      ["Two heroes","Matte Objects <code>Statue, Crystal</code> plus a second Cryptomatte to give each its own grade."],
+      ["Material mattes","Tick <b>Material</b> in the Cryptomatte pass and switch the node's layer to <b>CryptoMaterial</b>: grade every bronze surface at once."],
+      ["Shadow lift","Use Math <b>Multiply</b> on the inverted matte to lift only the background's darks with a Lift grade."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L3 */
+{
+  id:"l3", num:3, short:"Depth atmosphere",
+  title:"Fog, light rays and lens blur from distance",
+  kick:"Lesson 3 · Depth + Mist passes, Render Layers in effects, Defocus",
+  time:"40–50 min",
+  intro:`Distance is the secret ingredient of epic shots. You'll read how far away every pixel is and use it three ways: haze that thickens toward the horizon, god rays bursting from the crystal, and a real-lens focus fall-off where the statue stays sharp and the pillars melt away.`,
+  use:`<b>Used for:</b> establishing shots, game cinematics, environment portfolio renders and matte paintings. Atmospheric depth is the cheapest way to make a scene feel huge.`,
+  learn:["Depth pass","Mist pass + World mist range","Render Layers node","Math Power curve","Glare · Sun Beams","Defocus + camera focus"],
+  concepts:[
+    {h:"Depth vs Mist", p:"<b>Depth</b> is real distance in metres (0.5, 9, 37…). <b>Mist</b> is the same distance already squeezed to 0–1 between the World's mist Start and Start + Depth. It's perfect as a fog Factor."},
+    {h:"Two ways in", p:"<b>Group Input › Image</b> = the picture from the effect above. <b>Render Layers</b> = the raw render plus all its passes. Use passes as data and the Group Input as the picture."},
+    {h:"Curves shape atmosphere", p:"Raising a 0–1 value to a power above 1 keeps small values small and lets big ones climb. That gives a clear foreground and thick distance, like real air."},
+    {h:"Order of operations", p:"Fog first (light scatters in air), then rays from bright sources through that air, then lens blur last, because the lens sees everything in front of it."}
+  ],
+  graphs:[
+    {title:"Graph A: the whole atmosphere effect", hint:"Mist → fog, Glare → rays, Depth → focus", w:1330, h:360,
+     nodes:[
+      {id:"rl",t:"Render Layers",c:"input",x:20,y:20,w:150,p:["ViewLayer"],o:[["Image","col"],["Alpha","float"],["Depth","float"],["Mist","float"],["Normal","vec"]]},
+      {id:"gi",t:"Group Input",c:"group",x:20,y:260,w:120,o:[["Image","col"]]},
+      {id:"pw",t:"Math · Power",c:"util",x:210,y:120,w:140,o:[["Value","float"]],i:[["Base","float"],["Exponent","float","1.4"]]},
+      {id:"mu",t:"Math · Multiply",c:"util",x:390,y:120,w:140,o:[["Value","float"]],i:[["Value","float"],["Value","float","0.85"]]},
+      {id:"fog",t:"Mix Color · Mix",c:"color",x:570,y:60,w:170,o:[["Result","col"]],i:[["Factor","float"],["A","col"],["B","col","fog C3D3E7"]]},
+      {id:"gl",t:"Glare",c:"filter",x:780,y:40,w:170,o:[["Image","col"]],i:[["Image","col"],["Type","menu","Sun Beams"],["Threshold","float","2.0"],["Strength","float","0.6"],["Size","float","0.8"],["Sun Position","vec","0.65, 0.24"]]},
+      {id:"df",t:"Defocus",c:"filter",x:990,y:60,w:160,p:["Use Z-Buffer ✓","F-Stop 1.2","Max Blur 32"],o:[["Image","col"]],i:[["Image","col"],["Z","float"]]},
+      {id:"go",t:"Group Output",c:"group",x:1190,y:80,w:120,i:[["Image","col"]]}
+     ],
+     links:[["rl.Mist","pw.Base"],["pw.Value","mu.Value"],["mu.Value","fog.Factor"],["gi.Image","fog.A"],["fog.Result","gl.Image"],["gl.Image","df.Image"],["rl.Depth","df.Z"],["df.Image","go.Image"]],
+     cap:"Checked by rendering in 5.3: pale-blue haze builds with distance, rays burst from the crystal, the far pillars go soft while the statue (9 m) stays sharp."}
+  ],
+  steps:STEPS.l3,
+  check:`<b>You should have:</b> a <i>Depth Atmosphere</i> effect between Hero Pop and Cinematic Finish. Far pillars fade into blue haze and soften, the statue stays crisp, and light rays stream from the crystal. Changing the camera's Focus Distance moves the sharp zone.`,
+  cards:[
+    ["Depth pass vs Mist pass?","Depth = distance in metres. Mist = distance mapped to 0–1 between World mist Start and Start + Depth."],
+    ["Where do you set the mist range?","Properties → <b>World</b> → <b>Mist Pass</b> → Start and Depth."],
+    ["Group Input vs Render Layers inside an effect?","Group Input = the picture from the effect above. Render Layers = the raw render <b>and its passes</b>."],
+    ["Why raise the mist to a power above 1?","It keeps the foreground clear and makes fog climb with distance, like real haze."],
+    ["What makes Sun Beams come from the crystal?","<b>Sun Position</b> set to the crystal's spot (fractions of the frame) and a high <b>Threshold</b> so only it casts rays."],
+    ["What does Defocus need to blur by distance?","Image, <b>Z ← Depth</b>, <b>Use Z-Buffer</b> on, an F-Stop, and the camera's <b>Focus Distance</b>."],
+    ["Smaller or larger F-Stop for more blur?","Smaller (1.2 is very blurry, 16 is nearly sharp)."]
+  ],
+  boss:{
+    title:"Boss fight: a misty dawn, from memory",
+    brief:"Memory mode on. Rebuild the atmosphere but make it a warm dawn: golden haze, rays from the crystal, focus on the pillars at 20 m instead.",
+    goal:20,
+    items:[
+      ["Depth + Mist passes on, mist range set",""],
+      ["Fog shaped with a power curve, warm colour",""],
+      ["Sun Beams placed on the light source",""],
+      ["Defocus focused at 20 m",""],
+      ["Effect stack in a sensible order",""]
+    ],
+    stretch:[
+      ["Height fog","Use the <b>Position</b> pass (Z component via Separate XYZ) to add ground-hugging fog that thins with height."],
+      ["Fog colour from the sky","Blur the Group Input image heavily and use that as fog colour B, so the haze takes the scene's own colours."],
+      ["Rack focus","Keyframe the camera's Focus Distance from 9 m to 30 m and render the frames: a focus pull."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L4 */
+{
+  id:"l4", num:4, short:"Ink key art, as an asset",
+  title:"A stylised key-art look you can drop on any scene",
+  kick:"Lesson 4 · Normal pass, edge detection, Kuwahara, effect inputs, assets",
+  time:"50–60 min",
+  intro:`You'll turn the 3D render into inked, painted key art: outlines drawn from the surface and depth passes, brush-like Kuwahara smoothing and flat colour bands. Then you'll package it with three sliders and save it as an asset, so any future scene gets the look from the <b>Add Scene Effect</b> menu.`,
+  use:`<b>Used for:</b> stylised game key art, comic panels, store-page capsules, concept paintovers. It's also the pattern for every reusable look you'll build: make it once, ship it as a tool.`,
+  learn:["Normal pass","Sobel edge detection","Normalize","Map Range as threshold","Kuwahara","Posterize","Effect inputs","Usage: Scene Effect","Mark as Asset"],
+  concepts:[
+    {h:"Lines come from data, not colour", p:"Edge-detecting the <i>colour</i> image finds every texture and shadow. Edge-detecting the <b>Normal</b> and <b>Depth</b> passes finds only shape changes and overlaps. Those are the lines an artist would ink."},
+    {h:"Threshold with Map Range", p:"Map Range From Min/From Max picks which edge strengths become lines. Swapping To Min/To Max turns 'edge = 1' into 'ink = 0', ready to multiply."},
+    {h:"Effects can have inputs", p:"Drag a socket onto Group Input's empty dot and it becomes a field on the effect panel, like a modifier slider. That turns a node tree into a tool."},
+    {h:"Assets travel", p:"Tick <b>Usage › Scene Effect</b>, mark the group as an asset, keep the file in an asset library, and it appears in every file's Add Scene Effect menu."}
+  ],
+  graphs:[
+    {title:"Graph A: ink lines from Normal + Depth", hint:"Sobel → Maximum → Map Range", w:1150, h:420,
+     nodes:[
+      {id:"rl",t:"Render Layers",c:"input",x:20,y:20,w:150,o:[["Image","col"],["Depth","float"],["Normal","vec"]]},
+      {id:"fn",t:"Filter",c:"filter",x:210,y:10,w:150,o:[["Image","col"]],i:[["Image","col"],["Factor","float","1.0"],["Type","menu","Sobel"]]},
+      {id:"b1",t:"RGB to BW",c:"util",x:400,y:20,w:120,o:[["Val","float"]],i:[["Image","col"]]},
+      {id:"nz",t:"Normalize",c:"util",x:210,y:170,w:140,o:[["Value","float"]],i:[["Value","float"]]},
+      {id:"fd",t:"Filter",c:"filter",x:380,y:160,w:150,o:[["Image","col"]],i:[["Image","col"],["Factor","float","1.0"],["Type","menu","Sobel"]]},
+      {id:"b2",t:"RGB to BW",c:"util",x:560,y:180,w:120,o:[["Val","float"]],i:[["Image","col"]]},
+      {id:"mx",t:"Math · Maximum",c:"util",x:720,y:40,w:150,o:[["Value","float"]],i:[["Value","float"],["Value","float"]]},
+      {id:"gi",t:"Group Input",c:"group",x:520,y:300,w:150,o:[["Image","col"],["Paint Size","float"],["Colour Steps","float"],["Line Threshold","float"]]},
+      {id:"ad",t:"Math · Add",c:"util",x:720,y:300,w:140,o:[["Value","float"]],i:[["Value","float"],["Value","float","0.25"]]},
+      {id:"mr",t:"Map Range",c:"util",x:910,y:100,w:160,o:[["Result","float"]],i:[["Value","float"],["From Min","float"],["From Max","float"],["To Min","float","1"],["To Max","float","0"]]}
+     ],
+     links:[["rl.Normal","fn.Image"],["fn.Image","b1.Image"],["rl.Depth","nz.Value"],["nz.Value","fd.Image"],["fd.Image","b2.Image"],["b1.Val","mx.Value"],["b2.Val","mx.Value@1"],["mx.Value","mr.Value"],["gi.Line Threshold","mr.From Min"],["gi.Line Threshold","ad.Value"],["ad.Value","mr.From Max"]],
+     cap:"Checked by rendering in 5.3: black outlines on white around every shape. Flat-shaded objects get a line per face, so Shade Smooth them first."},
+    {title:"Graph B: paint, posterise, ink", hint:"the inputs become effect sliders", w:1000, h:330,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:60,w:150,o:[["Image","col"],["Paint Size","float"],["Colour Steps","float"],["Line Threshold","float"]]},
+      {id:"kw",t:"Kuwahara",c:"filter",x:230,y:20,w:170,o:[["Image","col"]],i:[["Image","col"],["Size","float"],["Type","menu","Anisotropic"]]},
+      {id:"po",t:"Posterize",c:"color",x:450,y:40,w:150,o:[["Image","col"]],i:[["Image","col"],["Steps","float"]]},
+      {id:"mrr",t:"Map Range (Graph A)",c:"util",x:450,y:220,w:170,o:[["Result","float"]]},
+      {id:"mm",t:"Mix Color · Multiply",c:"color",x:660,y:80,w:170,o:[["Result","col"]],i:[["Factor","float","1.0"],["A","col"],["B","col"]]},
+      {id:"go",t:"Group Output",c:"group",x:870,y:100,w:120,i:[["Image","col"]]}
+     ],
+     links:[["gi.Image","kw.Image"],["gi.Paint Size","kw.Size"],["kw.Image","po.Image"],["gi.Colour Steps","po.Steps"],["po.Image","mm.A"],["mrr.Result","mm.B"],["mm.Result","go.Image"]],
+     cap:"Paint Size 6, Colour Steps 8, Line Threshold 0.15 were the tested values. Bigger Paint Size = broader brush strokes."}
+  ],
+  steps:STEPS.l4,
+  check:`<b>You should have:</b> an <i>Ink Key Art</i> effect with three fields on its panel, giving inked outlines over painted, banded colour. It's marked as an asset with Usage › Scene Effect, and it works from <b>Add Scene Effect</b> in a brand-new file.`,
+  cards:[
+    ["Why draw outlines from the Normal and Depth passes, not the image?","Passes only change at shape edges and overlaps. The colour image also has texture and shadow edges you don't want inked."],
+    ["Which Filter type finds edges?","<b>Sobel</b> (Laplace, Prewitt and Kirsch are alternatives)."],
+    ["Why Normalize the Depth pass first?","Depth is in metres (0 to hundreds). Normalize squeezes it to 0–1 so Sobel's edge strengths are comparable to the Normal edges."],
+    ["How does Map Range make black lines?","From Min/Max pick the edge strengths. To Min 1 / To Max 0 flips it so edges become 0 (ink) and paper stays 1."],
+    ["How do you add a slider to an effect?","Drag a node's input socket onto Group Input's empty dot, rename it in N → Group, set its value on the effect panel."],
+    ["New effect inputs show 0 on the panel. What happens and why fix it?","Posterize with 0 steps turns the frame black. Type real values (6, 8, 0.15) on the effect panel."],
+    ["What makes a node group appear in Add Scene Effect?","Usage › <b>Scene Effect</b> ticked, <b>Mark as Asset</b>, and the file saved in an Asset Library folder."]
+  ],
+  boss:{
+    title:"Final exam: a new look, shipped as an asset",
+    brief:"Memory mode on, blank file. Invent your own stylised effect (e.g. blueprint lines on dark blue, or a two-tone comic), with at least two sliders, and ship it as an asset.",
+    goal:35,
+    items:[
+      ["Needed passes enabled and rendered",""],
+      ["Edge lines from passes",""],
+      ["A stylised colour treatment",""],
+      ["At least two inputs on the effect panel, with sensible values",""],
+      ["Usage › Scene Effect + Mark as Asset",""],
+      ["Works from Add Scene Effect in a new file",""]
+    ],
+    stretch:[
+      ["Coloured ink","Instead of Multiply, Mix Color <b>Mix</b> with Factor = inverted lines and B = a dark blue ink colour, exposed as an input."],
+      ["Line weight by distance","Multiply the Depth edges by the Mist pass inverted, so far objects get thinner lines."],
+      ["Look switcher","Add a <b>Menu</b> input and a <b>Menu Switch</b> to flip between Painterly and Flat."]
+    ]
+  }
+}
+];
+
+const ROADMAP = [
+  {m:"Module 2 · Multi-pass power", items:["Multilayer EXR + File Output: render once, regrade forever","Light Groups: relight a finished render per lamp (Cycles)","Vector Blur: motion blur in post from the Vector pass"]},
+  {m:"Module 3 · Keying and tracking your own footage", items:["Key a phone video of yourself (Keying, Despill, Dilate/Erode cleanup)","Track it and pin a CG object onto it (Movie Clip, Plane Track Deform)"]},
+  {m:"Module 4 · Stylised and game looks", items:["Pixel-art and dithered retro filters","Toon shading from the Diffuse/Shadow passes","Kuwahara oil-paint and watercolour bleeding"]},
+  {m:"Module 5 · Pipeline", items:["Compositor node groups as Video Sequencer strip modifiers (5.3)","Batch-finishing a turntable or trailer sequence"]}
+];
+
+const KEYS = [
+  ["<kbd>F12</kbd>","Render (the compositor then re-runs on that render as you edit)"],
+  ["<kbd>Shift</kbd><kbd>A</kbd> then type","Add node and search at once"],
+  ["<kbd>Ctrl</kbd><kbd>Shift</kbd> + click","Wire a node to the Viewer (click again for its next output)"],
+  ["<kbd>Ctrl</kbd> + right-drag","Cut wires"],
+  ["<kbd>Shift</kbd> + right-drag","Add a reroute on a wire"],
+  ["Drop node on wire","Splice it into the chain"],
+  ["<kbd>M</kbd>","Mute a node (pass the image straight through)"],
+  ["<kbd>Ctrl</kbd><kbd>H</kbd>","Hide/show unused sockets"],
+  ["<kbd>Ctrl</kbd><kbd>J</kbd>","Put the selected nodes in a frame"],
+  ["<kbd>Ctrl</kbd><kbd>G</kbd> / <kbd>Tab</kbd>","Make a node group / enter or exit it"],
+  ["<kbd>N</kbd>","Side panel: Node tab (settings), Group tab (inputs, Usage)"],
+  ["Drag socket to Group Input's empty dot","Expose it as a field on the effect panel"]
+];
+
+/* ===================== STATE + SAVE ===================== */
+let S = {done:{}, notes:{}, memory:false, timers:{}};
+const API = "/api/progress";
+let serverOK = false, saveT = null;
+const saveEl = document.getElementById("save");
+function setSave(cls, txt){ saveEl.className = "save " + cls; saveEl.querySelector("span").textContent = txt; }
+async function load(){
+  try{
+    // only a local serve.py has the progress API; on a static host skip the request
+    if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) throw 0;
+    const r = await fetch(API, {cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    S = Object.assign(S, j || {});
+    serverOK = true; setSave("ok","Saved to progress.json");
+  }catch(e){
+    try{ const l = localStorage.getItem("comp-fast-track"); if(l) S = Object.assign(S, JSON.parse(l)); }catch(_){}
+    setSave("ok","Progress saves in this browser");
+  }
+  S.done ||= {}; S.notes ||= {}; S.timers ||= {};
+}
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(async ()=>{
+    try{ localStorage.setItem("comp-fast-track", JSON.stringify(S)); }catch(_){}
+    if(!serverOK){ setSave("ok","Saved in this browser · " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})); return; }
+    try{
+      const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(S)});
+      if(!r.ok) throw 0;
+      setSave("ok","Saved to progress.json · " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+    }catch(e){ setSave("local","Server lost: saved in browser"); }
+  }, 300);
+}
+
+/* ===================== PROGRESS ===================== */
+function keysFor(L){
+  const k = [];
+  L.steps.forEach((_,i)=>k.push(`${L.id}.s${i}`));
+  L.cards.forEach((_,i)=>k.push(`${L.id}.c${i}`));
+  L.boss.items.forEach((_,i)=>k.push(`${L.id}.b${i}`));
+  return k;
+}
+function pct(L){ const k = keysFor(L); return k.filter(x=>S.done[x]).length / k.length; }
+function refreshProgress(){
+  let all = [], got = 0;
+  LESSONS.forEach(L=>{ const k = keysFor(L); all = all.concat(k); });
+  got = all.filter(x=>S.done[x]).length;
+  const p = all.length ? got/all.length : 0;
+  document.getElementById("ringArc").style.strokeDashoffset = 138.2 * (1 - p);
+  document.getElementById("ringTxt").textContent = Math.round(p*100) + "%";
+  document.getElementById("ringCount").textContent = `${got} / ${all.length}`;
+  document.getElementById("mtopPct").textContent = Math.round(p*100) + "% complete";
+  LESSONS.forEach(L=>{
+    const a = document.querySelector(`nav a[data-l="${L.id}"]`); if(!a) return;
+    const q = pct(L);
+    a.querySelector(".bar i").style.width = (q*100) + "%";
+    a.classList.toggle("done", q === 1);
+    a.querySelector(".nb").textContent = q === 1 ? "✓" : L.num;
+  });
+  const sp = document.getElementById("stepPct");
+  if(sp){ const L = LESSONS.find(x=>x.id===sp.dataset.l); sp.textContent = Math.round(pct(L)*100) + "% of this lesson"; }
+}
+
+/* ===================== NAV ===================== */
+function buildNav(){
+  let h = `<div class="grp">Start</div><a class="l" href="#home" data-l="home"><span class="nb">★</span><span>How this works + shortcuts</span></a>`;
+  h += `<div class="grp">Module 1 · Foundations by real projects</div>`;
+  LESSONS.forEach(L=>{
+    h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+  });
+  h += `<div class="grp">Coming next</div>`;
+  ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+2}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  document.getElementById("nav").innerHTML = h;
+}
+
+/* ===================== NODE GRAPH RENDERER ===================== */
+const TYPE = {geo:"--geo",float:"--float",int:"--int",vec:"--vec",bool:"--bool",rot:"--rot",menu:"--menu",obj:"--obj",str:"--str",mat:"--mat",col:"--col",shd:"--shd"};
+const CAT = {input:"--h-input",geo:"--h-geo",util:"--h-util",tex:"--h-tex",group:"--h-group",shader:"--h-shader",curve:"--h-curve",color:"--h-color",filter:"--h-filter",matte:"--h-matte",xform:"--h-xform"};
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+function nodeHTML(n){
+  if(n.note) return `<div class="node note" style="left:${n.x}px;top:${n.y}px;width:${n.w||140}px">${n.note}</div>`;
+  let h = `<div class="node" data-id="${n.id}" style="left:${n.x}px;top:${n.y}px;width:${n.w||150}px"><div class="nh" style="background:var(${CAT[n.c]||"--h-group"})">${esc(n.t)}</div><div class="nb">`;
+  (n.o||[]).forEach(o=>{ h += `<div class="row out" data-n="${n.id}" data-s="${esc(o[0])}"><span>${esc(o[0])}</span><i class="s ${o[3]||""}" style="--c:var(${TYPE[o[1]]})"></i></div>`; });
+  (n.p||[]).forEach(p=>{ h += `<div class="prop"><span>${esc(p)}</span></div>`; });
+  (n.i||[]).forEach(i=>{
+    const v = i[2] ? `<em class="${i[2]==="✓"?"ok":""}">${esc(i[2])}</em>` : "";
+    h += `<div class="row in" data-n="${n.id}" data-s="${esc(i[0])}"><i class="s ${i[3]||""}" style="--c:var(${TYPE[i[1]]})"></i><span>${esc(i[0])}</span>${v}</div>`;
+  });
+  return h + `</div></div>`;
+}
+function graphHTML(g, gi){
+  return `<div class="graphwrap"><div class="graphhead"><b>${g.title}</b><span class="hint">${g.hint||""}</span></div>
+  <div class="graphscroll mem"><div class="graph" data-g="${gi}" style="width:${g.w}px;height:${g.h}px"><svg class="links"></svg>${g.nodes.map(nodeHTML).join("")}</div></div>
+  <div class="legend"><span><i style="background:var(--col)"></i>Image / colour</span><span><i style="background:var(--float)"></i>Float (masks, passes)</span><span><i style="background:var(--vec)"></i>Vector</span><span><i style="background:var(--int)"></i>Integer</span><span><i style="background:var(--bool)"></i>Boolean</span><span><i style="background:var(--menu)"></i>Menu</span></div></div>
+  <p class="cap">${g.cap||""}</p>`;
+}
+function findSock(graph, ref, dir){
+  let [id, rest] = [ref.slice(0, ref.indexOf(".")), ref.slice(ref.indexOf(".")+1)];
+  let nth = 0; const at = rest.lastIndexOf("@");
+  if(at > -1){ nth = +rest.slice(at+1); rest = rest.slice(0, at); }
+  const rows = [...graph.querySelectorAll(`.row.${dir}[data-n="${id}"]`)].filter(r=>r.dataset.s === rest);
+  return rows[nth] ? rows[nth].querySelector(".s") : null;
+}
+function drawLinks(el, g){
+  const svg = el.querySelector("svg.links");
+  // size the canvas to fit its nodes, whatever the fonts did to their heights
+  let mw = 0, mh = 0;
+  el.querySelectorAll(".node").forEach(n=>{ mw = Math.max(mw, n.offsetLeft + n.offsetWidth); mh = Math.max(mh, n.offsetTop + n.offsetHeight); });
+  const W = Math.max(g.w, mw + 20), H = mh + 24;
+  el.style.width = W + "px"; el.style.height = H + "px";
+  const base = el.getBoundingClientRect();
+  const cs = getComputedStyle(document.documentElement);
+  let paths = "";
+  g.links.forEach(([a,b])=>{
+    const s1 = findSock(el, a, "out"), s2 = findSock(el, b, "in");
+    if(!s1 || !s2){ console.warn("missing socket", a, b); return; }
+    const r1 = s1.getBoundingClientRect(), r2 = s2.getBoundingClientRect();
+    const x1 = r1.left + r1.width/2 - base.left, y1 = r1.top + r1.height/2 - base.top;
+    const x2 = r2.left + r2.width/2 - base.left, y2 = r2.top + r2.height/2 - base.top;
+    const dx = Math.max(40, Math.abs(x2-x1) * .5);
+    const col = s1.style.getPropertyValue("--c");
+    const c = cs.getPropertyValue(col.replace(/var\(|\)/g,"").trim()) || "#aaa";
+    paths += `<path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}" stroke="#111" stroke-width="4.5" fill="none" opacity=".6"/><path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}" stroke="${c.trim()}" stroke-width="2" fill="none"/>`;
+  });
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.innerHTML = paths;
+}
+
+/* ===================== VIEWS ===================== */
+const main = document.getElementById("main");
+function homeView(){
+  const startL = LESSONS.find(L=>pct(L) < 1) || LESSONS[0];
+  return `
+  <section class="hero">
+    <div class="kick">Fast track · Blender ${COURSE.blender} · every effect render-tested in 5.3</div>
+    <h2>Compositing by finishing frames you'd actually ship</h2>
+    <p>No "add a blur and look at it" exercises. Every lesson is a real finishing job: a film-grade finishing stack, regrading one object after the render, depth-driven fog, rays and lens blur, then a stylised key-art look packaged as a reusable asset. Everything runs on scenes you build and render yourself, with no downloaded footage, HDRIs or assets. Built on Blender 5.3's new <b>Scene Effects</b> stack.</p>
+    <div class="chips"><span class="chip g">4 lessons in Module 1</span><span class="chip">~3–4 hours total</span><span class="chip">EEVEE, tested renders</span><span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">4 boss fights</span></div>
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn pri" href="#${startL.id}">${pct(startL)>0?"Continue":"Start"}: Lesson ${startL.num} →</a><button class="btn" onclick="openReview()">Run the review deck</button></div>
+  </section>
+
+  <h3 class="sec">How to make it stick <span class="tag">the loop</span></h3>
+  <div class="loop">
+    <div><b><i>1</i>Understand</b>Read the 4 core ideas. Study the node graphs: what goes in, what comes out, where each mask goes.</div>
+    <div><b><i>2</i>Build</b>Follow the steps in Blender and tick each one only when you can <i>see</i> it in the Image Editor or an F12 render.</div>
+    <div><b><i>3</i>Recall</b>Flip the cards. Tick "knew it" only if you answered before flipping. Use the Review deck on later days.</div>
+    <div><b><i>4</i>Rebuild</b>Boss fight: Memory mode on, timer running, blank file. This is where it locks in.</div>
+  </div>
+  <p class="cap" style="margin-top:12px">🧠 <b>Memory mode</b> (sidebar) blurs every graph and step detail. Click a blurred block to peek at just that one. Your ticks, notes and boss times save automatically: in this browser, or to <code>progress.json</code> when you run the page with <code>serve.py</code>.</p>
+
+  <h3 class="sec">Module 1 <span class="tag">foundations by real projects</span></h3>
+  <div class="road">
+    ${LESSONS.map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
+  </div>
+
+  <h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
+  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+
+  <h3 class="sec">The basic moves <span class="tag">read once before Lesson 1</span></h3>
+  ${basicsHTML()}
+
+  <h3 class="sec">Shortcuts you'll use every minute <span class="tag">node editor</span></h3>
+  <div class="concept"><table class="keys">${KEYS.map(k=>`<tr><td>${k[0]}</td><td>${k[1]}</td></tr>`).join("")}</table></div>
+
+  <h3 class="sec">Socket colours in the compositor</h3>
+  <div class="concepts">
+    <div class="concept"><h4><span style="color:var(--col)">●</span> Yellow = image / colour</h4><p>A whole picture (or one colour). Glare, Blur, Color Balance all take and give these.</p></div>
+    <div class="concept"><h4><span style="color:var(--float)">●</span> Grey = a number per pixel</h4><p>Masks, mattes and passes like Depth and Mist. Plug them into <b>Factor</b> to say where something happens.</p></div>
+    <div class="concept"><h4><span style="color:var(--vec)">●</span> Purple = vector</h4><p>Two or three numbers: positions in the frame, sizes, the Normal pass, pixel coordinates.</p></div>
+    <div class="concept"><h4>Mixing types is fine</h4><p>Grey into yellow becomes a grey image. Yellow into grey uses its brightness. A <span style="color:#ef6b6b">red</span> wire means the conversion isn't allowed.</p></div>
+  </div>`;
+}
+
+function lessonView(L){
+  const idx = LESSONS.indexOf(L);
+  const prev = LESSONS[idx-1], next = LESSONS[idx+1];
+  const ck = (k)=> S.done[k] ? "checked" : "";
+  return `
+  <section class="hero">
+    <div class="kick">${L.kick} · ${L.time}</div>
+    <h2>${L.title}</h2>
+    <p>${L.intro}</p>
+    <div class="chips">${L.learn.map(x=>`<span class="chip g">${x}</span>`).join("")}</div>
+    <div class="use">${L.use}</div>
+    <div class="use" id="stepPct" data-l="${L.id}"></div>
+  </section>
+  <div class="memnote">🧠 Memory mode is on. Graphs and step details are blurred. Try to recall each step from its title, then click to check yourself.</div>
+
+  <h3 class="sec">Core ideas <span class="tag">read first</span></h3>
+  <div class="concepts">${L.concepts.map(c=>`<div class="concept"><h4>${c.h}</h4><p>${c.p}</p></div>`).join("")}</div>
+
+  <h3 class="sec">The node graphs <span class="tag">what you're building</span></h3>
+  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}
+
+  <h3 class="sec">Build it <span class="tag">tick when it works in Blender</span></h3>
+  <details class="basics" ${L.num===1?"open":""}><summary>🖱️ The basic moves: how to add, place, wire and type in the node editor (read once)</summary>${basicsHTML()}</details>
+  <div class="steps">
+  ${L.steps.map((s,i)=>{const k=`${L.id}.s${i}`; return `
+    <div class="step ${S.done[k]?"done":""}" data-k="${k}">
+      <input type="checkbox" class="cb" data-k="${k}" ${ck(k)} aria-label="Step ${i+1} done">
+      <div><div class="st" data-tog="${k}"><small>${String(i+1).padStart(2,"0")}</small>${s.t}</div>
+      <div class="sd mem">
+        ${s.goal?`<div class="goal"><b>Goal:</b> ${s.goal}</div>`:""}
+        ${s.hl?`<button class="btn where" data-hl="${s.hl.g}|${s.hl.n.join(",")}">📍 Show where these nodes go</button>`:""}
+        <ol class="do">${s.do.map(x=>`<li>${x}</li>`).join("")}</ol>
+        ${s.see?`<div class="see"><b>You should see:</b> ${s.see}</div>`:""}
+        ${s.why?`<div class="why">${s.why}</div>`:""}${s.pro?`<div class="pro">${s.pro}</div>`:""}
+      </div></div>
+    </div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">Check yourself</h3>
+  <div class="check">${L.check}</div>
+  ${SHOTS[L.id]?`<div class="shots">${SHOTS[L.id].map(x=>`<figure><img src="img/${x[0]}.jpg" alt="${x[1]}" loading="lazy"><figcaption>${x[1]}</figcaption></figure>`).join("")}</div>`:""}
+
+  <h3 class="sec">Recall drill <span class="tag">answer out loud, then flip</span></h3>
+  <div class="cards">
+  ${L.cards.map((c,i)=>{const k=`${L.id}.c${i}`; return `
+    <div class="fc ${S.done[k]?"known":""}" data-k="${k}"><div class="in">
+      <div class="face front"><div class="lab">Card ${i+1}</div><div class="q">${c[0]}</div><div class="foot"><span>click to flip</span>${S.done[k]?'<span style="color:#f0d58a">✓ known</span>':""}</div></div>
+      <div class="face back"><div class="lab">Answer</div><div>${c[1]}</div><div class="foot"><label class="knew" onclick="event.stopPropagation()"><input type="checkbox" class="cb" data-k="${k}" ${ck(k)}> I knew it</label><span>click to flip back</span></div></div>
+    </div></div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">${L.boss.title}</h3>
+  <div class="boss">
+    <div class="brief">${L.boss.brief}</div>
+    <div class="timer"><span class="clock" id="clock">00:00</span><button class="btn" id="tStart">▶ Start</button><button class="btn" id="tReset">Reset</button><span style="font-size:.82rem;color:#a89e93">Target: under ${L.boss.goal} min · Best: <b id="best" style="color:#ffd2a6">${S.timers[L.id+".best"]?fmt(S.timers[L.id+".best"]):"–"}</b></span></div>
+    ${L.boss.items.map((b,i)=>{const k=`${L.id}.b${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}">${b[0]}${b[1]?`<small>${b[1]}</small>`:""}</label></div>`;}).join("")}
+    <div style="margin:14px 0 4px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#a89e93">Stretch goals (optional, not counted)</div>
+    ${L.boss.stretch.map((b,i)=>{const k=`${L.id}.x${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}"><b>${b[0]}</b><small>${b[1]}</small></label></div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">My notes <span class="tag">saved automatically</span></h3>
+  <textarea class="notes" id="notes" placeholder="What tripped you up? What would you do differently? Write it in your own words. That's what makes it stick.">${esc(S.notes[L.id]||"")}</textarea>
+
+  <div class="navrow">
+    ${prev?`<a class="btn" href="#${prev.id}">← Lesson ${prev.num}: ${prev.short}</a>`:`<a class="btn" href="#home">← Overview</a>`}
+    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:`<a class="btn pri" href="#home">Module 1 done → Overview</a>`}
+  </div>`;
+}
+
+function basicsHTML(){
+  return `<div class="bgrid">${BASICS.map((b,i)=>`<div class="bcard"><b><i>${i+1}</i>${b[0]}</b><div>${b[1]}</div></div>`).join("")}</div>`;
+}
+let hlT = null;
+function showWhere(btn){
+  const [g, ids] = btn.dataset.hl.split("|");
+  const graph = document.querySelector(`.graph[data-g="${g}"]`); if(!graph) return;
+  document.querySelectorAll(".node.hl").forEach(n=>n.classList.remove("hl"));
+  const nodes = ids.split(",").map(id=>graph.querySelector(`.node[data-id="${id}"]`)).filter(Boolean);
+  nodes.forEach(n=>n.classList.add("hl"));
+  const sc = graph.closest(".graphscroll"); sc.classList.add("peek");
+  const wrap = graph.closest(".graphwrap");
+  wrap.scrollIntoView({block:"center", behavior:"smooth"});
+  if(nodes[0]){ const left = Math.min(...nodes.map(n=>n.offsetLeft)); sc.scrollTo({left:Math.max(0,left-40), behavior:"smooth"}); }
+  let back = document.getElementById("backBtn");
+  if(!back){ back = document.createElement("button"); back.id = "backBtn"; back.className = "btn pri backbtn"; document.body.appendChild(back); }
+  back.textContent = "↩ Back to step " + btn.closest(".step").querySelector(".st small").textContent;
+  back.onclick = ()=>{ btn.closest(".step").scrollIntoView({block:"center", behavior:"smooth"}); back.remove(); };
+  clearTimeout(hlT); hlT = setTimeout(()=>nodes.forEach(n=>n.classList.remove("hl")), 6000);
+}
+
+/* ===================== TIMER ===================== */
+let tInt = null, tStart = 0, tLesson = null;
+function fmt(ms){ const s = Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function wireTimer(L){
+  const clock = document.getElementById("clock"), bS = document.getElementById("tStart"), bR = document.getElementById("tReset");
+  const run = S.timers[L.id+".run"];
+  const tick = ()=>{ clock.textContent = fmt(Date.now() - S.timers[L.id+".run"]); };
+  if(run){ bS.textContent = "■ Finish"; tick(); tInt = setInterval(tick, 500); }
+  bS.onclick = ()=>{
+    if(S.timers[L.id+".run"]){
+      const t = Date.now() - S.timers[L.id+".run"];
+      delete S.timers[L.id+".run"]; clearInterval(tInt);
+      const best = S.timers[L.id+".best"];
+      if(!best || t < best){ S.timers[L.id+".best"] = t; document.getElementById("best").textContent = fmt(t); }
+      clock.textContent = fmt(t); bS.textContent = "▶ Start"; save();
+    } else {
+      S.timers[L.id+".run"] = Date.now(); bS.textContent = "■ Finish"; tInt = setInterval(tick, 500); save();
+    }
+  };
+  bR.onclick = ()=>{ delete S.timers[L.id+".run"]; clearInterval(tInt); clock.textContent = "00:00"; bS.textContent = "▶ Start"; save(); };
+}
+
+/* ===================== ROUTER ===================== */
+function route(){
+  clearInterval(tInt);
+  const bb = document.getElementById("backBtn"); if(bb) bb.remove();
+  const id = (location.hash || "#home").slice(1);
+  const L = LESSONS.find(x=>x.id===id);
+  main.innerHTML = L ? lessonView(L) : homeView();
+  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:"home")));
+  document.getElementById("side").classList.remove("open");
+  if(L){
+    document.title = `L${L.num} ${L.short} · Compositing Fast Track`;
+    setTimeout(redraw, 0);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+    wireTimer(L);
+    document.getElementById("notes").addEventListener("input", e=>{ S.notes[L.id] = e.target.value; save(); });
+  } else document.title = "Compositing Fast Track";
+  window.scrollTo(0,0);
+  refreshProgress();
+}
+function redraw(){
+  const id = (location.hash || "#home").slice(1); const L = LESSONS.find(x=>x.id===id);
+  if(L) document.querySelectorAll(".graph").forEach(el=>drawLinks(el, L.graphs[+el.dataset.g]));
+}
+
+/* ===================== EVENTS ===================== */
+document.addEventListener("change", e=>{
+  const t = e.target; if(!t.classList.contains("cb") || !t.dataset.k) return;
+  const k = t.dataset.k;
+  if(t.checked) S.done[k] = true; else delete S.done[k];
+  const st = t.closest(".step"); if(st) st.classList.toggle("done", t.checked);
+  const fc = t.closest(".fc"); if(fc) fc.classList.toggle("known", t.checked);
+  document.querySelectorAll(`.cb[data-k="${k}"]`).forEach(c=>{ if(c!==t) c.checked = t.checked; });
+  save(); refreshProgress();
+  if(t.checked && st){ const n = st.nextElementSibling; if(n && !n.classList.contains("done")) n.scrollIntoView({block:"nearest", behavior:"smooth"}); }
+});
+document.addEventListener("click", e=>{
+  const wb = e.target.closest(".where");
+  if(wb && (!document.body.classList.contains("memory") || wb.closest(".mem.peek"))){ showWhere(wb); return; }
+  const mem = e.target.closest(".mem");
+  if(document.body.classList.contains("memory") && mem && !mem.classList.contains("peek")){ mem.classList.add("peek"); e.preventDefault(); return; }
+  const tog = e.target.closest("[data-tog]");
+  if(tog){ const cb = document.querySelector(`.cb[data-k="${tog.dataset.tog}"]`); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change", {bubbles:true})); return; }
+  const fc = e.target.closest(".fc");
+  if(fc && !e.target.closest(".knew")) fc.classList.toggle("flip");
+});
+const memT = document.getElementById("memToggle");
+function applyMem(){ document.body.classList.toggle("memory", !!S.memory); memT.classList.toggle("on", !!S.memory); memT.setAttribute("aria-checked", !!S.memory); document.querySelectorAll(".mem.peek").forEach(m=>m.classList.remove("peek")); }
+memT.onclick = ()=>{ S.memory = !S.memory; applyMem(); save(); };
+memT.onkeydown = e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); memT.click(); } };
+document.getElementById("menuBtn").onclick = ()=>document.getElementById("side").classList.toggle("open");
+document.getElementById("resetBtn").onclick = ()=>{
+  if(confirm("Clear every tick, note and best time? This can't be undone.")){ S = {done:{}, notes:{}, memory:S.memory, timers:{}}; save(); route(); }
+};
+window.addEventListener("hashchange", route);
+let rT; window.addEventListener("resize", ()=>{ clearTimeout(rT); rT = setTimeout(redraw, 120); });
+
+/* ===================== REVIEW DECK ===================== */
+let deck = [], di = 0;
+function openReview(){
+  const started = LESSONS.filter(L=>pct(L) > 0);
+  const pool = (started.length ? started : [LESSONS[0]]);
+  deck = [];
+  pool.forEach(L=>L.cards.forEach((c,i)=>deck.push({L, i, q:c[0], a:c[1], k:`${L.id}.c${i}`})));
+  // weakest first: unknown cards ahead of known ones, shuffled within
+  deck.sort(()=>Math.random()-.5).sort((a,b)=>(S.done[a.k]?1:0)-(S.done[b.k]?1:0));
+  di = 0; showCard(); document.getElementById("modal").classList.add("on");
+}
+window.openReview = openReview;
+function showCard(){
+  const box = document.getElementById("mbox"); box.classList.remove("show");
+  if(di >= deck.length){
+    document.getElementById("mfrom").textContent = "Deck finished";
+    document.getElementById("mq").textContent = `Done: ${deck.filter(c=>S.done[c.k]).length} of ${deck.length} marked as known.`;
+    document.getElementById("ma").innerHTML = ""; ["mshow","magain","mgot"].forEach(id=>document.getElementById(id).style.display="none");
+    document.getElementById("mcnt").textContent = ""; return;
+  }
+  const c = deck[di];
+  document.getElementById("mfrom").textContent = `Lesson ${c.L.num} · ${c.L.short}${S.done[c.k]?" · known before":""}`;
+  document.getElementById("mq").innerHTML = c.q; document.getElementById("ma").innerHTML = c.a;
+  document.getElementById("mcnt").textContent = `${di+1} / ${deck.length}`;
+  document.getElementById("mshow").style.display = ""; document.getElementById("magain").style.display = "none"; document.getElementById("mgot").style.display = "none";
+}
+function reveal(){ document.getElementById("mbox").classList.add("show"); document.getElementById("mshow").style.display="none"; document.getElementById("magain").style.display=""; document.getElementById("mgot").style.display=""; }
+document.getElementById("mshow").onclick = reveal;
+document.getElementById("mgot").onclick = ()=>{ S.done[deck[di].k] = true; save(); refreshProgress(); di++; showCard(); };
+document.getElementById("magain").onclick = ()=>{ delete S.done[deck[di].k]; deck.push(deck[di]); save(); refreshProgress(); di++; showCard(); };
+document.getElementById("mclose").onclick = ()=>{ document.getElementById("modal").classList.remove("on"); route(); };
+document.getElementById("reviewBtn").onclick = openReview;
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("modal").classList.contains("on")) return;
+  if(e.key===" "){ e.preventDefault(); if(!document.getElementById("mbox").classList.contains("show")) reveal(); else document.getElementById("mgot").click(); }
+  if(e.key==="Escape") document.getElementById("mclose").click();
+});
+
+/* ===================== BOOT ===================== */
+(async()=>{ buildNav(); await load(); applyMem(); route(); })();
+</script>
+</body>
+</html>

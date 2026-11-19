@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Niagara VFX Fast Track</title>
+<style>
+:root{
+  --bg:#17181b;--panel:#1f2125;--card:#25272c;--card2:#2c2f35;--line:#363941;--ink:#e8e9ec;--mut:#9a9ea8;--dim:#6d717b;
+  --acc:#ff8a3d;--acc2:#4fb3ff;--warn:#f0a35a;--good:#5fd38d;--bad:#ef6b6b;
+  --geo:#00d6a3;--float:#a1a1a1;--int:#598c5c;--vec:#6363c7;--bool:#cca6d6;--rot:#a663c7;--menu:#7c7c7c;--obj:#ed9e5c;--str:#70b2ff;--mat:#eb7582;--col:#c7c729;--shd:#63c763;
+  --h-input:#83314a;--h-geo:#1d725e;--h-util:#2f4f86;--h-tex:#7a4a1f;--h-group:#3d3f45;--h-shader:#2b652b;--h-curve:#1d725e;
+  --pin:#d0d3d8;--exec:#ffffff;--bfloat:#9fe34a;--bobj:#2fa6f0;--bcol:#3f6fd8;--bname:#c787f0;
+  --h-func:#2a4f7a;--h-part:#5b3a7a;--h-math:#3a3d42;--h-result:#6b4a2a;--h-param:#2e6b3f;--h-event:#8c2323;--h-bfunc:#2c5a8c;--h-bpure:#3a6e3a;--h-tl:#8a5a10;--h-var:#454850;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc2)}
+kbd{font:600 .78em/1 ui-monospace,Consolas,monospace;background:#0f1012;border:1px solid #444851;border-bottom-width:2px;border-radius:4px;padding:.18em .42em;color:#f1f1f1;white-space:nowrap}
+code{font:.88em ui-monospace,Consolas,monospace;background:#0f1012;border:1px solid #33363d;border-radius:4px;padding:.05em .35em;color:#d9f7ee}
+b.n{color:var(--acc);font-weight:600}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow:auto;padding:20px 16px}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.brand svg{flex:none}
+.brand h1{font-size:1.02rem;margin:0;line-height:1.2}
+.brand small{display:block;color:var(--mut);font-weight:400;font-size:.78rem}
+.ring{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:16px 0}
+.ring svg{flex:none}
+.ring .t{font-size:.82rem;color:var(--mut);line-height:1.35}
+.ring .t b{display:block;color:var(--ink);font-size:1rem}
+nav .grp{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:18px 4px 6px}
+nav a.l{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink);padding:8px 8px;border-radius:8px;font-size:.9rem;line-height:1.25}
+nav a.l:hover{background:var(--card)}
+nav a.l.on{background:var(--card2);box-shadow:inset 3px 0 0 var(--acc)}
+nav a.l .nb{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:#2d3036;color:var(--mut)}
+nav a.l.done .nb{background:var(--acc);color:#2a1203}
+nav a.l .bar{height:3px;background:#30333a;border-radius:2px;margin-top:5px;overflow:hidden}
+nav a.l .bar i{display:block;height:100%;background:var(--acc);width:0}
+nav .lock{display:flex;gap:10px;align-items:center;color:var(--dim);padding:6px 8px;font-size:.85rem;line-height:1.25}
+nav .lock .nb{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;border:1px dashed #444851}
+.tools{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;font:600 .85rem system-ui,sans-serif;cursor:pointer;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.btn:hover{border-color:#50545e;background:var(--card2)}
+a.btn{text-decoration:none}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#2a1203}
+.btn.pri:hover{filter:brightness(1.08)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer;user-select:none}
+.toggle .sw{width:34px;height:20px;border-radius:10px;background:#3a3d44;position:relative;flex:none;transition:.2s}
+.toggle .sw::after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#cfd2d8;transition:.2s}
+.toggle.on .sw{background:var(--acc)}.toggle.on .sw::after{left:17px;background:#2a1203}
+.save{font-size:.75rem;color:var(--dim);margin-top:10px;display:flex;gap:6px;align-items:center}
+.save i{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.save.ok i{background:var(--good)}.save.local i{background:var(--warn)}
+main{min-width:0;padding:34px 40px 120px;max-width:1180px}
+.hero{border:1px solid var(--line);border-radius:14px;padding:26px 28px;background:radial-gradient(1200px 300px at 0% 0%,rgba(255,138,61,.13),transparent 60%),var(--panel);margin-bottom:26px;position:relative;overflow:hidden}
+.hero .kick{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.hero h2{font-size:2rem;line-height:1.15;margin:6px 0 10px}
+.hero p{color:#c9ccd3;max-width:760px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font-size:.76rem;border:1px solid #3d4048;border-radius:999px;padding:3px 10px;color:#cdd0d6;background:#1b1d20}
+.chip.g{border-color:rgba(255,138,61,.45);color:#ffd2a8}
+.use{margin-top:14px;font-size:.88rem;color:var(--mut)}
+.use b{color:var(--ink)}
+h3.sec{font-size:1.2rem;margin:38px 0 12px;display:flex;align-items:center;gap:10px}
+h3.sec .tag{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;background:#2b2e34;color:var(--mut);border-radius:4px;padding:2px 7px}
+.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.concept{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.concept h4{margin:0 0 6px;font-size:.95rem;color:#fff}
+.concept p{margin:0;color:#c3c6cd;font-size:.9rem}
+.graphwrap{background:#1d1e21;border:1px solid var(--line);border-radius:12px;margin:14px 0 6px;overflow:hidden}
+.graphhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.88rem}
+.graphhead b{color:#fff}
+.graphhead .hint{color:var(--dim);font-size:.78rem}
+.graphscroll{overflow:auto;position:relative}
+.graph{position:relative;background-color:#1d1e21;background-image:radial-gradient(#2a2c31 1px,transparent 1px);background-size:22px 22px}
+.graph svg.links{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.node{position:absolute;background:#303236;border:1px solid #17181a;border-radius:7px;box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:12px;line-height:1;color:#e6e6e6}
+.node .nh{padding:6px 10px;border-radius:6px 6px 0 0;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.node .nb{padding:4px 0 6px}
+.node .prop{margin:3px 10px 4px;background:#222326;border:1px solid #3c3e43;border-radius:4px;padding:3px 7px;font-size:11px;color:#d7d7d7;display:flex;justify-content:space-between}
+.node .prop::after{content:"▾";color:#888;margin-left:6px}
+.node .row{position:relative;height:22px;display:flex;align-items:center;padding:0 12px;gap:6px}
+.node .row.out{justify-content:flex-end}
+.node .row span{white-space:nowrap}
+.node .row em{font-style:normal;margin-left:auto;background:#545659;border-radius:4px;padding:2px 6px;font-size:11px;color:#f2f2f2;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.node .row em.ok{background:#4772b3}
+.node .s{position:absolute;top:50%;width:11px;height:11px;margin-top:-5.5px;border-radius:50%;border:1px solid #111;background:var(--c)}
+.node .row.in .s{left:-6px}.node .row.out .s{right:-6px}
+.node .s.f{border-radius:2px;transform:rotate(45deg) scale(.88)}
+.node .s.m{height:20px;margin-top:-10px;border-radius:6px}
+.node.note{background:transparent;border:1px dashed #4a4d55;box-shadow:none;color:var(--mut);font-size:11.5px;line-height:1.35;padding:8px 10px;white-space:normal}
+.cap{font-size:.85rem;color:var(--mut);margin:0 2px 18px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--mut);padding:8px 14px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block;border:1px solid #111}
+.legend i.f{border-radius:1px;transform:rotate(45deg)}
+.steps{counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 14px;display:grid;grid-template-columns:30px 1fr;gap:10px;transition:border-color .2s,background .2s}
+.step.done{border-color:rgba(255,138,61,.4);background:linear-gradient(90deg,rgba(255,138,61,.07),transparent 40%),var(--card)}
+.cb{appearance:none;width:22px;height:22px;border-radius:6px;border:2px solid #555963;background:#1a1b1e;cursor:pointer;margin:1px 0 0;display:grid;place-items:center;transition:.15s}
+.cb:checked{background:var(--acc);border-color:var(--acc)}
+.cb:checked::after{content:"";width:6px;height:11px;border:solid #2a1203;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.cb:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.step .st{font-weight:650;color:#fff;cursor:pointer}
+.step .st small{color:var(--acc);font-weight:700;margin-right:8px}
+.step .sd{color:#c6c9d0;font-size:.92rem;margin-top:6px}
+.step .sd p{margin:.4em 0}
+.step .sd ul{margin:.3em 0;padding-left:20px}
+.why{margin-top:8px;border-left:3px solid var(--acc2);background:rgba(79,179,255,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#c9dcef}
+.why b{color:#8fcbff}
+.pro{margin-top:8px;border-left:3px solid var(--warn);background:rgba(240,163,90,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#ecd9c6}
+.pro b{color:#ffc58f}
+.check{background:linear-gradient(135deg,rgba(255,138,61,.1),rgba(79,179,255,.06));border:1px solid rgba(255,138,61,.3);border-radius:10px;padding:14px 16px;color:#f1e1d4;font-size:.92rem}
+.check b{color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.fc{perspective:900px;min-height:150px;cursor:pointer}
+.fc .in{position:relative;width:100%;height:100%;min-height:150px;transition:transform .45s;transform-style:preserve-3d}
+.fc.flip .in{transform:rotateY(180deg)}
+.fc .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;border:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;font-size:.9rem}
+.fc .front{background:var(--card)}
+.fc .back{background:#2a1f17;border-color:rgba(255,138,61,.35);transform:rotateY(180deg);color:#f6e2d2}
+.fc .q{font-weight:600;color:#fff}
+.fc .lab{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.fc .back .lab{color:#f0a36b}
+.fc .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--dim);padding-top:8px}
+.fc .knew{display:flex;gap:6px;align-items:center;color:#ffc896;cursor:pointer}
+.fc .knew .cb{width:18px;height:18px}
+.fc.known .front{border-color:rgba(255,138,61,.45)}
+.boss{background:radial-gradient(600px 200px at 100% 0%,rgba(240,163,90,.14),transparent 60%),var(--card);border:1px solid rgba(240,163,90,.4);border-radius:12px;padding:18px 18px 8px}
+.boss h4{margin:0 0 4px;color:#ffd2a6;font-size:1.05rem}
+.boss .brief{color:#d8cfc6;font-size:.92rem;margin-bottom:10px}
+.ck{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:7px 0;border-top:1px solid #3a3530;font-size:.92rem;color:#e8e1da}
+.ck:first-of-type{border-top:0}
+.ck label{cursor:pointer}
+.ck small{display:block;color:#a89e93;font-size:.82rem;margin-top:2px}
+.timer{display:flex;align-items:center;gap:10px;margin:6px 0 12px;flex-wrap:wrap}
+.timer .clock{font:700 1.3rem ui-monospace,Consolas,monospace;color:#ffd2a6;min-width:84px}
+textarea.notes{width:100%;min-height:110px;background:#141518;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:14px/1.5 system-ui,sans-serif;resize:vertical}
+textarea.notes:focus{outline:none;border-color:var(--acc)}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:40px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.road{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.mod .mk{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.mod.lockd .mk{color:var(--dim)}
+.mod h4{margin:4px 0 6px;font-size:1rem}
+.mod ul{margin:0;padding-left:18px;color:#c3c6cd;font-size:.88rem}
+.mod.lockd{opacity:.78;border-style:dashed}
+.mod a{text-decoration:none}
+table.keys{width:100%;border-collapse:collapse;font-size:.9rem}
+table.keys td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+table.keys td:first-child{white-space:nowrap;width:1%}
+table.keys tr:first-child td{border-top:0}
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.loop div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.88rem;color:#c3c6cd}
+.loop b{display:block;color:#fff;margin-bottom:3px}
+.loop i{font-style:normal;color:var(--acc);font-weight:800;margin-right:6px}
+/* literal steps */
+.goal{color:#e9ebef;margin:2px 0 8px}
+.goal b{color:var(--acc)}
+ol.do{margin:6px 0 4px;padding-left:24px;display:flex;flex-direction:column;gap:7px}
+ol.do li{padding-left:4px;line-height:1.55}
+ol.do li::marker{color:var(--acc);font-weight:700}
+ol.do li > b:first-child{color:#fff}
+ol.do u{text-decoration:none;border-bottom:1px dashed #8fcbff;color:#d7ebff}
+.so,.si{display:inline-block;border-radius:4px;padding:0 6px;font-size:.86em;font-weight:600;line-height:1.5}
+.so{background:#20302c;color:#9ff3dc;border:1px solid #2f5a4f}
+.si{background:#262a3a;color:#c3c9ff;border:1px solid #3d4466}
+ol.do small{color:var(--dim)}
+.see{margin-top:8px;border-left:3px solid var(--good);background:rgba(95,211,141,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#d3efdd}
+.see b{color:#8fe6b0}
+.btn.where{font-size:.78rem;padding:5px 10px;margin:2px 0 6px;font-weight:600}
+.node.hl{outline:3px solid #ffd166;outline-offset:2px;box-shadow:0 0 0 8px rgba(255,209,102,.18),0 6px 18px rgba(0,0,0,.35);z-index:3;animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{box-shadow:0 0 0 14px rgba(255,209,102,.05),0 6px 18px rgba(0,0,0,.35)}}
+.backbtn{position:fixed;right:20px;bottom:20px;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+details.basics{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:0 0 14px;padding:0 14px}
+details.basics summary{cursor:pointer;padding:12px 0;font-weight:650;color:#fff}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:0 0 14px}
+.bcard{background:#1d1f23;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:#c6c9d0}
+.bcard b{display:block;color:#fff;margin-bottom:4px}
+.bcard b i{font-style:normal;color:var(--acc);margin-right:6px}
+/* stack diagrams (Niagara) */
+.stackg{display:flex;gap:14px;padding:16px;align-items:flex-start;width:max-content;min-width:100%}
+.sem{width:260px;flex:none;background:#2a2c31;border:1px solid #121315;border-radius:8px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.semh{background:#3a3e46;padding:8px 10px;border-bottom:1px solid #121315}
+.semh b{display:block;color:#fff;font-size:13px}
+.semh span{font-size:11px;color:#b9bdc6}
+.ssech{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;color:#fff;background:var(--sc,#555)}
+.smod{padding:6px 10px 7px;border-top:1px solid #35383e;font-size:12px;transition:background .2s}
+.smn{font-weight:600;color:#eee}
+.smv{display:flex;justify-content:space-between;gap:8px;color:#a9adb7;font-size:11px;margin-top:3px;line-height:1.3}
+.smv em{font-style:normal;background:#4a4d53;border-radius:4px;padding:1px 6px;color:#f2f2f2;text-align:right;max-width:62%}
+.smod.hl{outline:3px solid #ffd166;outline-offset:-3px;background:rgba(255,209,102,.13)}
+.node .s.x{border:none;border-radius:0;width:12px;height:12px;margin-top:-6px;clip-path:polygon(0 0,100% 50%,0 100%)}
+.legend i.x{border:none;border-radius:0;clip-path:polygon(0 0,100% 50%,0 100%)}
+/* memory mode */
+body.memory .mem{filter:blur(7px) saturate(.4);opacity:.55;cursor:pointer;transition:filter .25s,opacity .25s;user-select:none}
+body.memory .mem.peek{filter:none;opacity:1;user-select:auto}
+body.memory .graphwrap .mem{pointer-events:auto}
+.memnote{display:none;background:#2a2433;border:1px solid #574a6b;color:#dccbf3;border-radius:10px;padding:10px 14px;font-size:.88rem;margin:0 0 18px}
+body.memory .memnote{display:block}
+/* review modal */
+.modal{position:fixed;inset:0;background:rgba(5,6,8,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:560px;width:100%;padding:22px}
+.mbox .from{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.mbox .q{font-size:1.15rem;font-weight:650;margin:8px 0 14px}
+.mbox .a{background:#2a1f17;border:1px solid rgba(255,138,61,.35);border-radius:10px;padding:12px 14px;color:#f6e2d2;display:none}
+.mbox.show .a{display:block}
+.mbox .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.mbox .cnt{font-size:.8rem;color:var(--dim);margin-right:auto;align-self:center}
+.mtop{display:none;position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;align-items:center;justify-content:space-between;gap:10px}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  aside{position:fixed;inset:0 auto 0 0;width:290px;z-index:40;transform:translateX(-100%);transition:transform .25s}
+  aside.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.5)}
+  .mtop{display:flex}
+  main{padding:20px 16px 100px}
+  .hero{padding:20px}.hero h2{font-size:1.55rem}
+  .grid2,.loop{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="mtop"><button class="btn" id="menuBtn">☰ Lessons</button><span id="mtopPct" style="font-size:.85rem;color:var(--mut)"></span></div>
+<div class="app">
+<aside id="side">
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="8" fill="#3a1d0c"/><circle cx="17" cy="20" r="5" fill="#ff8a3d"/><circle cx="17" cy="20" r="2.2" fill="#fff3e6"/><path d="M17 13 L15 6 M21 15 L26 9 M13 15 L8 10 M23 20 L29 19 M11 21 L5 22" stroke="#ffb066" stroke-width="2" stroke-linecap="round"/></svg>
+    <h1>Niagara VFX<small>Fast Track · Unreal Engine 5.8</small></h1>
+  </div>
+  <div class="ring">
+    <svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" stroke="#30333a" stroke-width="6" fill="none"/><circle id="ringArc" cx="27" cy="27" r="22" stroke="#ff8a3d" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 27 27)"/><text id="ringTxt" x="27" y="31" text-anchor="middle" fill="#e8e9ec" font-size="12" font-weight="700">0%</text></svg>
+    <div class="t"><b id="ringCount">0 / 0</b>tasks, cards and challenges ticked</div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="tools">
+    <div class="toggle" id="memToggle" role="switch" aria-checked="false" tabindex="0"><span>🧠 Memory mode<br><small style="color:var(--dim)">blur the answers, recall first</small></span><span class="sw"></span></div>
+    <button class="btn pri" id="reviewBtn">⟳ Review deck</button>
+    <button class="btn" id="resetBtn" style="color:var(--mut)">Reset progress…</button>
+  </div>
+  <div class="save" id="save"><i></i><span>connecting…</span></div>
+</aside>
+<main id="main"></main>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mq">
+  <div class="mbox" id="mbox">
+    <div class="from" id="mfrom"></div>
+    <div class="q" id="mq"></div>
+    <div class="a" id="ma"></div>
+    <div class="row">
+      <span class="cnt" id="mcnt"></span>
+      <button class="btn" id="mshow">Show answer <kbd>Space</kbd></button>
+      <button class="btn" id="magain" style="display:none">Again</button>
+      <button class="btn pri" id="mgot" style="display:none">Knew it ✓</button>
+      <button class="btn" id="mclose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+/* ===================== LITERAL STEP HELPERS ===================== */
+const K = (...k)=>k.map(x=>`<kbd>${x}</kbd>`).join("");
+// Niagara: add a module to a stack group
+function AM(mod, group, search){
+  return `<b>Add ${mod}:</b> in the emitter's stack (right-hand panel), find the <b>${group}</b> group and click the <b>+</b> at the right end of its header row → type <code>${search}</code> → click <b>${mod}</b>. It is added at the bottom of ${group}.`;
+}
+// Niagara: type a value into a module input
+function SV(mod, inp, val, was){
+  return `<b>Type:</b> in <b>${mod}</b>, click the <b>${inp}</b> box${was!==undefined?` (it shows <i>${was}</i>)`:""}, type <code>${val}</code>, press ${K("Enter")}.`;
+}
+// Niagara: XYZ input
+function SX(mod, inp, x, y, z, was){
+  return `<b>Type:</b> in <b>${mod}</b>, the <b>${inp}</b> row has three boxes X, Y, Z${was?` (now <i>${was}</i>)`:""}. Click each one and type <code>${x}</code>, <code>${y}</code>, <code>${z}</code>, pressing ${K("Enter")} after each.`;
+}
+// Niagara: dropdown on a module input
+function SD(mod, inp, cur, pick){
+  return `<b>Dropdown:</b> in <b>${mod}</b>, click the <b>${inp}</b> box (it says <i>${cur}</i>) and choose <b>${pick}</b>. New rows appear under it.`;
+}
+// Niagara: curve via dynamic input
+function SC(mod, inp, tpl){
+  return `<b>Curve:</b> in <b>${mod}</b>, click the small <b>▾</b> at the right end of the <b>${inp}</b> row → type <code>float from curve</code> → click <b>Float from Curve</b>. A small curve appears under it. Below the curve is a row of tiny curve pictures (templates): hover them until the tooltip says <b>${tpl}</b> and click it.`;
+}
+// Material editor: add node
+function MN(node, search, where){
+  return `<b>Add ${node}:</b> right-click empty graph space <u>${where}</u> → in the search box type <code>${search}</code> → click <b>${node}</b>. It appears where you right-clicked.`;
+}
+// Material / Blueprint: wire
+function MW(fn, fp, tn, tp){
+  return `<b>Wire:</b> press and hold on <b>${fn}</b> › <span class="so">${fp}</span> <small>(pin on its right side)</small>, drag to <b>${tn}</b> › <span class="si">${tp}</span> <small>(pin on its left side)</small>, let go.`;
+}
+// Details panel value
+function DV(what, field, val, was){
+  return `<b>Details:</b> click <b>${what}</b> once. In the <b>Details</b> panel set <b>${field}</b>${was!==undefined?` (it shows <i>${was}</i>)`:""} to <code>${val}</code> and press ${K("Enter")}.`;
+}
+// Add an emitter to the open system
+function AE(name){
+  return `<b>New emitter:</b> right-click empty space in the <b>System Overview</b> graph (the middle panel) → <b>Add Emitter</b> → in the window that opens type <code>minimal</code> in its search box → pick <b>Minimal</b> → confirm with the add/create button at the bottom-right. A new emitter box appears. Double-click its name and type <code>${name}</code>, ${K("Enter")}. Click the box once so its stack shows on the right.`;
+}
+// Emitter state one-shot / loop
+function ES(loop){
+  return `<b>Emitter State:</b> in the <b>Emitter Update</b> group click <b>Emitter State</b>. Set <b>Life Cycle Mode</b> from <i>System</i> to <b>Self</b>. A <b>Loop Behavior</b> row appears: set it to <b>${loop}</b>.`;
+}
+// Solve forces fix
+const SOLVE = `<b>Fix the red error:</b> a red <b>!</b> appears on the force/velocity modules: <i>"The module has unmet dependencies… SolveForcesAndVelocity"</i>. Click the error line and press its <b>Fix issue</b> button (<i>Add new dependency module SolveForcesAndVelocity</i>). A <b>Solve Forces and Velocity</b> module appears near the bottom of Particle Update, and the errors clear.`;
+
+const BASICS = [
+  ["Mouse first, then key","Unreal sends a shortcut to whichever panel the <b>mouse is over</b>. Hover the graph or viewport you mean before pressing a key."],
+  ["Content Browser","The bottom panel (open it with "+K("Ctrl","Space")+" if it's hidden). Right-click empty space to make anything: <b>New Folder</b>, <b>Material</b>, <b>FX → Niagara System</b>, <b>Blueprint Class</b>. Double-click an asset to open it."],
+  ["Save","Every editor window has a <b>Save</b> button top-left, or press "+K("Ctrl","S")+" with the mouse over that window. An asterisk * on a tab means unsaved."],
+  ["Material editor layout","<b>Viewport</b> preview top-left, <b>Details</b> bottom-left, the <b>graph</b> in the middle, <b>Palette</b> on the right. The big node with your material's name is the <b>result node</b>: whatever you wire into it is the final look."],
+  ["Add a material node","Right-click empty graph space → type in the search box → click the node. Or hold a hotkey and left-click: "+K("M")+" Multiply, "+K("A")+" Add, "+K("1")+" Constant, "+K("2")+" Constant2Vector, "+K("3")+" Constant3Vector, "+K("U")+" TexCoord, "+K("S")+" Scalar Parameter, "+K("V")+" Vector Parameter, "+K("O")+" One Minus, "+K("E")+" Power, "+K("P")+" Panner, "+K("L")+" Lerp."],
+  ["Wire pins","Outputs are on a node's <b>right</b> side, inputs on its <b>left</b>. Press and hold on an output pin, drag to an input pin, let go. Drag from a pin into empty space to get a search menu that only lists nodes that fit. "+K("Alt")+"+click a pin cuts its wires."],
+  ["Constants on math nodes","A Multiply, Add or Subtract with nothing wired into <b>B</b> uses the <b>Const B</b> number in the Details panel. Power uses <b>Const Exponent</b>. That saves a Constant node."],
+  ["Material settings","Click empty graph space (nothing selected): the Details panel shows the material itself. That's where <b>Blend Mode</b>, <b>Shading Model</b> and <b>Two Sided</b> live."],
+  ["Niagara editor layout","<b>Preview</b> top-left, <b>System Overview</b> graph in the middle (one box per emitter), the <b>stack</b> (Selection panel) on the right, <b>Parameters</b> / <b>User Parameters</b> on the left, the <b>timeline</b> along the bottom with play and loop buttons."],
+  ["The stack","Click an emitter box: its stack shows on the right, top to bottom: <b>Properties</b>, <b>Emitter Spawn</b>, <b>Emitter Update</b>, <b>Particle Spawn</b>, <b>Particle Update</b>, <b>Render</b>. Modules run top to bottom. Drag a module by its name to reorder it. Its checkbox turns it off without deleting it."],
+  ["Module inputs","Click a value to type. The small <b>▾</b> at a row's right end swaps the value for something smarter: a curve, a random range, or a link to a parameter (<b>Link Inputs</b>)."],
+  ["Red and yellow marks","A red <b>!</b> is an error and a yellow one a warning. Click the message: many come with a <b>Fix issue</b> button that does the right thing for you."],
+  ["Blueprint graph","In a Blueprint, the <b>Event Graph</b> tab is the canvas. Right-click empty space → search → click. White pins with arrows are <b>execution</b> (the order things happen): wire them left to right. Coloured pins carry values."],
+  ["Viewport moves","Hold the right mouse button + "+K("W")+" "+K("A")+" "+K("S")+" "+K("D")+" to fly. "+K("F")+" frames the selected thing. In the Niagara editor, the timeline's buttons (bottom) play, pause and restart the preview."]
+];
+
+const STEPS = {
+/* ============================== L1 ============================== */
+l1:[
+ {t:"Make a folder for the effect", goal:"An empty Content Browser folder called FX_Slam.", do:[
+   `Open your Unreal project in UE 5.8 (any project works; a blank one is fine).`,
+   `In the <b>Content Browser</b> (bottom panel; ${K("Ctrl","Space")} if hidden) click the <b>Content</b> folder on the left.`,
+   `Right-click empty space in the asset area → <b>New Folder</b> → type <code>FX_Slam</code> → ${K("Enter")}. Double-click the folder to go inside.`
+ ]},
+
+ {t:"Material 1: a soft glowing dot (M_FX_Glow)", goal:"An additive, unlit material: a soft round glow, coloured by each particle.", hl:{g:1,n:["rge","pc","m1","m2","res"]}, do:[
+   `Right-click empty space in FX_Slam → <b>Material</b> → type <code>M_FX_Glow</code> → ${K("Enter")}. Double-click it to open the material editor.`,
+   `Click empty graph space once (so nothing is selected). In the <b>Details</b> panel (bottom-left) set <b>Blend Mode</b> from <i>Opaque</i> to <b>Additive</b>, and <b>Shading Model</b> from <i>Default Lit</i> to <b>Unlit</b>.`,
+   MN("RadialGradientExponential","radial gradient exponential","on the left of the graph"),
+   MN("Particle Color","particle color","below it"),
+   `Hold ${K("M")} and left-click to the right of the gradient: a <b>Multiply</b> appears. Do it again further right for a second <b>Multiply</b>.`,
+   MW("RadialGradientExponential","(its only output)","first Multiply","A"),
+   MW("Particle Color","RGB","first Multiply","B"),
+   MW("first Multiply","(output)","second Multiply","A"),
+   MW("Particle Color","A","second Multiply","B"),
+   MW("second Multiply","(output)","M_FX_Glow result node","Emissive Color"),
+   `Click <b>Save</b> (top-left of the material editor).`
+ ], see:`The preview sphere shows a soft white glow. It looks bright and blown out on its own: that's fine, particles tint and fade it.`,
+ why:`<b>Additive</b> adds light to the screen, so black = invisible and overlapping glows get brighter. That's exactly how flashes, sparks and energy behave. <b>Particle Color</b> lets every particle carry its own colour and fade (its A channel) into this one material.`},
+
+ {t:"Material 2: a shockwave ring (M_FX_Ring)", goal:"A thin glowing circle drawn by maths, with no texture.", hl:{g:2,n:["tc","c2","dist","sub","abs","mul","om","sat","pw","pc","m1","m2","res"]}, do:[
+   `Right-click in FX_Slam → <b>Material</b> → <code>M_FX_Ring</code> → open it. Set <b>Blend Mode</b> = <b>Additive</b>, <b>Shading Model</b> = <b>Unlit</b> (same as before).`,
+   `Hold ${K("U")} and click on the far left: a <b>TexCoord</b> node (the sprite's UVs, 0 to 1 across).`,
+   `Hold ${K("2")} and click below it: a <b>Constant2Vector</b>. In its Details set <b>R</b> <code>0.5</code> and <b>G</b> <code>0.5</code> (the centre of the sprite).`,
+   MN("Distance","distance","to the right of both"),
+   MW("TexCoord","(output)","Distance","A"), MW("Constant2Vector","(output)","Distance","B"),
+   MN("Subtract","subtract","to the right of Distance"),
+   MW("Distance","(output)","Subtract","A"), DV("Subtract","Const B","0.42","0.0"),
+   MN("Abs","abs","to the right"), MW("Subtract","(output)","Abs","(input)"),
+   `Hold ${K("M")} + click to the right → <b>Multiply</b>. Wire Abs into its <b>A</b>. Set its <b>Const B</b> to <code>14</code>.`,
+   `Hold ${K("O")} + click to the right → <b>One Minus</b>. Wire Multiply into it.`,
+   MN("Saturate","saturate","to the right"), `Wire One Minus into Saturate.`,
+   `Hold ${K("E")} + click to the right → <b>Power</b>. Wire Saturate into <b>Base</b>. Set <b>Const Exponent</b> to <code>3</code>.`,
+   MN("Particle Color","particle color","below the Power node"),
+   `Add two <b>Multiply</b> nodes (${K("M")}+click). First: Power → <b>A</b>, Particle Color <b>RGB</b> → <b>B</b>. Second: first Multiply → <b>A</b>, Particle Color <b>A</b> → <b>B</b>.`,
+   MW("second Multiply","(output)","M_FX_Ring result node","Emissive Color"),
+   `<b>Save</b>.`
+ ], see:`The preview shows a thin bright circle near the edge of a square (switch the preview shape to a plane with the buttons under the preview if the sphere makes it hard to read).`,
+ why:`<b>Distance from the centre</b> is a gradient from 0 to about 0.7. Subtracting 0.42 and taking <b>Abs</b> makes a V that is 0 exactly on a circle of radius 0.42. Multiply sharpens it, One Minus flips it so the circle is bright, Power makes the edge crisp.`},
+
+ {t:"Material 3: soft dust (M_FX_Dust)", goal:"A see-through, unlit puff that fades out where it touches the floor.", hl:{g:3,n:["rge","pc","m1","df","res"]}, do:[
+   `New material <code>M_FX_Dust</code>, open it. <b>Blend Mode</b> = <b>Translucent</b>, <b>Shading Model</b> = <b>Unlit</b>.`,
+   MN("RadialGradientExponential","radial gradient exponential","on the left"),
+   MN("Particle Color","particle color","below it"),
+   `${K("M")}+click → <b>Multiply</b>. Gradient → <b>A</b>, Particle Color <b>A</b> → <b>B</b>.`,
+   MN("DepthFade","depth fade","to the right of Multiply"),
+   MW("Multiply","(output)","DepthFade","Opacity"), DV("DepthFade","Fade Distance","60"),
+   MW("DepthFade","(output)","M_FX_Dust result node","Opacity"),
+   MW("Particle Color","RGB","M_FX_Dust result node","Emissive Color"),
+   `<b>Save</b>.`
+ ], why:`<b>Depth Fade</b> fades the sprite out over the last 60 cm before it meets the floor, so dust never shows a hard straight line where the flat card cuts the ground.`},
+
+ {t:"Create the system and the Flash emitter", goal:"NS_GroundSlam with one emitter called Flash that fires once.", hl:{g:0,n:["flash.state","flash.burst"]}, do:[
+   `In FX_Slam right-click → <b>FX</b> → <b>Niagara System</b>. The <b>Create Niagara System</b> window opens.`,
+   `Use its search box: type <code>minimal</code> and pick <b>Minimal</b> (the emitter template). Click the create/finish button at the bottom-right. Name it <code>NS_GroundSlam</code>, ${K("Enter")}, and double-click it to open.`,
+   `In the <b>System Overview</b> (middle) double-click the emitter's name (<i>Minimal</i>) and type <code>Flash</code>, ${K("Enter")}. Click the box once so its stack shows on the right.`,
+   ES("Once"),
+   AM("Spawn Burst Instantaneous","Emitter Update","spawn burst"),
+   SV("Spawn Burst Instantaneous","Spawn Count","1","1"),
+ ], see:`Nothing visible yet, or a single default sprite blinking in the preview.`,
+ why:`<b>Self</b> lets this emitter run its own clock instead of the system's. <b>Once</b> makes it a one-shot: impacts happen once, they don't loop.`},
+
+ {t:"Flash: bright, big, and gone in 0.15 s", goal:"A 5 m warm flash that fades out fast.", hl:{g:0,n:["flash.init","flash.scol","flash.spr"]}, do:[
+   `In <b>Particle Spawn</b> click <b>Initialize Particle</b>.`,
+   SV("Initialize Particle","Lifetime","0.15","5.0"),
+   SD("Initialize Particle","Color Mode","Unset","Direct Set"),
+   `A <b>Color</b> row appears. Click the small <b>▸</b> in front of it to show <b>R G B A</b> boxes and type R <code>6</code>, G <code>3.5</code>, B <code>1.5</code>, A <code>1</code>. Values above 1 are HDR: they glow.`,
+   SD("Initialize Particle","Sprite Size Mode","Unset","Uniform"),
+   SV("Initialize Particle","Uniform Sprite Size","500"),
+   AM("Scale Color","Particle Update","scale color"),
+   SC("Scale Color","Scale Alpha","Linear Ramp Down"),
+   `In <b>Render</b> click <b>Sprite Renderer</b>. Click its <b>Material</b> box and pick <b>M_FX_Glow</b>.`
+ ], see:`In the preview, a large warm flash that pops and fades each time the timeline restarts.`},
+
+ {t:"Flash: a real light that hits the floor", goal:"The flash lights the ground and walls for one beat.", hl:{g:0,n:["flash.light","flash.lr"]}, do:[
+   `On the <b>Render</b> group header click <b>+</b> → <b>Light Renderer</b>.`,
+   `Click the new <b>Light Renderer</b>. <u>Untick</u> <b>Use Inverse Squared Falloff</b>. Tick <b>Alpha Scales Brightness</b> (so the light fades with the flash).`,
+   AM("Light Attributes","Particle Spawn","light attributes"),
+   SD("Light Attributes","Radius","Unset","Apply"),
+   SV("Light Attributes","Light Radius","800","100")
+ ], why:`The module's own tooltip says Radius <i>"only works when Inverse Squared Falloff is Disabled"</i>, which is why you untick it first. A flash with no light looks pasted on: the floor lighting up is what sells an impact.`},
+
+ {t:"Ring: a shockwave that grows flat on the ground", goal:"A ring that expands to 12 m wide in 0.6 s.", hl:{g:0,n:["ring.state","ring.burst","ring.init","ring.size","ring.scol"]}, do:[
+   AE("Ring"),
+   ES("Once"),
+   AM("Spawn Burst Instantaneous","Emitter Update","spawn burst"),
+   `<b>Initialize Particle</b>: Lifetime <code>0.6</code>; Color Mode <b>Direct Set</b>, Color R <code>3</code> G <code>1.6</code> B <code>0.6</code> A <code>1</code>; Sprite Size Mode <b>Uniform</b>, Uniform Sprite Size <code>1200</code>.`,
+   `Still in Initialize Particle: tick the checkbox in front of <b>Position Offset</b>, then type X <code>0</code>, Y <code>0</code>, Z <code>2</code> (lifts it 2 cm so it never flickers into the floor).`,
+   AM("Scale Sprite Size","Particle Update","scale sprite size"),
+   `In <b>Scale Sprite Size</b> the mode already says <i>Uniform Curve</i>. Under its curve click the template whose tooltip is <b>Smooth Ramp Up</b>.`,
+   AM("Scale Color","Particle Update","scale color"), SC("Scale Color","Scale Alpha","Linear Ramp Down"),
+   `<b>Sprite Renderer</b> → Material <b>M_FX_Ring</b>.`
+ ]},
+
+ {t:"Ring: lay it flat on the floor", goal:"The ring faces straight up instead of turning to face the camera.", hl:{g:0,n:["ring.face","ring.spr"]}, do:[
+   AM("Sprite Facing and Alignment","Particle Update","sprite facing"),
+   SX("Sprite Facing and Alignment","Sprite Facing","0","0","1","1, 0, 0"),
+   `Tick the checkbox in front of <b>Sprite Alignment</b>, then type X <code>1</code>, Y <code>0</code>, Z <code>0</code> (it was 0, 1, 0).`,
+   `Click <b>Sprite Renderer</b>. Set <b>Facing Mode</b> from <i>Automatic</i> to <b>Custom Facing Vector</b>, and <b>Alignment</b> from <i>Automatic</i> to <b>Custom Alignment</b>.`
+ ], see:`A flat ring racing outward across the preview floor.`,
+ why:`Facing alone isn't enough: with only a facing vector the sprite borrows its other axis from the camera, and from a level, player's-eye view the quad can collapse to a line. Setting the alignment too fixes both axes.`},
+
+ {t:"Sparks: 60 hot streaks thrown up and out", goal:"Fast sparks in a wide upward cone.", hl:{g:0,n:["sparks.burst","sparks.init","sparks.shape","sparks.cone"]}, do:[
+   AE("Sparks"), ES("Once"),
+   AM("Spawn Burst Instantaneous","Emitter Update","spawn burst"), SV("Spawn Burst Instantaneous","Spawn Count","60","1"),
+   `<b>Initialize Particle</b>: <b>Lifetime Mode</b> <i>Direct Set</i> → <b>Random</b>; Lifetime Min <code>0.4</code>, Lifetime Max <code>0.9</code>. Color Mode <b>Direct Set</b>: R <code>8</code> G <code>3</code> B <code>0.8</code> A <code>1</code>. Sprite Size Mode <b>Random Uniform</b>: Min <code>4</code>, Max <code>9</code>.`,
+   AM("Shape Location","Particle Spawn","shape location"), SV("Shape Location","Sphere Radius","15","100"),
+   AM("Add Velocity in Cone","Particle Spawn","velocity in cone"),
+   SV("Add Velocity in Cone","Velocity Strength","900","0"),
+   SV("Add Velocity in Cone","Cone Angle","70","45"),
+   SX("Add Velocity in Cone","Cone Axis","0","0","1","1, 0, 0")
+ ], why:`Cone Axis defaults to <b>X</b> (sideways). Pointing it at <b>Z</b> throws the sparks up out of the ground.`},
+
+ {t:"Sparks: gravity, drag, bouncing and stretch", goal:"Sparks arc, slow down, bounce off the floor and stretch with speed.", hl:{g:0,n:["sparks.grav","sparks.drag","sparks.col","sparks.solve","sparks.ssbs","sparks.spr"]}, do:[
+   AM("Gravity Force","Particle Update","gravity"), `(It already says Z <i>-980</i>, real gravity in cm/s².)`,
+   AM("Drag","Particle Update","drag"), SV("Drag","Drag","1.5","1.0"),
+   AM("Collision","Particle Update","collision"), `(Defaults are fine: <i>Ray Traced</i>, Restitution <i>0.6</i>, Friction <i>0.25</i>.)`,
+   SOLVE,
+   AM("Scale Sprite Size by Speed","Particle Update","size by speed"),
+   `Make sure <b>Scale Sprite Size by Speed</b> sits <u>below</u> Solve Forces and Velocity (drag it by its name if not). Set its <b>Max Scale Factor</b> to X <code>1</code>, Y <code>6</code>.`,
+   AM("Scale Color","Particle Update","scale color"), SC("Scale Color","Scale Alpha","Linear Ramp Down"),
+   `<b>Sprite Renderer</b>: Material <b>M_FX_Glow</b>, <b>Alignment</b> <i>Automatic</i> → <b>Velocity Aligned</b>.`
+ ], see:`Streaks that fly up, stretch while fast, shrink to dots as they slow, and bounce on the preview floor.`,
+ why:`Checked in UE 5.8: the Minimal template has no solver, so every force shows <i>"unmet dependencies"</i> until <b>Solve Forces and Velocity</b> is in. Scale Sprite Size by Speed reads the solved velocity, so it must come <i>after</i> it.`},
+
+ {t:"Dust: a ring of slow, rolling smoke", goal:"Dust pushed out along the ground, churning, swelling and fading.", hl:{g:0,n:["dust.burst","dust.init","dust.shape","dust.vel","dust.drag","dust.curl","dust.size","dust.scol"]}, do:[
+   AE("Dust"), ES("Once"),
+   AM("Spawn Burst Instantaneous","Emitter Update","spawn burst"),
+   SV("Spawn Burst Instantaneous","Spawn Count","30","1"), SV("Spawn Burst Instantaneous","Spawn Time","0.03","0"),
+   `<b>Initialize Particle</b>: Lifetime Mode <b>Random</b>, Min <code>1.5</code> Max <code>2.5</code>. Color Mode <b>Direct Set</b>: R <code>0.35</code> G <code>0.3</code> B <code>0.25</code> A <code>0.6</code>. Sprite Size Mode <b>Random Uniform</b>: Min <code>120</code> Max <code>220</code>. <b>Sprite Rotation Mode</b> <i>Unset</i> → <b>Random</b>.`,
+   AM("Shape Location","Particle Spawn","shape location"),
+   SD("Shape Location","Shape Primitive","Sphere","Ring / Disc"),
+   SV("Shape Location","Ring Radius","60","100"),
+   AM("Add Velocity from Point","Particle Spawn","velocity from point"), SV("Add Velocity from Point","Velocity Strength","500","100"),
+   AM("Drag","Particle Update","drag"), SV("Drag","Drag","3","1.0"),
+   AM("Curl Noise Force","Particle Update","curl noise"), SV("Curl Noise Force","Noise Strength","60","10"),
+   SOLVE,
+   AM("Scale Sprite Size","Particle Update","scale sprite size"), `Click its curve template <b>Linear Ramp Up</b>.`,
+   AM("Scale Color","Particle Update","scale color"), SC("Scale Color","Scale Alpha","Ramp Up Down"),
+   `<b>Sprite Renderer</b> → Material <b>M_FX_Dust</b>.`
+ ], why:`Each layer gets its own <b>size and speed step</b>: flash = huge and instant, ring = big and fast, sparks = tiny and fast, dust = big and slow. Two layers at the same size and speed would just be one muddier layer. <b>Spawn Time 0.03</b> lets dust arrive a beat after the hit.`},
+
+ {t:"Debris: chunks that tumble and bounce", goal:"14 small rock chunks (mesh particles) thrown up, spinning, landing.", hl:{g:0,n:["debris.burst","debris.init","debris.cone","debris.orient","debris.grav","debris.col","debris.solve","debris.spin","debris.mesh"]}, do:[
+   AE("Debris"), ES("Once"),
+   AM("Spawn Burst Instantaneous","Emitter Update","spawn burst"), SV("Spawn Burst Instantaneous","Spawn Count","14","1"), SV("Spawn Burst Instantaneous","Spawn Time","0.02","0"),
+   `<b>Initialize Particle</b>: Lifetime <code>2.5</code>. <b>Mesh Scale Mode</b> <i>Unset</i> → <b>Random Uniform</b>: Mesh Uniform Scale Min <code>0.05</code>, Max <code>0.15</code>.`,
+   AM("Add Velocity in Cone","Particle Spawn","velocity in cone"), `Velocity Strength <code>700</code>, Cone Angle <code>35</code>, Cone Axis X <code>0</code> Y <code>0</code> Z <code>1</code>.`,
+   AM("Initial Mesh Orientation","Particle Spawn","initial mesh orientation"), `(Mode already says <i>Random</i>.)`,
+   AM("Gravity Force","Particle Update","gravity"),
+   AM("Collision","Particle Update","collision"), SD("Collision","Radius Calculation Type","Sprite","Mesh"),
+   SOLVE,
+   AM("Update Mesh Orientation","Particle Update","update mesh orientation"), SV("Update Mesh Orientation","Rotation Rate","3","1"),
+   `<b>Render</b> + → <b>Mesh Renderer</b>. In it open <b>Meshes</b> → <b>Index [0]</b> → <b>Mesh</b>: pick <b>Cube</b> (Engine › BasicShapes) or a rock you modelled yourself (your Geometry Nodes rock exported as FBX works well).`,
+   `Untick the checkbox on the old <b>Sprite Renderer</b> so only the meshes draw.`
+ ], why:`<b>Same material as the world:</b> debris reads as "made of the ground" only if it looks like the ground. Real productions reuse the level's own rock meshes and materials for debris.`},
+
+ {t:"Fire it in a level", goal:"The full slam playing in a lit level, landing on real geometry.", do:[
+   `Press <b>Save</b> in the Niagara editor.`,
+   `Open a level with a floor (or <b>File → New Level → Basic</b>).`,
+   `Drag <b>NS_GroundSlam</b> from the Content Browser onto the floor in the viewport.`,
+   `Press <b>Play</b> (the green ▶ in the main toolbar, or ${K("Alt","P")}). The slam fires once as the game starts. Press ${K("Esc")} and Play again to watch it again.`,
+   `Look for: flash lights the floor, ring races outward flat, sparks bounce, dust rolls out a beat later, chunks tumble and settle.`
+ ], pro:`<b>Timing is the effect.</b> Everything at 0.00 s feels like one hit. Try moving dust to 0.08 s and debris to 0.05 s and feel the difference: a tiny delay reads as weight.`}
+],
+
+/* ============================== L2 ============================== */
+l2:[
+ {t:"Material: a hot ribbon core (M_FX_TrailCore)", goal:"A ribbon material that's brightest along its centre line and fades to its edges.", hl:{g:1,n:["tc","cm","om","mul","m4","pw","pc","m1","m2","res"]}, do:[
+   `Content Browser → <b>Content</b> → right-click → <b>New Folder</b> <code>FX_Trail</code>, go inside.`,
+   `Right-click → <b>Material</b> → <code>M_FX_TrailCore</code> → open. Click empty graph: <b>Blend Mode</b> <b>Additive</b>, <b>Shading Model</b> <b>Unlit</b>, and tick <b>Two Sided</b> (ribbons twist, so their back must draw too).`,
+   `${K("U")}+click on the left → <b>TexCoord</b>.`,
+   MN("ComponentMask","mask","to its right"), `In the Mask's Details tick only <b>G</b> (untick R, B, A if they're ticked). G is the coordinate across the ribbon.`,
+   MW("TexCoord","(output)","ComponentMask","(input)"),
+   `${K("O")}+click → <b>One Minus</b>; wire the Mask into it.`,
+   `${K("M")}+click → <b>Multiply</b>: Mask → <b>A</b>, One Minus → <b>B</b>.`,
+   `${K("M")}+click → another <b>Multiply</b>: previous Multiply → <b>A</b>, <b>Const B</b> <code>4</code>.`,
+   `${K("E")}+click → <b>Power</b>: wire the ×4 into <b>Base</b>, <b>Const Exponent</b> <code>3</code>.`,
+   MN("Particle Color","particle color","below"),
+   `Two more <b>Multiply</b> nodes: Power × Particle Color <b>RGB</b>, then that × Particle Color <b>A</b>.`,
+   MW("last Multiply","(output)","M_FX_TrailCore result","Emissive Color"), `<b>Save</b>.`
+ ], why:`<b>x × (1 − x) × 4</b> is a little hill: 0 at both edges (x = 0 and x = 1), exactly 1 in the middle. Power 3 squeezes it into a thin hot line. Ribbons put V across their width, so this works on any ribbon.`},
+
+ {t:"Material: a wider churning glow (M_FX_TrailGlow)", goal:"Same shape as the core but softer, with noise flowing along the trail.", hl:{g:1,n:["tc2","pan","app","c0","noise","mn"]}, do:[
+   `In the Content Browser right-click <b>M_FX_TrailCore</b> → <b>Duplicate</b> → name <code>M_FX_TrailGlow</code> → open it.`,
+   DV("Power node","Const Exponent","1.2","3"),
+   `${K("U")}+click below the graph → a second <b>TexCoord</b>. In its Details set <b>UTiling</b> <code>3</code>.`,
+   `${K("P")}+click → <b>Panner</b>. Wire the new TexCoord into <b>Coordinate</b>. In Details set <b>Speed X</b> <code>-2.5</code>, Speed Y <code>0</code>.`,
+   `${K("1")}+click → <b>Constant</b> (value 0).`,
+   MN("Append","append","to the right of the Panner"), `Panner → <b>A</b>, Constant → <b>B</b> (turns the 2D UV into a 3D point).`,
+   MN("Noise","noise","to the right"), MW("Append","(output)","Noise","World Position"),
+   DV("Noise","Scale","4","1.0"), `In the same Details set <b>Output Min</b> <code>0</code> and <b>Output Max</b> <code>1</code>.`,
+   `${K("M")}+click → <b>Multiply</b> between Power and the colour Multiply: Power → <b>A</b>, Noise → <b>B</b>, and wire its output into the Multiply that used to take Power.`,
+   `<b>Save</b>.`
+ ], why:`Panning noise along U (the ribbon's length) makes the glow look like it's streaming off the blade. The ribbon itself stays still. Only the material moves, and that costs almost nothing.`},
+
+ {t:"A spinning test rig (BP_SpinTest)", goal:"A Blueprint that swings a blade in a circle, so a trail has something to follow.", do:[
+   `In FX_Trail right-click → <b>Blueprint Class</b> → <b>Actor</b> → name <code>BP_SpinTest</code> → open it.`,
+   `In the <b>Components</b> panel (top-left) click <b>+ Add</b> → type <code>static mesh</code> → <b>Static Mesh</b>. Name it <code>Blade</code>. In Details: <b>Static Mesh</b> → <b>Cube</b>; <b>Location</b> X <code>60</code>; <b>Scale</b> X <code>1.2</code>, Y <code>0.05</code>, Z <code>0.02</code>.`,
+   `<b>+ Add</b> → type <code>rotating</code> → <b>Rotating Movement</b>. In Details set <b>Rotation Rate</b> Z (yaw) <code>540</code>.`,
+   `<b>+ Add</b> → type <code>niagara</code> → click the <b>Niagara</b> particle system component. Name it <code>TipFX</code>, <b>Location</b> X <code>120</code> (the blade tip). You'll set its system in step 6.`,
+   `Click <b>Compile</b>, then <b>Save</b>.`
+ ]},
+
+ {t:"Create NS_BladeTrail and its Core emitter", goal:"An emitter that drops a particle every 4 cm the tip moves.", hl:{g:0,n:["core.state","core.spu","core.init"]}, do:[
+   `In FX_Trail right-click → <b>FX</b> → <b>Niagara System</b> → pick <b>Minimal</b> → create → name <code>NS_BladeTrail</code> → open.`,
+   `Rename the emitter <code>Core</code> (double-click its name in the System Overview).`,
+   ES("Infinite"),
+   AM("Spawn Per Unit","Emitter Update","spawn per unit"), SV("Spawn Per Unit","Spawn Spacing","4","20"),
+   `<b>Initialize Particle</b>: Lifetime <code>0.18</code>; Color Mode <b>Direct Set</b>: R <code>10</code> G <code>6</code> B <code>3</code> A <code>1</code>.`,
+   SD("Initialize Particle","Ribbon Width Mode","Unset","Direct Set"), SV("Initialize Particle","Ribbon Width","6","5")
+ ], why:`<b>Spawn Per Unit</b> spawns by distance travelled, not by time: a fast swing gets the same smooth trail as a slow one. A standing blade spawns nothing.`},
+
+ {t:"Swap the sprite for a ribbon", goal:"The particles are joined into one continuous strip.", hl:{g:0,n:["core.rib"]}, do:[
+   `In <b>Render</b> right-click <b>Sprite Renderer</b> → <b>Delete</b> (or untick it).`,
+   `<b>Render</b> + → <b>Ribbon Renderer</b>. Set its <b>Material</b> to <b>M_FX_TrailCore</b>.`,
+   `Leave <b>Facing Mode</b> on <i>Screen</i> and the UV settings as they are (<i>Non-Uniform Scale (By Total Length)</i>).`
+ ]},
+
+ {t:"Taper and fade the tail", goal:"Thick at the blade, thin and dim at the old end.", hl:{g:0,n:["core.srw","core.scol"]}, do:[
+   AM("Scale Ribbon Width","Particle Update","scale ribbon width"), SC("Scale Ribbon Width","Ribbon Width Scale","Linear Ramp Down"),
+   AM("Scale Color","Particle Update","scale color"), SC("Scale Color","Scale Alpha","Linear Ramp Down"),
+   `<b>Save</b>. Open <b>BP_SpinTest</b>, click <b>TipFX</b>, set its <b>Niagara System Asset</b> to <b>NS_BladeTrail</b>, <b>Compile</b>, <b>Save</b>.`
+ ], see:`Drop BP_SpinTest in a level and press Play: a thin white-hot arc follows the blade tip, tapering away behind it.`},
+
+ {t:"Glow layer: copy the core, make it wide and soft", goal:"A second, wider ribbon behind the core.", hl:{g:0,n:["glow.init","glow.rib"]}, do:[
+   `In the System Overview click the <b>Core</b> box, press ${K("Ctrl","C")}, click empty space, press ${K("Ctrl","V")}. Rename the copy <code>Glow</code>.`,
+   `Glow's <b>Initialize Particle</b>: Lifetime <code>0.35</code>; Color R <code>2</code> G <code>0.6</code> B <code>0.15</code> A <code>0.6</code>; Ribbon Width <code>40</code>.`,
+   `Glow's <b>Ribbon Renderer</b> → Material <b>M_FX_TrailGlow</b>.`
+ ], why:`<b>Core + glow</b> is the oldest trick in energy VFX: a thin over-bright line sells heat, a wide dim halo sells size. Neither works alone.`},
+
+ {t:"Embers shed from the blade", goal:"Small sparks flicking off the tip and drifting away.", hl:{g:0,n:["emb.state","emb.spu","emb.init","emb.vel","emb.curl","emb.drag","emb.solve","emb.scol","emb.spr"]}, do:[
+   AE("Embers"), ES("Infinite"),
+   AM("Spawn Per Unit","Emitter Update","spawn per unit"), SV("Spawn Per Unit","Spawn Spacing","25","20"),
+   `<b>Initialize Particle</b>: Lifetime Mode <b>Random</b>, Min <code>0.3</code> Max <code>0.7</code>; Color Mode <b>Direct Set</b> R <code>6</code> G <code>2</code> B <code>0.5</code> A <code>1</code>; Sprite Size Mode <b>Random Uniform</b> Min <code>2</code> Max <code>5</code>.`,
+   AM("Add Velocity from Point","Particle Spawn","velocity from point"), SV("Add Velocity from Point","Velocity Strength","60","100"),
+   AM("Curl Noise Force","Particle Update","curl noise"), SV("Curl Noise Force","Noise Strength","40","10"),
+   AM("Drag","Particle Update","drag"), SV("Drag","Drag","2","1.0"),
+   SOLVE,
+   AM("Scale Color","Particle Update","scale color"), SC("Scale Color","Scale Alpha","Linear Ramp Down"),
+   `<b>Sprite Renderer</b>: Material <b>M_FX_Glow</b> (from FX_Slam), <b>Alignment</b> <b>Velocity Aligned</b>.`
+ ]},
+
+ {t:"Watch it at speed and tune", goal:"A trail that stays smooth at any swing speed.", do:[
+   `<b>Save</b>, then Play the level with BP_SpinTest in it.`,
+   `In BP_SpinTest's <b>Rotating Movement</b> try Rotation Rate Z <code>1440</code>. If the arc turns into straight chords, lower Core's <b>Spawn Spacing</b> to <code>2</code>.`,
+   `If the glow looks like a flat card from the side, that's Screen facing doing its job. It always turns to the camera.`
+ ], pro:`<b>Real weapons:</b> put TipFX on a socket at the blade tip of your weapon mesh and switch it on and off with an Animation Notify for the swing frames only. It's the same system, driven by the animation.`}
+]
+};
+
+/* ============================== L3 ============================== */
+STEPS.l3 = [
+ {t:"Material: the rift's black disc and burning rim", goal:"A dark round hole with a razor-bright edge.", hl:{g:1,n:["tc","c2","dist","cmin","cmax","ss","om1","sub","abs","m25","sat","om2","res"]}, do:[
+   `Content Browser → <b>Content</b> → new folder <code>FX_Rift</code>. Inside: right-click → <b>Material</b> → <code>M_FX_RiftCore</code> → open.`,
+   `Click empty graph: <b>Blend Mode</b> <b>Translucent</b>, <b>Shading Model</b> <b>Unlit</b>.`,
+   `${K("U")}+click → <b>TexCoord</b>. ${K("2")}+click below → <b>Constant2Vector</b> with R <code>0.5</code>, G <code>0.5</code>.`,
+   MN("Distance","distance","to their right"), `TexCoord → <b>A</b>, Constant2Vector → <b>B</b>. Call this output <b>d</b>: 0 at the centre, 0.5 at the sprite's edge.`,
+   MN("SmoothStep","smoothstep","to the right of Distance"),
+   `${K("1")}+click twice → two <b>Constant</b> nodes. Set one to <code>0.40</code> and wire it to SmoothStep <b>Min</b>; set the other to <code>0.46</code> and wire it to <b>Max</b>. Wire Distance into <b>Value</b>.`,
+   `${K("O")}+click → <b>One Minus</b>; wire SmoothStep into it. Wire One Minus into the result node's <b>Opacity</b>. (Inside the circle = 1, outside = 0.)`,
+   MN("Subtract","subtract","below SmoothStep"), `Distance → <b>A</b>, <b>Const B</b> <code>0.43</code>.`,
+   MN("Abs","abs","to its right"), `${K("M")}+click → <b>Multiply</b>, Abs → <b>A</b>, Const B <code>25</code>.`,
+   MN("Saturate","saturate","to its right"), `${K("O")}+click → <b>One Minus</b> after Saturate. This is the <b>rim</b>: a thin ring of 1 at radius 0.43.`
+ ], see:`Opacity alone makes a dark disc on the preview. The rim isn't wired to anything yet.`},
+
+ {t:"Material: spiral arms turning inside the rift", goal:"Faint spiral bands rotating into the hole, plus the hot rim.", hl:{g:1,n:["vtr","msk","m6","m8","add1","time","mt","add2","sin","sat2","mdisc","mrim","addc","pc","mpc","res"]}, do:[
+   MN("VectorToRadialValue","vector to radial","below everything, on the left"),
+   `Wire the first <b>TexCoord</b> into its <b>Vector or UVs</b> input.`,
+   MN("ComponentMask","mask","to its right"), `Wire <b>Radial Coordinates</b> into it; in Details tick only <b>R</b> (the angle around the centre, 0 to 1).`,
+   `${K("M")}+click → <b>Multiply</b>: Mask → A, Const B <code>6</code> (six arms).`,
+   `${K("M")}+click → another <b>Multiply</b>: <b>Distance</b> (d) → A, Const B <code>8</code> (twist the arms into spirals).`,
+   `${K("A")}+click → <b>Add</b>: the two Multiplies → A and B.`,
+   MN("Time","time","below the Add"), `${K("M")}+click → <b>Multiply</b>: Time → A, Const B <code>-0.6</code>.`,
+   `${K("A")}+click → <b>Add</b>: previous Add → A, Time Multiply → B.`,
+   MN("Sine","sine","to the right"), `Wire the Add in. Its <b>Period</b> in Details stays <i>1</i> (one full wave per 1.0).`,
+   MN("Saturate","saturate","to the right"), `Wire Sine into it: these are the spiral bands.`,
+   `${K("M")}+click → <b>Multiply</b>: bands → A, the disc's <b>One Minus</b> (the one wired to Opacity) → B. This keeps the bands inside the hole.`,
+   `${K("M")}+click → <b>Multiply</b>: <b>rim</b> (second One Minus) → A, Const B <code>15</code>.`,
+   `${K("A")}+click → <b>Add</b>: rim ×15 → A, bands → B.`,
+   MN("Particle Color","particle color","nearby"), `${K("M")}+click → <b>Multiply</b>: Add → A, Particle Color <b>RGB</b> → B. Wire it into <b>Emissive Color</b>. <b>Save</b>.`
+ ], why:`<b>Black disc, thin bright rim:</b> the edge is the brightest thing in view and there's almost no glowing area, so it reads as a hole in the world, not a lamp. <b>Angle × 6 + distance × 8 − time</b> is the whole spiral: angle makes arms, distance bends them, time turns them.`},
+
+ {t:"Material: a soft floor glow with Depth Fade (M_FX_FloorGlow)", goal:"A big glow pool that melts into the ground instead of showing a hard card edge.", hl:{g:2,n:["rge","pc","m1","df","res"]}, do:[
+   `New material <code>M_FX_FloorGlow</code>. <b>Blend Mode</b> <b>Translucent</b>, <b>Shading Model</b> <b>Unlit</b>.`,
+   MN("RadialGradientExponential","radial gradient exponential","on the left"), MN("Particle Color","particle color","below"),
+   `${K("M")}+click → <b>Multiply</b>: gradient → A, Particle Color <b>A</b> → B.`,
+   MN("DepthFade","depth fade","to the right"), MW("Multiply","(output)","DepthFade","Opacity"), DV("DepthFade","Fade Distance","40"),
+   `DepthFade → result <b>Opacity</b>. Particle Color <b>RGB</b> → <b>Emissive Color</b>. <b>Save</b>.`
+ ]},
+
+ {t:"System NS_Rift: the Core disc that lives forever", goal:"One sprite that appears once and never dies, lying flat, local to the actor.", hl:{g:0,n:["core.props","core.state","core.burst","core.init","core.pst","core.face","core.spr"]}, do:[
+   `In FX_Rift right-click → <b>FX</b> → <b>Niagara System</b> → <b>Minimal</b> → name <code>NS_Rift</code> → open. Rename the emitter <code>Core</code>.`,
+   `At the very top of Core's stack click <b>Properties</b> and tick <b>Local Space</b> (the rift turns and moves with its actor).`,
+   ES("Infinite"),
+   AM("Spawn Burst Instantaneous","Emitter Update","spawn burst"),
+   `In it tick the checkbox in front of <b>Loop Count Limit</b> and leave the value at <code>1</code>. The burst fires on the first loop only.`,
+   `<b>Particle Update</b> → <b>Particle State</b>: untick <b>Kill Particles When Lifetime Has Elapsed</b>.`,
+   `<b>Initialize Particle</b>: Color Mode <b>Direct Set</b> R <code>1.2</code> G <code>0.35</code> B <code>3</code> A <code>1</code>; Sprite Size Mode <b>Uniform</b>, <code>400</code>; tick <b>Position Offset</b> and set Z <code>2</code>.`,
+   AM("Sprite Facing and Alignment","Particle Update","sprite facing"),
+   `Sprite Facing X <code>0</code> Y <code>0</code> Z <code>1</code>; tick <b>Sprite Alignment</b> and set X <code>1</code> Y <code>0</code> Z <code>0</code>.`,
+   `<b>Sprite Renderer</b>: Material <b>M_FX_RiftCore</b>, Facing Mode <b>Custom Facing Vector</b>, Alignment <b>Custom Alignment</b>.`
+ ], why:`<b>A long-lived single particle</b> is the cheap way to draw a looping body: one sprite, no respawning, the material does all the motion. <b>Loop Count Limit 1</b> plus "don't kill when lifetime ends" means it's spawned once and stays.`},
+
+ {t:"FloorGlow: the pool of light under it", goal:"A 9 m glow pool around the rift.", hl:{g:0,n:["floor.init","floor.spr"]}, do:[
+   `Copy the Core emitter (${K("Ctrl","C")} / ${K("Ctrl","V")} in the System Overview) and rename the copy <code>FloorGlow</code>.`,
+   `FloorGlow's <b>Initialize Particle</b>: Color R <code>0.6</code> G <code>0.15</code> B <code>1.6</code> A <code>1</code>; Uniform Sprite Size <code>900</code>; Position Offset Z <code>1</code>.`,
+   `FloorGlow's <b>Sprite Renderer</b> → Material <b>M_FX_FloorGlow</b>.`
+ ]},
+
+ {t:"Wisps: a GPU emitter with fixed bounds", goal:"A GPU emitter that won't get culled by mistake.", hl:{g:0,n:["wisps.props","wisps.state","wisps.rate","wisps.init","wisps.shape"]}, do:[
+   AE("Wisps"), ES("Infinite"),
+   `Click Wisps' <b>Properties</b>: tick <b>Local Space</b>; set <b>Sim Target</b> to <b>GPUCompute Sim</b>.`,
+   `A yellow warning appears: <i>"The emitter is GPU and is using dynamic bounds mode… Missing fixed bounds."</i> In the same Properties set <b>Calculate Bounds Mode</b> to <b>Fixed</b>, then <b>Fixed Bounds</b> Min X <code>-400</code> Y <code>-400</code> Z <code>-50</code>, Max X <code>400</code> Y <code>400</code> Z <code>500</code>.`,
+   AM("Spawn Rate","Emitter Update","spawn rate"), SV("Spawn Rate","SpawnRate","300","1"),
+   `<b>Initialize Particle</b>: Lifetime Mode <b>Random</b> Min <code>1.2</code> Max <code>2.2</code>; Color Mode <b>Direct Set</b> R <code>2</code> G <code>0.6</code> B <code>6</code> A <code>1</code>; Sprite Size Mode <b>Random Uniform</b> Min <code>3</code> Max <code>7</code>.`,
+   AM("Shape Location","Particle Spawn","shape location"), SD("Shape Location","Shape Primitive","Sphere","Ring / Disc"), SV("Shape Location","Ring Radius","170","100")
+ ], why:`Checked in UE 5.8: a GPU emitter on dynamic bounds raises exactly this warning. The CPU can't see GPU particles, so it can't measure where they are. Wrong bounds make the effect vanish when its centre leaves the screen.`},
+
+ {t:"Wisps: get sucked in, swirling", goal:"Wisps born on the rim spiral inward and die at the centre.", hl:{g:0,n:["wisps.vortex","wisps.attr","wisps.curl","wisps.acc","wisps.drag","wisps.solve","wisps.ssbs","wisps.spr"]}, do:[
+   AM("Vortex Force","Particle Update","vortex"), SV("Vortex Force","Vortex Force Amount","500","200"), `(Vortex Axis is already 0, 0, 1.)`,
+   AM("Point Attraction Force","Particle Update","point attraction"),
+   SV("Point Attraction Force","Attraction Strength","80","1"), SV("Point Attraction Force","Attraction Radius","400","100"),
+   `Tick <b>Kill Within Radius</b> and set <b>Kill Radius</b> <code>25</code> (it was 4).`,
+   AM("Curl Noise Force","Particle Update","curl noise"), SV("Curl Noise Force","Noise Strength","120","10"),
+   AM("Acceleration Force","Particle Update","acceleration force"), SX("Acceleration Force","Acceleration","0","0","60","0, 0, 0"),
+   AM("Drag","Particle Update","drag"), SV("Drag","Drag","1.5","1.0"),
+   SOLVE,
+   AM("Scale Sprite Size by Speed","Particle Update","size by speed"), `Keep it below Solve; Max Scale Factor X <code>1</code> Y <code>4</code>.`,
+   `<b>Sprite Renderer</b>: Material <b>M_FX_Glow</b>, Alignment <b>Velocity Aligned</b>.`
+ ], see:`Violet streaks peel off the rim, curl, and spiral into the hole, where they vanish.`,
+ why:`<b>Several weak forces plus drag:</b> vortex alone is a merry-go-round and attraction alone is a drain. Together, with curl noise breaking the symmetry and drag keeping speeds readable, it looks alive.`},
+
+ {t:"Light it and place it", goal:"The rift lights the floor around it, sitting in a real level.", hl:{g:0,n:["core.light","core.lr"]}, do:[
+   `Click the <b>Core</b> emitter. <b>Render</b> + → <b>Light Renderer</b>; untick <b>Use Inverse Squared Falloff</b>.`,
+   AM("Light Attributes","Particle Spawn","light attributes"), SD("Light Attributes","Radius","Unset","Apply"), SV("Light Attributes","Light Radius","700","100"),
+   `<b>Save</b>. Drag <b>NS_Rift</b> onto a floor in a level. Rotate the actor 90° (Rotation Y <code>90</code>) to stand it upright as a wall portal: it all turns together, because every emitter is in Local Space.`
+ ], pro:`Turn the level's lights down. A rift is a light source, and in a bright room it looks like a sticker.`}
+];
+
+/* ============================== L4 ============================== */
+STEPS.l4 = [
+ {t:"Material: a mesh that burns away (M_Dissolve)", goal:"A Masked material whose Dissolve value (0 to 1) eats the mesh away with a glowing edge.", hl:{g:1,n:["noise","dis","mdis","sub1","sub2","res"]}, do:[
+   `New folder <code>FX_Dissolve</code>. New material <code>M_Dissolve</code>, open it. Click empty graph: <b>Blend Mode</b> <b>Masked</b> (Shading Model stays <b>Default Lit</b>). Set <b>Opacity Mask Clip Value</b> from <i>0.3333</i> to <code>0</code>.`,
+   MN("Noise","noise","on the left"), `In its Details: <b>Scale</b> <code>0.02</code>, <b>Output Min</b> <code>0</code>, <b>Output Max</b> <code>1</code>.`,
+   `${K("S")}+click → <b>Scalar Parameter</b>. Name it <code>Dissolve</code>, Default Value <code>0</code>. In its Details tick <b>Use Custom Primitive Data</b>, <b>Primitive Data Index</b> <code>0</code>.`,
+   `${K("M")}+click → <b>Multiply</b>: Dissolve → A, Const B <code>1.2</code>. Then <b>Subtract</b> (right-click → subtract): Multiply → A, Const B <code>0.1</code>. Call this <b>t</b> (the burn line).`,
+   MN("Subtract","subtract","to the right of Noise"), `Noise → <b>A</b>, t → <b>B</b>. Wire it into the result's <b>Opacity Mask</b>.`
+ ], why:`<b>Custom Primitive Data</b> lets each placed mesh carry its own Dissolve number without making a separate material instance per object, so a whole crowd can dissolve at different times on one material.`},
+
+ {t:"Material: the glowing burn edge and colour", goal:"An orange-hot line right where the mesh is being eaten.", hl:{g:1,n:["abs","m20","sat","om","edge","memit","base","res"]}, do:[
+   MN("Abs","abs","below the Opacity Mask Subtract"), `Wire that Subtract (noise − t) into it.`,
+   `${K("M")}+click → <b>Multiply</b>: Abs → A, Const B <code>20</code>. Then <b>Saturate</b>, then ${K("O")}+click <b>One Minus</b>. This is 1 only in a thin band at the burn line.`,
+   `${K("V")}+click → <b>Vector Parameter</b> named <code>EdgeColor</code>, default R <code>4</code> G <code>1.2</code> B <code>0.3</code>.`,
+   `${K("M")}+click → <b>Multiply</b>: One Minus → A, EdgeColor → B. Wire it into <b>Emissive Color</b>.`,
+   `${K("V")}+click → <b>Vector Parameter</b> named <code>BaseColor</code>, R G B <code>0.5</code>. Wire it into <b>Base Color</b>. <b>Save</b>.`
+ ]},
+
+ {t:"Niagara: embers born on the mesh surface", goal:"A GPU emitter that spawns on whatever static mesh it's attached to.", hl:{g:0,n:["emb.props","emb.state","emb.rate","emb.smloc","emb.init"]}, do:[
+   `In FX_Dissolve: <b>FX</b> → <b>Niagara System</b> → <b>Minimal</b> → <code>NS_Dissolve</code> → open. Rename the emitter <code>Embers</code>.`,
+   `<b>Properties</b>: Sim Target <b>GPUCompute Sim</b>; Calculate Bounds Mode <b>Fixed</b>; Fixed Bounds Min <code>-300, -300, -300</code>, Max <code>300, 300, 400</code>.`,
+   ES("Infinite"),
+   AM("Spawn Rate","Emitter Update","spawn rate"),
+   AM("Static Mesh Location","Particle Spawn","static mesh location"),
+   `In <b>Static Mesh Location</b> click the <b>▸</b> in front of <b>Static Mesh</b> to open the mesh settings. Set <b>Source Mode</b> to <b>Attach Parent</b>, and as <b>Preview Mesh</b> pick <b>Sphere</b> (only for the editor preview).`,
+   `<b>Initialize Particle</b>: Lifetime Mode <b>Random</b> Min <code>0.8</code> Max <code>1.6</code>; Sprite Size Mode <b>Random Uniform</b> Min <code>2</code> Max <code>6</code>; Color Mode <b>Direct Set</b> (you'll link the colour next).`
+ ], why:`<b>Attach Parent</b>: when a Blueprint spawns this system attached to a mesh component, the embers sample that mesh. One effect works for a chair, a robot or a rock.`},
+
+ {t:"User Parameters: the knobs the outside world turns", goal:"SpawnRate and EmberColor exposed, and the stack reading them.", hl:{g:0,n:["user.rate","user.color","emb.rate","emb.init"]}, do:[
+   `Open the <b>User Parameters</b> panel (left side; if hidden: <b>Window</b> menu → <b>User Parameters</b>). Click its <b>+</b> → choose <b>Float</b> → name it <code>SpawnRate</code>, default <code>0</code>.`,
+   `<b>+</b> again → <b>Linear Color</b> → name <code>EmberColor</code>, default R <code>4</code> G <code>1.2</code> B <code>0.3</code> A <code>1</code>.`,
+   `In <b>Spawn Rate</b>, click the <b>▾</b> at the right of the <b>SpawnRate</b> row → <b>Link Inputs</b> → <b>User</b> → <b>SpawnRate</b>. The box now shows <i>User.SpawnRate</i>.`,
+   `In <b>Initialize Particle</b>, click the <b>▾</b> at the right of <b>Color</b> → <b>Link Inputs</b> → <b>User</b> → <b>EmberColor</b>.`
+ ], see:`The preview goes quiet. SpawnRate is 0 until a Blueprint turns it up. Set the default to 2000 for a moment to check the embers, then back to 0.`},
+
+ {t:"Embers rise, curl and fade", goal:"Embers float up off the surface like sparks from burning paper.", hl:{g:0,n:["emb.curl","emb.acc","emb.drag","emb.solve","emb.scol","emb.spr"]}, do:[
+   AM("Curl Noise Force","Particle Update","curl noise"), SV("Curl Noise Force","Noise Strength","60","10"),
+   AM("Acceleration Force","Particle Update","acceleration force"), SX("Acceleration Force","Acceleration","0","0","120","0, 0, 0"),
+   AM("Drag","Particle Update","drag"), SV("Drag","Drag","1.5","1.0"),
+   SOLVE,
+   AM("Scale Color","Particle Update","scale color"), SC("Scale Color","Scale Alpha","Linear Ramp Down"),
+   `<b>Sprite Renderer</b> → Material <b>M_FX_Glow</b>. <b>Save</b>.`
+ ]},
+
+ {t:"Effect Type: a budget the engine enforces", goal:"NET_Gameplay culls far or excess copies automatically.", do:[
+   `In FX_Dissolve right-click → <b>FX</b> → <b>Niagara Effect Type</b> → name <code>NET_Gameplay</code> → open.`,
+   `<b>Cull Reaction</b> already says <i>Deactivate Immediate</i>. Set <b>Update Frequency</b> from <i>Spawn Only</i> to <b>Low</b>.`,
+   `Under <b>System Scalability Settings</b> click <b>+</b> to add an entry, then open it. Tick <b>Cull By Distance</b> and set <b>Max Distance</b> <code>5000</code>. Tick <b>Cull Max Instance Count</b> and set <b>Max Instances</b> <code>10</code>. <b>Save</b>.`,
+   `Open <b>NS_Dissolve</b>. In the System Overview click the <b>system box</b> (the one with the system's name, not an emitter). In its <b>System Properties</b> set <b>Effect Type</b> to <b>NET_Gameplay</b>. <b>Save</b>. Do the same for NS_GroundSlam and NS_Rift.`
+ ], why:`Without an Effect Type nothing stops 40 copies of this effect running behind the camera. Even good marketplace packs skip this step. On a mid-range graphics card you can't afford to.`},
+
+ {t:"Blueprint: BP_Dissolver's parts", goal:"A Blueprint holding the mesh, with Duration and EmberColor settable per copy.", hl:{g:2,n:["ev","spawn"]}, do:[
+   `In FX_Dissolve right-click → <b>Blueprint Class</b> → <b>Actor</b> → <code>BP_Dissolver</code> → open.`,
+   `<b>Components</b> → <b>+ Add</b> → <b>Static Mesh</b>, name <code>Body</code>. In Details: Static Mesh <b>Sphere</b> (or your own model), Materials › Element 0 → <b>M_Dissolve</b>.`,
+   `In <b>My Blueprint</b> (left) click <b>+</b> next to <b>Variables</b>: name <code>EmberColor</code>, type <b>Linear Color</b>, default R <code>4</code> G <code>1.2</code> B <code>0.3</code> A <code>1</code>. Click the <b>eye</b> icon so it's editable per placed copy.`,
+   `Another variable <code>Duration</code>, type <b>Float</b>, default <code>2.0</code>, eye on. A third <code>FX</code> of type <b>Niagara System Component</b> → <b>Object Reference</b> (no eye).`,
+   `<b>Compile</b>.`
+ ]},
+
+ {t:"Blueprint: spawn, colour and play", goal:"StartDissolve spawns the embers on Body, colours them, and starts a timeline.", hl:{g:2,n:["ev","spawn","setfx","setcol","div","rate","tl"]}, do:[
+   `In the <b>Event Graph</b> right-click empty space → type <code>custom event</code> → <b>Add Custom Event</b> → name it <code>StartDissolve</code>.`,
+   `Drag from StartDissolve's white exec pin into empty space → type <code>spawn system attached</code> → click <b>Spawn System Attached</b>. Set its <b>System Template</b> to <b>NS_Dissolve</b>.`,
+   `Drag <b>Body</b> from the Components panel into the graph (a <i>Get Body</i> node) and wire it into <b>Attach to Component</b>.`,
+   `Drag from the spawn node's exec out → type <code>set fx</code> → <b>Set FX</b>; wire <b>Return Value</b> into its value pin.`,
+   `From Set FX's exec out → type <code>set niagara variable linearcolor</code> → <b>Set Niagara Variable (LinearColor)</b>. Target ← <b>FX</b>; <b>In Variable Name</b> <code>EmberColor</code>; <b>In Value</b> ← drag the <b>EmberColor</b> variable in (Get).`,
+   `Right-click empty space → <code>add timeline</code> → <b>Add Timeline…</b> → name <code>DissolveTL</code>. Double-click it: click <b>+ Track</b> → <b>Add Float Track</b>, name it <code>Alpha</code>. ${K("Shift")}+click the curve twice to add two keys; set the first to Time <code>0</code> Value <code>0</code> and the second to Time <code>1</code> Value <code>1</code>. Set <b>Length</b> to <code>1</code>. Close the tab.`,
+   `Drag <b>DissolveTL</b> (the component, from My Blueprint › Components) into the graph → from it drag → <b>Set Play Rate</b>. Wire Set Niagara Variable's exec into it. New Rate = <b>1 ÷ Duration</b> (right-click → <code>divide</code> → float ÷ float: A <code>1</code>, B ← Duration).`,
+   `From Set Play Rate's exec → wire into the timeline node's <b>Play from Start</b> input.`
+ ]},
+
+ {t:"Blueprint: drive the material and the embers every frame", goal:"While the timeline runs, Dissolve and SpawnRate follow Alpha.", hl:{g:2,n:["tl","cpd","mulr","setr","zero","begin","delay","call"]}, do:[
+   `From the timeline's <b>Update</b> exec → type <code>set scalar parameter for custom primitive data</code> → click it. Target ← <b>Body</b>; <b>Parameter Name</b> <code>Dissolve</code>; <b>Value</b> ← <b>Alpha</b>.`,
+   `From its exec → <b>Set Niagara Variable (Float)</b>: Target ← FX; In Variable Name <code>SpawnRate</code>; In Value ← <b>Alpha × 3000</b> (right-click → <code>multiply</code>).`,
+   `From the timeline's <b>Finished</b> exec → another <b>Set Niagara Variable (Float)</b>: FX, <code>SpawnRate</code>, value <code>0</code>.`,
+   `From <b>Event BeginPlay</b> → <b>Delay</b> (Duration <code>1.0</code>) → right-click → <code>startdissolve</code> → call <b>Start Dissolve</b>.`,
+   `<b>Compile</b>, <b>Save</b>. Drag three BP_Dissolvers into a level. Give each a different <b>EmberColor</b> and <b>Duration</b> in the Details panel. Press <b>Play</b>.`
+ ], see:`One second after Play, each sphere burns away from a glowing edge while embers in its own colour stream off it. The slow one takes longest.`},
+
+ {t:"Check the budget", goal:"Know what your effects cost before they ship.", do:[
+   `During Play press ${K("`")} (the key under Esc) to open the console, type <code>stat Niagara</code>, ${K("Enter")}. Read the particle counts and times while the dissolves run. Type it again to hide it.`,
+   `Targets for a gameplay effect on a mid-range graphics card at 1080p (aims, not measurements): <b>GroundSlam</b> ≤ 250 particles at peak, CPU; <b>BladeTrail</b> ≤ 150 live; <b>Rift</b> ≤ 800 GPU wisps; <b>Dissolve</b> ≤ 3,000 GPU embers per copy, Max Instances 10.`,
+   `If a number is over: lower the spawn first, then lifetime, and only then particle size. Overdraw (big see-through sprites stacked up) is the usual killer, so thin out the near, large sprites first.`
+ ], pro:`<b>Overdraw first:</b> one 900 cm translucent FloorGlow costs more pixels than 300 tiny wisps. Measure with the camera close, where the effect fills the screen.`}
+];
+
+const COURSE = { title: "Niagara VFX Fast Track", engine: "5.8" };
+
+/* shorthand for material / blueprint nodes */
+const OUT = [["~","pin"]];
+const MUL = (id,x,y,b)=>({id,t:"Multiply",c:"mathm",x,y,w:110,o:OUT,i:[["A","pin"],["B","pin",b||""]]});
+const ADD = (id,x,y)=>({id,t:"Add",c:"mathm",x,y,w:100,o:OUT,i:[["A","pin"],["B","pin"]]});
+const ONE = (id,t,x,y,w)=>({id,t,c:"mathm",x,y,w:w||110,o:OUT,i:[["~","pin"]]});
+const PC  = (id,x,y)=>({id,t:"Particle Color",c:"part",x,y,w:140,o:[["RGB","pin"],["R","pin"],["G","pin"],["B","pin"],["A","pin"]]});
+const RGE = (id,x,y)=>({id,t:"RadialGradientExponential",c:"func",x,y,w:210,o:OUT,i:[["UVs","pin"],["CenterPosition","pin"],["Radius","pin"],["Density","pin"]]});
+const RES = (id,name,x,y,pins)=>({id,t:name,c:"result",x,y,w:180,i:pins.map(p=>[p,"pin"])});
+const MATLEG = `<span><i style="background:var(--pin)"></i>Material pin</span><span><b style="color:#fff">Big right-hand node</b> = the material's result</span><span>Values in grey pills are typed in the Details panel</span>`;
+const BPLEG = `<span><i class="x" style="background:#fff"></i>Execution (order)</span><span><i style="background:var(--bfloat)"></i>Float</span><span><i style="background:var(--bobj)"></i>Object</span><span><i style="background:var(--bcol)"></i>Linear Color</span><span><i style="background:var(--bname)"></i>Name</span>`;
+
+const LESSONS = [
+/* ---------------------------------------------------------------- L1 */
+{
+  id:"l1", num:1, short:"Ground-slam impact",
+  title:"A ground slam that hits like a truck",
+  kick:"Lesson 1 · Layering, timing, forces and collision",
+  time:"75–90 min",
+  intro:`A hero smashes the ground. In 0.15 s the screen flashes and the floor lights up, a shockwave ring races outward, sixty sparks spray up and bounce, dust rolls out a beat later, and chunks of rock tumble and settle. Five emitters, each with one job, timed to the hundredth of a second. This is the bread and butter of every action game, and the pattern you'll reuse for explosions, landings and spell hits.`,
+  use:`<b>Used for:</b> melee and ability impacts, landings, explosions, bullet hits on stone, anything that must say "something heavy just happened".`,
+  learn:["Systems vs emitters","One-shot bursts","Spawn timing","Layering by size & speed","Forces + Solve","Ray-traced collision","Velocity-aligned sprites","Ground-facing sprites","Mesh particles","Particle lights","Procedural materials"],
+  concepts:[
+    {h:"System → emitters → modules", p:"A <b>Niagara System</b> is the effect you place. Inside it, each <b>emitter</b> is one layer (flash, ring, sparks…). Each emitter is a <b>stack of modules</b> that run top to bottom: spawn some particles, set them up, then move and change them every frame."},
+    {h:"One job per layer", p:"No layer is impressive alone. The flash is a blob, the ring a circle, sparks are dots. Stacked in <b>steps of size and speed</b> (huge-instant, big-fast, tiny-fast, big-slow) and <b>offset in time</b>, they read as one violent event."},
+    {h:"Forces need a solver", p:"Gravity, Drag, Curl Noise and Collision only <i>add up forces</i>. <b>Solve Forces and Velocity</b> turns them into movement. The Minimal template doesn't include it, so Niagara flags every force module in red until you add it."},
+    {h:"Materials do the drawing", p:"A particle is just a point with a size and a colour. Its look comes from the material, and every material here is built from maths nodes: no textures, no packs, all yours."}
+  ],
+  graphs:[
+    {kind:"stack", title:"NS_GroundSlam: five emitters, one hit", hint:"read each column top to bottom", emitters:[
+      {id:"flash", name:"Flash", tag:"0.00 s · 1 sprite + light", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Life Cycle Mode","Self"],["Loop Behavior","Once"]]},{id:"burst",n:"Spawn Burst Instantaneous",v:[["Spawn Count","1"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","0.15"],["Color","6, 3.5, 1.5, 1"],["Uniform Sprite Size","500"]]},{id:"light",n:"Light Attributes",v:[["Radius","Apply"],["Light Radius","800"]]}]},
+        {s:"Particle Update", mods:[{id:"pstate",n:"Particle State"},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Linear Ramp Down"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_Glow"]]},{id:"lr",n:"Light Renderer",v:[["Inverse Squared Falloff","off"],["Alpha Scales Brightness","on"]]}]}
+      ]},
+      {id:"ring", name:"Ring", tag:"0.00 s · flat shockwave", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Once"]]},{id:"burst",n:"Spawn Burst Instantaneous",v:[["Spawn Count","1"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","0.6"],["Color","3, 1.6, 0.6, 1"],["Uniform Sprite Size","1200"],["Position Offset","0, 0, 2"]]}]},
+        {s:"Particle Update", mods:[{id:"size",n:"Scale Sprite Size",v:[["Curve","Smooth Ramp Up"]]},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Linear Ramp Down"]]},{id:"face",n:"Sprite Facing and Alignment",v:[["Sprite Facing","0, 0, 1"],["Sprite Alignment","1, 0, 0"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Facing Mode","Custom Facing Vector"],["Alignment","Custom Alignment"],["Material","M_FX_Ring"]]}]}
+      ]},
+      {id:"sparks", name:"Sparks", tag:"0.00 s · 60 streaks", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Once"]]},{id:"burst",n:"Spawn Burst Instantaneous",v:[["Spawn Count","60"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","Random 0.4–0.9"],["Color","8, 3, 0.8, 1"],["Sprite Size","Random 4–9"]]},{id:"shape",n:"Shape Location",v:[["Sphere Radius","15"]]},{id:"cone",n:"Add Velocity in Cone",v:[["Velocity Strength","900"],["Cone Angle","70"],["Cone Axis","0, 0, 1"]]}]},
+        {s:"Particle Update", mods:[{id:"grav",n:"Gravity Force",v:[["Gravity","0, 0, -980"]]},{id:"drag",n:"Drag",v:[["Drag","1.5"]]},{id:"col",n:"Collision",v:[["CPU Collision Type","Ray Traced"]]},{id:"solve",n:"Solve Forces and Velocity",v:[["added by","Fix issue"]]},{id:"ssbs",n:"Scale Sprite Size by Speed",v:[["Max Scale Factor","1, 6"]]},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Linear Ramp Down"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Alignment","Velocity Aligned"],["Material","M_FX_Glow"]]}]}
+      ]},
+      {id:"dust", name:"Dust", tag:"0.03 s · rolling ring", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Once"]]},{id:"burst",n:"Spawn Burst Instantaneous",v:[["Spawn Count","30"],["Spawn Time","0.03"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","Random 1.5–2.5"],["Color","0.35, 0.3, 0.25, 0.6"],["Sprite Size","Random 120–220"],["Rotation","Random"]]},{id:"shape",n:"Shape Location",v:[["Shape","Ring / Disc"],["Ring Radius","60"]]},{id:"vel",n:"Add Velocity from Point",v:[["Velocity Strength","500"]]}]},
+        {s:"Particle Update", mods:[{id:"drag",n:"Drag",v:[["Drag","3"]]},{id:"curl",n:"Curl Noise Force",v:[["Noise Strength","60"]]},{id:"solve",n:"Solve Forces and Velocity"},{id:"size",n:"Scale Sprite Size",v:[["Curve","Linear Ramp Up"]]},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Ramp Up Down"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_Dust"]]}]}
+      ]},
+      {id:"debris", name:"Debris", tag:"0.02 s · 14 chunks", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Once"]]},{id:"burst",n:"Spawn Burst Instantaneous",v:[["Spawn Count","14"],["Spawn Time","0.02"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","2.5"],["Mesh Scale","Random 0.05–0.15"]]},{id:"cone",n:"Add Velocity in Cone",v:[["Strength","700"],["Angle","35"],["Axis","0, 0, 1"]]},{id:"orient",n:"Initial Mesh Orientation",v:[["Mode","Random"]]}]},
+        {s:"Particle Update", mods:[{id:"grav",n:"Gravity Force"},{id:"col",n:"Collision",v:[["Radius Calculation Type","Mesh"]]},{id:"solve",n:"Solve Forces and Velocity"},{id:"spin",n:"Update Mesh Orientation",v:[["Rotation Rate","3"]]}]},
+        {s:"Render", mods:[{id:"mesh",n:"Mesh Renderer",v:[["Mesh","Cube / your rock"]]},{id:"sproff",n:"Sprite Renderer",v:[["enabled","off"]]}]}
+      ]}
+    ], cap:"Checked by building it in UE 5.8: with these modules and Solve Forces and Velocity added, the system compiles with no errors. The tag under each name is when it fires."},
+    {title:"M_FX_Glow: soft additive dot", hint:"Additive · Unlit", w:820, nodes:[
+      RGE("rge",20,20), PC("pc",20,190), MUL("m1",290,40), MUL("m2",450,120),
+      RES("res","M_FX_Glow",620,40,["Base Color","Emissive Color","Opacity"])
+     ], links:[["rge.~","m1.A"],["pc.RGB","m1.B"],["m1.~","m2.A"],["pc.A","m2.B"],["m2.~","res.Emissive Color"]], legend:MATLEG,
+     cap:"Used by Flash, Sparks and later lessons. Particle Color carries each particle's colour and fade into the material."},
+    {title:"M_FX_Ring: a circle drawn by maths", hint:"Additive · Unlit", w:1660, nodes:[
+      {id:"tc",t:"TexCoord",c:"mathm",x:20,y:20,w:110,o:OUT},
+      {id:"c2",t:"Constant2Vector",c:"param",x:20,y:110,w:140,o:OUT,p:["0.5, 0.5"]},
+      {id:"dist",t:"Distance",c:"mathm",x:190,y:40,w:110,o:OUT,i:[["A","pin"],["B","pin"]]},
+      {id:"sub",t:"Subtract",c:"mathm",x:330,y:40,w:110,o:OUT,i:[["A","pin"],["B","pin","0.42"]]},
+      ONE("abs","Abs",470,40,90), MUL("mul",590,40,"14"), ONE("om","One Minus",730,40), ONE("sat","Saturate",870,40),
+      {id:"pw",t:"Power",c:"mathm",x:1010,y:40,w:120,o:OUT,i:[["Base","pin"],["Exp","pin","3"]]},
+      PC("pc",1010,160), MUL("m1",1170,60), MUL("m2",1310,130),
+      RES("res","M_FX_Ring",1460,40,["Emissive Color","Opacity"])
+     ], links:[["tc.~","dist.A"],["c2.~","dist.B"],["dist.~","sub.A"],["sub.~","abs.~"],["abs.~","mul.A"],["mul.~","om.~"],["om.~","sat.~"],["sat.~","pw.Base"],["pw.~","m1.A"],["pc.RGB","m1.B"],["m1.~","m2.A"],["pc.A","m2.B"],["m2.~","res.Emissive Color"]], legend:MATLEG,
+     cap:"|distance − 0.42| is zero on a circle. ×14, One Minus, Saturate and Power turn that into a thin glowing line. Change 0.42 to move the ring, 14 to change its thickness."},
+    {title:"M_FX_Dust: soft puff with Depth Fade", hint:"Translucent · Unlit", w:860, nodes:[
+      RGE("rge",20,20), PC("pc",20,190), MUL("m1",290,40),
+      {id:"df",t:"DepthFade",c:"mathm",x:450,y:40,w:150,o:OUT,i:[["Opacity","pin"],["Fade Distance","pin","60"]]},
+      RES("res","M_FX_Dust",660,40,["Emissive Color","Opacity"])
+     ], links:[["rge.~","m1.A"],["pc.A","m1.B"],["m1.~","df.Opacity"],["df.~","res.Opacity"],["pc.RGB","res.Emissive Color"]], legend:MATLEG,
+     cap:"Depth Fade is the single most useful node for smoke, dust and floor glows: no hard line where the card meets the ground."}
+  ],
+  steps:STEPS.l1,
+  check:`<b>You should have:</b> five emitters in NS_GroundSlam, three materials of your own, and in Play: a flash that lights the floor, a ring racing out flat, sparks that arc and bounce, dust rolling out a beat later and chunks that tumble and settle. No red marks in the stack.`,
+  cards:[
+    ["What's the difference between a Niagara System and an emitter?","The <b>System</b> is the effect you place in the level. Each <b>emitter</b> inside it is one layer with its own stack of modules."],
+    ["Why do Gravity, Drag and Collision show red errors on a Minimal emitter?","They need <b>Solve Forces and Velocity</b> after them (Niagara: <i>&ldquo;unmet dependencies&rdquo;</i>). Minimal doesn't include it. Click <b>Fix issue</b> to add it."],
+    ["How do you make an emitter fire once instead of looping?","Emitter State: <b>Life Cycle Mode → Self</b>, then <b>Loop Behavior → Once</b>, plus a <b>Spawn Burst Instantaneous</b>."],
+    ["How do you make the dust arrive a beat after the hit?","Spawn Burst Instantaneous → <b>Spawn Time</b> (e.g. 0.03 s)."],
+    ["Which two settings lay a sprite flat on the ground?","Sprite Facing and Alignment (Facing 0,0,1 + Alignment 1,0,0) <b>and</b> the Sprite Renderer's Facing Mode = Custom Facing Vector, Alignment = Custom Alignment."],
+    ["Why must Scale Sprite Size by Speed sit below Solve Forces and Velocity?","It reads the particle's velocity, which is only final <b>after</b> the solver runs."],
+    ["What makes a Niagara light's Radius setting work?","Untick <b>Use Inverse Squared Falloff</b> on the Light Renderer (the module's own tooltip says so), then Light Attributes: Radius → Apply."],
+    ["Why Additive for flashes and sparks?","Additive adds light: black is invisible, overlaps get brighter, which is how hot, glowing things behave."],
+    ["What does Depth Fade do?","Fades a translucent sprite out over the last N cm before it meets geometry, so there's no hard edge where it cuts the floor."],
+    ["Name the four layering steps used here.","Huge & instant (flash), big & fast (ring), tiny & fast (sparks), big & slow (dust), plus debris in its own time slot."]
+  ],
+  boss:{
+    title:"Boss fight: a different impact from memory",
+    brief:"Memory mode on, timer running. Build a <b>meteor landing</b> (blue-white, bigger, slower dust) from scratch, without opening this lesson.",
+    goal:45,
+    items:[
+      ["Three materials made from maths (glow, ring, dust)",""],
+      ["Flash with a real light that hits the floor",""],
+      ["Flat ring that expands and fades",""],
+      ["Sparks that bounce, with no red errors",""],
+      ["Dust that rolls out after the hit (Spawn Time)",""],
+      ["Debris mesh particles that tumble and settle",""]
+    ],
+    stretch:[
+      ["Camera shake","In the Blueprint or level that fires it, add a <b>Camera Shake</b> on the same frame. Impact is half visual, half feel."],
+      ["Ground decal","Add a scorch mark with a <b>Decal Renderer</b> emitter (Niagara has one) that fades over 5 s."],
+      ["Dust lit by the flash","Switch M_FX_Dust to a lit translucent material and see the flash light colour it. Mind the dark-level gotcha: give it an emissive floor."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L2 */
+{
+  id:"l2", num:2, short:"Energy blade trail",
+  title:"An energy blade trail that follows any swing",
+  kick:"Lesson 2 · Ribbons, spawn per distance, panning materials",
+  time:"60–75 min",
+  intro:`A blade sweeps and leaves a white-hot arc with a wide orange glow streaming off it and embers flicking away. It's built from ribbons (strips joined through the particles), spawned by distance instead of time so it stays smooth at any swing speed, with a material that does all the motion.`,
+  use:`<b>Used for:</b> sword and weapon trails, dash and dodge streaks, projectile tails, magic whips, car light trails.`,
+  learn:["Ribbon Renderer","Spawn Per Unit","Ribbon width & taper","Core + glow layering","Ribbon UVs","Panner + Noise","Two Sided materials","Test rigs in Blueprint","Copy-paste emitters"],
+  concepts:[
+    {h:"A ribbon joins its particles", p:"Each particle is one point on the trail. The <b>Ribbon Renderer</b> draws a strip through them in spawn order. Old particles die from the back, so the tail shortens itself."},
+    {h:"Spawn by distance, not time", p:"<b>Spawn Per Unit</b> drops a particle every N cm the emitter moves. A slow swing and a fast swing get the same density, and a still blade spawns nothing."},
+    {h:"Ribbon UVs", p:"U runs along the trail and V across it. A material can light the centre line (V) and stream noise along the length (U): that's where all the richness comes from."},
+    {h:"Effects need a test rig", p:"A trail needs movement to exist. A tiny Blueprint that spins a blade is the fastest way to judge it at real speed, long before an animator hands you a swing."}
+  ],
+  graphs:[
+    {kind:"stack", title:"NS_BladeTrail: core, glow, embers", hint:"all three ride the same moving component", emitters:[
+      {id:"core", name:"Core", tag:"thin, white-hot ribbon", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Life Cycle Mode","Self"],["Loop Behavior","Infinite"]]},{id:"spu",n:"Spawn Per Unit",v:[["Spawn Spacing","4"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","0.18"],["Color","10, 6, 3, 1"],["Ribbon Width","6"]]}]},
+        {s:"Particle Update", mods:[{id:"srw",n:"Scale Ribbon Width",v:[["Ribbon Width Scale","Linear Ramp Down"]]},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Linear Ramp Down"]]}]},
+        {s:"Render", mods:[{id:"rib",n:"Ribbon Renderer",v:[["Material","M_FX_TrailCore"],["Facing Mode","Screen"]]}]}
+      ]},
+      {id:"glow", name:"Glow", tag:"copy of Core, wide & soft", sections:[
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","0.35"],["Color","2, 0.6, 0.15, 0.6"],["Ribbon Width","40"]]}]},
+        {s:"Render", mods:[{id:"rib",n:"Ribbon Renderer",v:[["Material","M_FX_TrailGlow"]]}]}
+      ]},
+      {id:"emb", name:"Embers", tag:"sprites shed by the tip", sections:[
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Infinite"]]},{id:"spu",n:"Spawn Per Unit",v:[["Spawn Spacing","25"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","Random 0.3–0.7"],["Color","6, 2, 0.5, 1"],["Sprite Size","Random 2–5"]]},{id:"vel",n:"Add Velocity from Point",v:[["Velocity Strength","60"]]}]},
+        {s:"Particle Update", mods:[{id:"curl",n:"Curl Noise Force",v:[["Noise Strength","40"]]},{id:"drag",n:"Drag",v:[["Drag","2"]]},{id:"solve",n:"Solve Forces and Velocity"},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Linear Ramp Down"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_Glow"],["Alignment","Velocity Aligned"]]}]}
+      ]}
+    ], cap:"Glow only lists what changes after copying Core. Checked in UE 5.8: a Minimal emitter with Spawn Per Unit, ribbon width set in Initialize Particle, Scale Ribbon Width and a Ribbon Renderer compiles with no errors, and Local Space is off by default (right for trails)."},
+    {title:"M_FX_TrailCore and M_FX_TrailGlow", hint:"Additive · Unlit · Two Sided", w:1520, nodes:[
+      {id:"tc",t:"TexCoord",c:"mathm",x:20,y:20,w:110,o:OUT},
+      {id:"cm",t:"ComponentMask",c:"mathm",x:170,y:20,w:130,o:OUT,i:[["~","pin"]],p:["G only"]},
+      ONE("om","One Minus",330,110), MUL("mul",470,30), MUL("m4",610,30,"4"),
+      {id:"pw",t:"Power",c:"mathm",x:750,y:30,w:130,o:OUT,i:[["Base","pin"],["Exp","pin","3 · glow 1.2"]]},
+      {id:"mn",t:"Multiply (glow only)",c:"mathm",x:920,y:60,w:150,o:OUT,i:[["A","pin"],["B","pin"]]},
+      PC("pc",920,200), MUL("m1",1100,80), MUL("m2",1240,150),
+      RES("res","Result",1370,60,["Emissive Color","Opacity"]),
+      {id:"tc2",t:"TexCoord",c:"mathm",x:20,y:290,w:120,o:OUT,p:["UTiling 3"]},
+      {id:"pan",t:"Panner",c:"mathm",x:180,y:290,w:130,o:OUT,i:[["Coordinate","pin"],["Time","pin"],["Speed","pin","-2.5, 0"]]},
+      {id:"c0",t:"Constant",c:"param",x:180,y:440,w:100,o:OUT,p:["0"]},
+      {id:"app",t:"Append",c:"mathm",x:350,y:330,w:110,o:OUT,i:[["A","pin"],["B","pin"]]},
+      {id:"noise",t:"Noise",c:"mathm",x:500,y:330,w:170,o:OUT,i:[["World Position","pin"],["FilterWidth","pin"]],p:["Scale 4 · Out 0–1"]}
+     ], links:[["tc.~","cm.~"],["cm.~","om.~"],["cm.~","mul.A"],["om.~","mul.B"],["mul.~","m4.A"],["m4.~","pw.Base"],["pw.~","mn.A"],["noise.~","mn.B"],["mn.~","m1.A"],["pc.RGB","m1.B"],["m1.~","m2.A"],["pc.A","m2.B"],["m2.~","res.Emissive Color"],["tc2.~","pan.Coordinate"],["pan.~","app.A"],["c0.~","app.B"],["app.~","noise.World Position"]], legend:MATLEG,
+     cap:"Top row = the core: x·(1−x)·4 across the ribbon, sharpened by Power. The glow copy adds the bottom row: noise panning along the ribbon, multiplied in."}
+  ],
+  steps:STEPS.l2,
+  check:`<b>You should have:</b> BP_SpinTest swinging a blade, with a white-hot tapering core, a wide orange glow streaming along it and embers flicking off. At four times the speed the arc stays smooth.`,
+  cards:[
+    ["What does the Ribbon Renderer draw?","A strip joined through the emitter's particles in spawn order. Each particle is one point on the trail."],
+    ["Why Spawn Per Unit instead of Spawn Rate for a trail?","It spawns by <b>distance moved</b>, so density stays even at any speed and a still blade spawns nothing."],
+    ["What setting makes a ribbon start wide and end thin?","Scale Ribbon Width → Ribbon Width Scale → Float from Curve → <b>Linear Ramp Down</b> (over each particle's age)."],
+    ["Which ribbon UV runs across the width?","<b>V</b> (TexCoord G). U runs along the length."],
+    ["What's the formula for a bright centre line across a ribbon?","x · (1 − x) · 4 on V, then Power to sharpen it."],
+    ["Why tick Two Sided on ribbon materials?","Ribbons twist and can be seen from behind. Without Two Sided the back side doesn't draw."],
+    ["Why core + glow?","A thin over-bright line sells heat. A wide dim halo sells size. Neither works alone."],
+    ["How do you make noise stream along a trail cheaply?","Panner on TexCoord (Speed X negative) → Append 0 → Noise. The material moves while the ribbon stays still."]
+  ],
+  boss:{
+    title:"Boss fight: a dash streak from memory",
+    brief:"Memory mode on. Build a <b>blue dash trail</b> for a character's dodge on a straight-line test rig (a Blueprint that slides back and forth instead of spinning).",
+    goal:35,
+    items:[
+      ["Core ribbon by distance, tapered and fading",""],
+      ["Wide glow ribbon with streaming noise",""],
+      ["Shed sparks or motes",""],
+      ["Test rig that moves at real speed",""],
+      ["Smooth at 3× speed (Spawn Spacing tuned)",""]
+    ],
+    stretch:[
+      ["Distortion trail","A third ribbon whose material bends what's behind it (heat haze). Try Refraction on a translucent material."],
+      ["Anim Notify","On a real swing animation, an Anim Notify State switches the trail on only for the swing frames."],
+      ["Width from speed","Feed Engine.Owner.Velocity length into the ribbon width so faster swings leave fatter arcs."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L3 */
+{
+  id:"l3", num:3, short:"Ground rift portal",
+  title:"A rift tearing open in the floor",
+  kick:"Lesson 3 · Looping bodies, GPU particles, attraction & vortex",
+  time:"75–90 min",
+  intro:`A black hole opens in the floor with a burning violet rim and spiral arms turning inside it. A pool of light spreads around it, and hundreds of wisps peel off the rim, swirl and get sucked in. The body is one forever-living sprite with a clever material. The swirl is a GPU emitter driven by four weak forces. Rotate the actor 90° and it's a wall portal.`,
+  use:`<b>Used for:</b> portals, summoning circles, black holes, boss arena hazards, spawn points, magic seals, any "the world is torn here" moment.`,
+  learn:["Long-lived single particle","Spawn Rate","Local Space","GPU simulation","Fixed bounds","Vortex Force","Point Attraction","Curl Noise","Acceleration","Radial (polar) UVs","Time-driven materials","Depth Fade floor glow"],
+  concepts:[
+    {h:"The body is one particle", p:"The rift's disc is a single sprite that never dies. All its motion (the turning spirals) lives in the material. No respawning, no popping, almost no cost."},
+    {h:"Several weak forces + drag", p:"Vortex alone spins like a merry-go-round, attraction alone drains straight in. Vortex + attraction + curl noise + a little lift, held back by drag, reads as something alive."},
+    {h:"GPU particles need fixed bounds", p:"Hundreds of wisps are cheaper on the GPU, but the CPU can't see where they are. Give the emitter <b>Fixed Bounds</b> so it isn't culled while still on screen. UE 5.8 warns you if you don't."},
+    {h:"Polar coordinates", p:"<b>VectorToRadialValue</b> turns UVs into angle-around-the-centre and distance-from-the-centre. Angle makes arms, distance bends them into spirals, and time turns them."}
+  ],
+  graphs:[
+    {kind:"stack", title:"NS_Rift: core, floor glow, wisps", hint:"all emitters in Local Space", emitters:[
+      {id:"core", name:"Core", tag:"1 immortal sprite + light", sections:[
+        {s:"Properties", mods:[{id:"props",n:"Emitter Properties",v:[["Local Space","on"]]}]},
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Infinite"]]},{id:"burst",n:"Spawn Burst Instantaneous",v:[["Loop Count Limit","on · 1"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Color","1.2, 0.35, 3, 1"],["Uniform Sprite Size","400"],["Position Offset","0, 0, 2"]]},{id:"light",n:"Light Attributes",v:[["Radius","Apply · 700"]]}]},
+        {s:"Particle Update", mods:[{id:"pst",n:"Particle State",v:[["Kill When Lifetime Has Elapsed","off"]]},{id:"face",n:"Sprite Facing and Alignment",v:[["Facing","0, 0, 1"],["Alignment","1, 0, 0"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_RiftCore"],["Facing / Alignment","Custom / Custom"]]},{id:"lr",n:"Light Renderer",v:[["Inverse Squared Falloff","off"]]}]}
+      ]},
+      {id:"floor", name:"FloorGlow", tag:"copy of Core, 9 m pool", sections:[
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Color","0.6, 0.15, 1.6, 1"],["Uniform Sprite Size","900"],["Position Offset","0, 0, 1"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_FloorGlow"]]}]}
+      ]},
+      {id:"wisps", name:"Wisps", tag:"GPU · 300 / s", sections:[
+        {s:"Properties", mods:[{id:"props",n:"Emitter Properties",v:[["Sim Target","GPUCompute Sim"],["Bounds","Fixed ±400, -50…500"],["Local Space","on"]]}]},
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Infinite"]]},{id:"rate",n:"Spawn Rate",v:[["SpawnRate","300"]]}]},
+        {s:"Particle Spawn", mods:[{id:"init",n:"Initialize Particle",v:[["Lifetime","Random 1.2–2.2"],["Color","2, 0.6, 6, 1"],["Sprite Size","Random 3–7"]]},{id:"shape",n:"Shape Location",v:[["Ring / Disc","Radius 170"]]}]},
+        {s:"Particle Update", mods:[{id:"vortex",n:"Vortex Force",v:[["Amount","500"]]},{id:"attr",n:"Point Attraction Force",v:[["Strength","80"],["Radius","400"],["Kill Radius","on · 25"]]},{id:"curl",n:"Curl Noise Force",v:[["Noise Strength","120"]]},{id:"acc",n:"Acceleration Force",v:[["Acceleration","0, 0, 60"]]},{id:"drag",n:"Drag",v:[["Drag","1.5"]]},{id:"solve",n:"Solve Forces and Velocity"},{id:"ssbs",n:"Scale Sprite Size by Speed",v:[["Max Scale Factor","1, 4"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_Glow"],["Alignment","Velocity Aligned"]]}]}
+      ]}
+    ], cap:"Checked in UE 5.8: the Wisps stack compiles. As a GPU emitter on dynamic bounds it raises exactly one warning, \"Missing fixed bounds\", which the Properties settings fix."},
+    {title:"M_FX_RiftCore: black disc, burning rim, turning spirals", hint:"Translucent · Unlit", w:1780, nodes:[
+      {id:"tc",t:"TexCoord",c:"mathm",x:20,y:20,w:110,o:OUT},
+      {id:"c2",t:"Constant2Vector",c:"param",x:20,y:110,w:140,o:OUT,p:["0.5, 0.5"]},
+      {id:"dist",t:"Distance (d)",c:"mathm",x:190,y:40,w:120,o:OUT,i:[["A","pin"],["B","pin"]]},
+      {id:"cmin",t:"Constant",c:"param",x:190,y:150,w:100,o:OUT,p:["0.40"]},
+      {id:"cmax",t:"Constant",c:"param",x:190,y:240,w:100,o:OUT,p:["0.46"]},
+      {id:"ss",t:"SmoothStep",c:"mathm",x:350,y:60,w:130,o:OUT,i:[["Min","pin"],["Max","pin"],["Value","pin"]]},
+      ONE("om1","One Minus (disc)",520,60,150),
+      {id:"sub",t:"Subtract",c:"mathm",x:350,y:290,w:110,o:OUT,i:[["A","pin"],["B","pin","0.43"]]},
+      ONE("abs","Abs",500,290,90), MUL("m25",620,290,"25"), ONE("sat","Saturate",760,290), ONE("om2","One Minus (rim)",900,290,150),
+      {id:"vtr",t:"VectorToRadialValue",c:"func",x:20,y:430,w:200,o:[["Radial Coordinates","pin"],["Vector Converted to Angle","pin"],["Linear Distance","pin"]],i:[["Vector or UVs","pin"],["Swizzle Coordinate Output","pin"]]},
+      {id:"msk",t:"ComponentMask",c:"mathm",x:260,y:430,w:130,o:OUT,i:[["~","pin"]],p:["R only (angle)"]},
+      MUL("m6",420,430,"6"), MUL("m8",420,550,"8"), ADD("add1",570,470),
+      {id:"time",t:"Time",c:"mathm",x:570,y:600,w:90,o:OUT},
+      MUL("mt",690,600,"-0.6"), ADD("add2",720,480),
+      {id:"sin",t:"Sine",c:"mathm",x:850,y:480,w:100,o:OUT,i:[["~","pin"]],p:["Period 1"]},
+      ONE("sat2","Saturate",980,480), MUL("mdisc",1120,420), MUL("mrim",1120,290,"15"),
+      ADD("addc",1270,340), PC("pc",1270,470), MUL("mpc",1430,370),
+      RES("res","M_FX_RiftCore",1570,120,["Emissive Color","Opacity"])
+     ], links:[["tc.~","dist.A"],["c2.~","dist.B"],["dist.~","ss.Value"],["cmin.~","ss.Min"],["cmax.~","ss.Max"],["ss.~","om1.~"],["om1.~","res.Opacity"],["dist.~","sub.A"],["sub.~","abs.~"],["abs.~","m25.A"],["m25.~","sat.~"],["sat.~","om2.~"],["tc.~","vtr.Vector or UVs"],["vtr.Radial Coordinates","msk.~"],["msk.~","m6.A"],["dist.~","m8.A"],["m6.~","add1.A"],["m8.~","add1.B"],["time.~","mt.A"],["add1.~","add2.A"],["mt.~","add2.B"],["add2.~","sin.~"],["sin.~","sat2.~"],["sat2.~","mdisc.A"],["om1.~","mdisc.B"],["om2.~","mrim.A"],["mrim.~","addc.A"],["mdisc.~","addc.B"],["addc.~","mpc.A"],["pc.RGB","mpc.B"],["mpc.~","res.Emissive Color"]], legend:MATLEG,
+     cap:"Top: the disc (Opacity) and the rim. Bottom: spiral arms = sine of (angle × 6 + d × 8 − time × 0.6), kept inside the disc. Node and pin names checked in the 5.8 material editor."},
+    {title:"M_FX_FloorGlow", hint:"Translucent · Unlit", w:860, nodes:[
+      RGE("rge",20,20), PC("pc",20,190), MUL("m1",290,40),
+      {id:"df",t:"DepthFade",c:"mathm",x:450,y:40,w:150,o:OUT,i:[["Opacity","pin"],["Fade Distance","pin","40"]]},
+      RES("res","M_FX_FloorGlow",660,40,["Emissive Color","Opacity"])
+     ], links:[["rge.~","m1.A"],["pc.A","m1.B"],["m1.~","df.Opacity"],["df.~","res.Opacity"],["pc.RGB","res.Emissive Color"]], legend:MATLEG,
+     cap:"Same recipe as Lesson 1's dust, fed a bigger, brighter particle."}
+  ],
+  steps:STEPS.l3,
+  check:`<b>You should have:</b> a black hole in the floor with a violet rim and slowly turning spirals, a soft pool of light around it, a real light on the floor, and streams of wisps spiralling in and vanishing at the centre. Rotated 90°, everything stands up as a wall portal.`,
+  cards:[
+    ["How do you make a sprite that spawns once and never dies?","Spawn Burst Instantaneous with <b>Loop Count Limit 1</b>, emitter looping Infinite, and Particle State <b>Kill Particles When Lifetime Has Elapsed</b> off."],
+    ["What does Local Space do?","Particles live in the actor's space, so they move and rotate with it. That's why the rift can stand upright as a wall portal."],
+    ["Why must a GPU emitter use fixed bounds?","The CPU can't read GPU particle positions, so it can't size the bounds. UE 5.8 warns <i>&ldquo;Missing fixed bounds&rdquo;</i>; wrong bounds get the effect culled."],
+    ["Which two forces make the swirl-and-drain?","<b>Vortex Force</b> (spin around the axis) + <b>Point Attraction Force</b> (pull to the centre, Kill Within Radius)."],
+    ["Why add Drag when you already have forces?","It caps the speed so the motion stays slow and readable instead of whipping off."],
+    ["What does VectorToRadialValue give you?","Radial Coordinates: <b>angle</b> around the centre (R) and <b>distance</b> (G), so you can draw arms and spirals."],
+    ["How do the spiral arms turn?","Add Time × a speed inside the sine. The material moves, the particle doesn't."],
+    ["Why a black disc with a thin rim instead of a big glowing circle?","The edge is the brightest thing with little glowing area: it reads as a hole in the world, not a lamp, and costs little overdraw."]
+  ],
+  boss:{
+    title:"Boss fight: a summoning circle from memory",
+    brief:"Memory mode on. Build a <b>green summoning circle</b>: a ring (not a hole) with rising sparks instead of sucked-in wisps.",
+    goal:45,
+    items:[
+      ["Immortal single-sprite body with a maths material",""],
+      ["Depth-faded floor glow",""],
+      ["GPU emitter with fixed bounds, no warnings",""],
+      ["At least three forces + drag, shaped on purpose",""],
+      ["Real light on the floor",""],
+      ["Works upright when rotated 90°",""]
+    ],
+    stretch:[
+      ["Let the rate breathe","Replace SpawnRate with a <b>Sine</b> dynamic input so the flow swells and fades. A flow that breathes doesn't read as a loop."],
+      ["Opening animation","A second, one-shot Core that scales from 0 to full in 0.4 s (Scale Sprite Size, Smooth Ramp Up), then hands over to the looping one."],
+      ["Heat distortion","A sprite with a Refraction material over the rim. Check the material's Refraction Method setting in 5.8 first; this course didn't verify it."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L4 */
+{
+  id:"l4", num:4, short:"Dissolve tool + budgets",
+  title:"Dissolve anything into embers, as a reusable tool",
+  kick:"Lesson 4 · User Parameters, Blueprints, mesh sampling, Effect Types",
+  time:"90–110 min",
+  intro:`Any mesh burns away from a glowing edge while embers in a colour you choose stream off its surface. Drop three on a level, give each its own colour and speed in the Details panel, press Play. This is where an effect becomes a tool: the outside world sets its knobs (User Parameters), a Blueprint drives it, a material reacts per object, and an Effect Type keeps the engine from running too many.`,
+  use:`<b>Used for:</b> enemy deaths, teleports, item pickups, despawning loot, "melt into shadow" abilities. Any gameplay event that needs the same effect on many different meshes.`,
+  learn:["User Parameters","Link Inputs","Static Mesh Location","Attach Parent","GPU + fixed bounds","Masked dissolve material","Custom Primitive Data","Spawn System Attached","Set Niagara Variable","Timelines","Effect Types","stat Niagara"],
+  concepts:[
+    {h:"User Parameters are the knobs", p:"Anything starting with <b>User.</b> can be set from outside the effect, by a Blueprint, a level designer or code. Link module inputs to them, and one system becomes a hundred variants."},
+    {h:"Born on the shape", p:"<b>Static Mesh Location</b> samples points on the triangles of the mesh the system is attached to. Embers come off the object itself, not out of an invisible box."},
+    {h:"Custom Primitive Data", p:"Each placed mesh carries its own small array of numbers that its material reads. Every object dissolves at its own pace on one shared material, with no extra material instances."},
+    {h:"Effect Types are budgets", p:"An <b>Effect Type</b> tells the engine when to cull or throttle an effect: too far, too many copies, not visible. Every shipped effect should have one."}
+  ],
+  graphs:[
+    {kind:"stack", title:"NS_Dissolve: one GPU emitter + two knobs", hint:"User Parameters on the left", emitters:[
+      {id:"user", name:"User Parameters", tag:"set from outside", sections:[
+        {s:"User", mods:[{id:"rate",n:"User.SpawnRate",v:[["Float","0"]]},{id:"color",n:"User.EmberColor",v:[["Linear Color","4, 1.2, 0.3, 1"]]}]}
+      ]},
+      {id:"emb", name:"Embers", tag:"GPU · on the mesh surface", sections:[
+        {s:"Properties", mods:[{id:"props",n:"Emitter Properties",v:[["Sim Target","GPUCompute Sim"],["Bounds","Fixed ±300, -300…400"]]}]},
+        {s:"Emitter Update", mods:[{id:"state",n:"Emitter State",v:[["Self","Infinite"]]},{id:"rate",n:"Spawn Rate",v:[["SpawnRate","→ User.SpawnRate"]]}]},
+        {s:"Particle Spawn", mods:[{id:"smloc",n:"Static Mesh Location",v:[["Source Mode","Attach Parent"],["Preview Mesh","Sphere"]]},{id:"init",n:"Initialize Particle",v:[["Lifetime","Random 0.8–1.6"],["Sprite Size","Random 2–6"],["Color","→ User.EmberColor"]]}]},
+        {s:"Particle Update", mods:[{id:"curl",n:"Curl Noise Force",v:[["Noise Strength","60"]]},{id:"acc",n:"Acceleration Force",v:[["Acceleration","0, 0, 120"]]},{id:"drag",n:"Drag",v:[["Drag","1.5"]]},{id:"solve",n:"Solve Forces and Velocity"},{id:"scol",n:"Scale Color",v:[["Scale Alpha","Linear Ramp Down"]]}]},
+        {s:"Render", mods:[{id:"spr",n:"Sprite Renderer",v:[["Material","M_FX_Glow"]]}]}
+      ]}
+    ], cap:"Checked in UE 5.8: Static Mesh Location, Spawn Rate and the force modules compile together on a GPU emitter."},
+    {title:"M_Dissolve: burn line and glowing edge", hint:"Masked · Default Lit · Clip Value 0", w:1640, nodes:[
+      {id:"noise",t:"Noise",c:"mathm",x:20,y:20,w:170,o:OUT,i:[["World Position","pin"],["FilterWidth","pin"]],p:["Scale 0.02 · Out 0–1"]},
+      {id:"dis",t:"Dissolve (Scalar Param)",c:"param",x:20,y:180,w:190,o:OUT,p:["Custom Primitive Data 0"]},
+      MUL("mdis",250,180,"1.2"),
+      {id:"sub1",t:"Subtract (t)",c:"mathm",x:400,y:180,w:120,o:OUT,i:[["A","pin"],["B","pin","0.1"]]},
+      {id:"sub2",t:"Subtract",c:"mathm",x:560,y:40,w:110,o:OUT,i:[["A","pin"],["B","pin"]]},
+      ONE("abs","Abs",710,180,90), MUL("m20",830,180,"20"), ONE("sat","Saturate",970,180), ONE("om","One Minus",1110,180),
+      {id:"edge",t:"EdgeColor (Vector Param)",c:"param",x:1060,y:320,w:200,o:OUT,p:["4, 1.2, 0.3"]},
+      MUL("memit",1290,200),
+      {id:"base",t:"BaseColor (Vector Param)",c:"param",x:1220,y:20,w:200,o:OUT,p:["0.5, 0.5, 0.5"]},
+      RES("res","M_Dissolve",1450,60,["Base Color","Emissive Color","Opacity Mask"])
+     ], links:[["noise.~","sub2.A"],["dis.~","mdis.A"],["mdis.~","sub1.A"],["sub1.~","sub2.B"],["sub2.~","res.Opacity Mask"],["sub2.~","abs.~"],["abs.~","m20.A"],["m20.~","sat.~"],["sat.~","om.~"],["om.~","memit.A"],["edge.~","memit.B"],["memit.~","res.Emissive Color"],["base.~","res.Base Color"]], legend:MATLEG,
+     cap:"Noise − t is positive where the mesh survives (Opacity Mask) and near 0 on the burn line, which the Abs → One Minus band lights up."},
+    {title:"BP_Dissolver: the Event Graph", hint:"white wires = order of execution", w:1860, nodes:[
+      {id:"begin",t:"Event BeginPlay",c:"event",x:20,y:20,w:160,o:[["~","exec"]]},
+      {id:"delay",t:"Delay",c:"bfunc",x:210,y:20,w:140,o:[["Completed","exec"]],i:[["~","exec"],["Duration","bfloat","1.0"]]},
+      {id:"call",t:"Start Dissolve",c:"bfunc",x:390,y:20,w:150,o:[["~","exec"]],i:[["~","exec"]]},
+      {id:"ev",t:"Custom Event: StartDissolve",c:"event",x:20,y:170,w:210,o:[["~","exec"]]},
+      {id:"body",t:"Body",c:"var",x:20,y:300,w:110,o:[["~","bobj"]]},
+      {id:"spawn",t:"Spawn System Attached",c:"bfunc",x:260,y:170,w:210,o:[["~","exec"],["Return Value","bobj"]],i:[["~","exec"],["System Template","bobj","NS_Dissolve"],["Attach to Component","bobj"]]},
+      {id:"setfx",t:"Set FX",c:"var",x:500,y:170,w:120,o:[["~","exec"]],i:[["~","exec"],["FX","bobj"]]},
+      {id:"fx1",t:"FX",c:"var",x:500,y:330,w:90,o:[["~","bobj"]]},
+      {id:"col",t:"EmberColor",c:"var",x:500,y:410,w:140,o:[["~","bcol"]]},
+      {id:"setcol",t:"Set Niagara Variable (LinearColor)",c:"bfunc",x:670,y:170,w:250,o:[["~","exec"]],i:[["~","exec"],["Target","bobj"],["In Variable Name","bname","EmberColor"],["In Value","bcol"]]},
+      {id:"dur",t:"Duration",c:"var",x:700,y:430,w:120,o:[["~","bfloat"]]},
+      {id:"div",t:"÷ (float)",c:"bpure",x:860,y:380,w:120,o:[["~","bfloat"]],i:[["A","bfloat","1"],["B","bfloat"]]},
+      {id:"rate",t:"Set Play Rate",c:"bfunc",x:960,y:170,w:170,o:[["~","exec"]],i:[["~","exec"],["Target","bobj","DissolveTL"],["New Rate","bfloat"]]},
+      {id:"tl",t:"DissolveTL (Timeline)",c:"tl",x:1170,y:170,w:190,o:[["Update","exec"],["Finished","exec"],["Alpha","bfloat"]],i:[["Play from Start","exec"]]},
+      {id:"cpd",t:"Set Scalar Parameter for Custom Primitive Data",c:"bfunc",x:1400,y:20,w:300,o:[["~","exec"]],i:[["~","exec"],["Target","bobj","Body"],["Parameter Name","bname","Dissolve"],["Value","bfloat"]]},
+      {id:"mulr",t:"× (float)",c:"bpure",x:1400,y:270,w:120,o:[["~","bfloat"]],i:[["A","bfloat"],["B","bfloat","3000"]]},
+      {id:"setr",t:"Set Niagara Variable (Float)",c:"bfunc",x:1560,y:250,w:240,o:[["~","exec"]],i:[["~","exec"],["Target","bobj","FX"],["In Variable Name","bname","SpawnRate"],["In Value","bfloat"]]},
+      {id:"zero",t:"Set Niagara Variable (Float)",c:"bfunc",x:1400,y:420,w:240,o:[["~","exec"]],i:[["~","exec"],["Target","bobj","FX"],["In Variable Name","bname","SpawnRate"],["In Value","bfloat","0"]]}
+     ], links:[["begin.~","delay.~"],["delay.Completed","call.~"],["ev.~","spawn.~"],["body.~","spawn.Attach to Component"],["spawn.~","setfx.~"],["spawn.Return Value","setfx.FX"],["setfx.~","setcol.~"],["fx1.~","setcol.Target"],["col.~","setcol.In Value"],["setcol.~","rate.~"],["dur.~","div.B"],["div.~","rate.New Rate"],["rate.~","tl.Play from Start"],["tl.Update","cpd.~"],["tl.Alpha","cpd.Value"],["tl.Alpha","mulr.A"],["cpd.~","setr.~"],["mulr.~","setr.In Value"],["tl.Finished","zero.~"]], legend:BPLEG,
+     cap:"The Blueprint functions exist in UE 5.8 under these names (checked in UE 5.8: Spawn System Attached, Set Niagara Variable (LinearColor/Float), Set Scalar Parameter for Custom Primitive Data). Some Target wires are drawn as text to keep the picture readable."}
+  ],
+  steps:STEPS.l4,
+  check:`<b>You should have:</b> three BP_Dissolvers that each burn away from a glowing edge at their own speed, shedding embers in their own colour from their own surface, one material and one Niagara system shared by all, and every system in this course on an Effect Type.`,
+  cards:[
+    ["How does a module input read a User Parameter?","Click the input's <b>▾</b> → <b>Link Inputs</b> → <b>User</b> → the parameter. It then shows <i>User.Name</i>."],
+    ["In a Blueprint, what name do you pass to Set Niagara Variable for User.EmberColor?","<code>EmberColor</code> (without the <i>User.</i> prefix)."],
+    ["What does Static Mesh Location's Source Mode = Attach Parent do?","Samples the mesh component the Niagara component is attached to, so one effect works on any mesh it's spawned on."],
+    ["Why use Custom Primitive Data for Dissolve instead of a Material Instance per object?","Each mesh carries its own value on one shared material: cheaper, simpler, and it batches better."],
+    ["Which material setting makes Opacity Mask cut exactly where noise − t crosses 0?","<b>Opacity Mask Clip Value</b> = 0 (it defaults to 0.3333)."],
+    ["How do you make a 1-second timeline run for Duration seconds?","<b>Set Play Rate</b> = 1 ÷ Duration, then <b>Play from Start</b>."],
+    ["What two culls did NET_Gameplay add?","Cull By Distance (Max Distance 5000) and Cull Max Instance Count (Max Instances 10)."],
+    ["What console command shows Niagara counts and timings in Play?","<code>stat Niagara</code>"],
+    ["What's usually the most expensive part of a big effect?","<b>Overdraw</b>: large translucent sprites stacked over many screen pixels. Thin those out first."]
+  ],
+  boss:{
+    title:"Final exam: a teleport tool from nothing",
+    brief:"Memory mode on, blank folder. Ship <b>BP_Teleporter</b>: the mesh dissolves out at A and back in at B, embers in a chosen colour, all on an Effect Type.",
+    goal:60,
+    items:[
+      ["Dissolve material driven by Custom Primitive Data",""],
+      ["GPU embers sampled from the attached mesh, fixed bounds",""],
+      ["User Parameters for colour and rate, linked in the stack",""],
+      ["Blueprint drives material + Niagara from one timeline",""],
+      ["Reverse dissolve (appear) at the destination",""],
+      ["Effect Type assigned; stat Niagara checked in Play",""]
+    ],
+    stretch:[
+      ["Embers only at the burn line","Sample the same noise in Niagara (or pass the Dissolve value) and kill particles that spawn away from the edge, so embers come only off the burning line."],
+      ["Skeletal mesh version","Swap Static Mesh Location for <b>Skeletal Mesh Location</b> and run it on a character. Avoid sampling cloth sections on the CPU (particles end up at the world origin)."],
+      ["Pooling","Set the system's pooling method so frequent dissolves reuse components instead of spawning new ones."]
+    ]
+  }
+}
+];
+
+const ROADMAP = [
+  {m:"Module 2 · Simulation stages", items:["Grid 2D gas: real-time smoke and fire that swirls around obstacles","Neighbour grids: flocking embers and fish schools","Particle-to-particle collisions (PBD) for piles of sand and coins"]},
+  {m:"Module 3 · Hero materials", items:["Flipbooks you render yourself in Blender or Houdini","Erosion, warping and the three-noise trick","Lit translucent smoke that sits in the scene's lighting"]},
+  {m:"Module 4 · Gameplay integration", items:["Niagara Data Channels: thousands of bullet impacts from one system","Animation Notifies and pooling","Scalability per platform: phone vs PC from one effect"]},
+  {m:"Module 5 · Set pieces", items:["A boss arrival: a 10-second sequence of a dozen systems","Sequencer timing, camera shakes, post-process impact frames"]}
+];
+
+const KEYS = [
+  ["Right-click empty graph","Material/Blueprint: search and add a node"],
+  ["Drag a pin into empty space","Search only nodes that fit that pin"],
+  [K("Alt")+" + click a pin","Cut every wire on that pin"],
+  [K("M")+" / "+K("A")+" / "+K("L")+" + click","Multiply / Add / Lerp"],
+  [K("1")+" "+K("2")+" "+K("3")+" + click","Constant / Constant2Vector / Constant3Vector"],
+  [K("U")+" / "+K("P")+" / "+K("O")+" / "+K("E")+" + click","TexCoord / Panner / One Minus / Power"],
+  [K("S")+" / "+K("V")+" + click","Scalar Parameter / Vector Parameter"],
+  [K("C")+" with nodes selected","Wrap them in a comment box"],
+  [K("Ctrl","S"),"Save the asset in the window under the mouse"],
+  [K("Ctrl","C")+" / "+K("Ctrl","V")+" in System Overview","Copy an emitter (then rename the copy)"],
+  ["Section header <b>+</b>","Niagara: add a module to that group"],
+  ["Input <b>▾</b>","Niagara: curve, random, or Link Inputs → User"],
+  [K("Alt","P"),"Play in the editor; "+K("Esc")+" stops"],
+  [K("`")+" in Play","Console: <code>stat Niagara</code>"]
+];
+
+/* ===================== STATE + SAVE ===================== */
+let S = {done:{}, notes:{}, memory:false, timers:{}};
+const API = "/api/progress";
+let serverOK = false, saveT = null;
+const saveEl = document.getElementById("save");
+function setSave(cls, txt){ saveEl.className = "save " + cls; saveEl.querySelector("span").textContent = txt; }
+async function load(){
+  try{
+    // only a local serve.py has the progress API; on a static host skip the request
+    if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) throw 0;
+    const r = await fetch(API, {cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    S = Object.assign(S, j || {});
+    serverOK = true; setSave("ok","Saved to progress.json");
+  }catch(e){
+    try{ const l = localStorage.getItem("nvfx-fast-track"); if(l) S = Object.assign(S, JSON.parse(l)); }catch(_){}
+    setSave("ok","Progress saves in this browser");
+  }
+  S.done ||= {}; S.notes ||= {}; S.timers ||= {};
+}
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(async ()=>{
+    try{ localStorage.setItem("nvfx-fast-track", JSON.stringify(S)); }catch(_){}
+    if(!serverOK){ setSave("ok","Saved in this browser · " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})); return; }
+    try{
+      const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(S)});
+      if(!r.ok) throw 0;
+      setSave("ok","Saved to progress.json · " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+    }catch(e){ setSave("local","Server lost: saved in browser"); }
+  }, 300);
+}
+
+/* ===================== PROGRESS ===================== */
+function keysFor(L){
+  const k = [];
+  L.steps.forEach((_,i)=>k.push(`${L.id}.s${i}`));
+  L.cards.forEach((_,i)=>k.push(`${L.id}.c${i}`));
+  L.boss.items.forEach((_,i)=>k.push(`${L.id}.b${i}`));
+  return k;
+}
+function pct(L){ const k = keysFor(L); return k.filter(x=>S.done[x]).length / k.length; }
+function refreshProgress(){
+  let all = [], got = 0;
+  LESSONS.forEach(L=>{ const k = keysFor(L); all = all.concat(k); });
+  got = all.filter(x=>S.done[x]).length;
+  const p = all.length ? got/all.length : 0;
+  document.getElementById("ringArc").style.strokeDashoffset = 138.2 * (1 - p);
+  document.getElementById("ringTxt").textContent = Math.round(p*100) + "%";
+  document.getElementById("ringCount").textContent = `${got} / ${all.length}`;
+  document.getElementById("mtopPct").textContent = Math.round(p*100) + "% complete";
+  LESSONS.forEach(L=>{
+    const a = document.querySelector(`nav a[data-l="${L.id}"]`); if(!a) return;
+    const q = pct(L);
+    a.querySelector(".bar i").style.width = (q*100) + "%";
+    a.classList.toggle("done", q === 1);
+    a.querySelector(".nb").textContent = q === 1 ? "✓" : L.num;
+  });
+  const sp = document.getElementById("stepPct");
+  if(sp){ const L = LESSONS.find(x=>x.id===sp.dataset.l); sp.textContent = Math.round(pct(L)*100) + "% of this lesson"; }
+}
+
+/* ===================== NAV ===================== */
+function buildNav(){
+  let h = `<div class="grp">Start</div><a class="l" href="#home" data-l="home"><span class="nb">★</span><span>How this works + shortcuts</span></a>`;
+  h += `<div class="grp">Module 1 · Foundations by real projects</div>`;
+  LESSONS.forEach(L=>{
+    h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+  });
+  h += `<div class="grp">Coming next</div>`;
+  ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+2}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  document.getElementById("nav").innerHTML = h;
+}
+
+/* ===================== NODE GRAPH RENDERER ===================== */
+const TYPE = {geo:"--geo",float:"--float",int:"--int",vec:"--vec",bool:"--bool",rot:"--rot",menu:"--menu",obj:"--obj",str:"--str",mat:"--mat",col:"--col",shd:"--shd",pin:"--pin",exec:"--exec",bfloat:"--bfloat",bobj:"--bobj",bcol:"--bcol",bname:"--bname"};
+const CAT = {input:"--h-input",geo:"--h-geo",util:"--h-util",tex:"--h-tex",group:"--h-group",shader:"--h-shader",curve:"--h-curve",func:"--h-func",part:"--h-part",mathm:"--h-math",result:"--h-result",param:"--h-param",event:"--h-event",bfunc:"--h-bfunc",bpure:"--h-bpure",tl:"--h-tl",var:"--h-var"};
+const lab = s => s.startsWith("~") ? "" : esc(s);
+const sk = t => t === "exec" ? "x" : "";
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+function nodeHTML(n){
+  if(n.note) return `<div class="node note" style="left:${n.x}px;top:${n.y}px;width:${n.w||140}px">${n.note}</div>`;
+  let h = `<div class="node" data-id="${n.id}" style="left:${n.x}px;top:${n.y}px;width:${n.w||150}px"><div class="nh" style="background:var(${CAT[n.c]||"--h-group"})">${esc(n.t)}</div><div class="nb">`;
+  (n.o||[]).forEach(o=>{ h += `<div class="row out" data-n="${n.id}" data-s="${esc(o[0])}"><span>${lab(o[0])}</span><i class="s ${o[3]||sk(o[1])}" style="--c:var(${TYPE[o[1]]})"></i></div>`; });
+  (n.p||[]).forEach(p=>{ h += `<div class="prop"><span>${esc(p)}</span></div>`; });
+  (n.i||[]).forEach(i=>{
+    const v = i[2] ? `<em class="${i[2]==="✓"?"ok":""}">${esc(i[2])}</em>` : "";
+    h += `<div class="row in" data-n="${n.id}" data-s="${esc(i[0])}"><i class="s ${i[3]||sk(i[1])}" style="--c:var(${TYPE[i[1]]})"></i><span>${lab(i[0])}</span>${v}</div>`;
+  });
+  return h + `</div></div>`;
+}
+const SECCOL = {"Properties":"#555a63","Emitter Spawn":"#a35718","Emitter Update":"#a35718","Particle Spawn":"#3b7a3b","Particle Update":"#3b7a3b","Render":"#8f3550","User":"#2c5a8c"};
+function stackHTML(g, gi){
+  const ems = g.emitters.map(em=>`<div class="sem"><div class="semh"><b>${esc(em.name)}</b><span>${em.tag||""}</span></div>${
+    em.sections.map(sec=>`<div class="ssec"><div class="ssech" style="--sc:${SECCOL[sec.s]||"#555"}">${sec.s}</div>${
+      sec.mods.map(m=>`<div class="smod" data-id="${em.id}.${m.id}"><div class="smn">${esc(m.n)}</div>${(m.v||[]).map(v=>`<div class="smv"><span>${esc(v[0])}</span><em>${esc(v[1])}</em></div>`).join("")}</div>`).join("")
+    }</div>`).join("")}</div>`).join("");
+  return `<div class="graphwrap"><div class="graphhead"><b>${g.title}</b><span class="hint">${g.hint||""}</span></div>
+  <div class="graphscroll mem"><div class="graph stackg" data-g="${gi}">${ems}</div></div>
+  <div class="legend">${Object.entries({"Emitter Spawn / Update":"#a35718","Particle Spawn / Update":"#3b7a3b","Render":"#8f3550"}).map(([k,c])=>`<span><i style="background:${c};border-radius:2px"></i>${k}</span>`).join("")}<span>Each column = one emitter; modules run top to bottom</span></div></div>
+  <p class="cap">${g.cap||""}</p>`;
+}
+function graphHTML(g, gi){
+  if(g.kind === "stack") return stackHTML(g, gi);
+  return `<div class="graphwrap"><div class="graphhead"><b>${g.title}</b><span class="hint">${g.hint||""}</span></div>
+  <div class="graphscroll mem"><div class="graph" data-g="${gi}" style="width:${g.w}px;height:${g.h||300}px"><svg class="links"></svg>${g.nodes.map(nodeHTML).join("")}</div></div>
+  <div class="legend">${g.legend||""}</div></div>
+  <p class="cap">${g.cap||""}</p>`;
+}
+function findSock(graph, ref, dir){
+  let [id, rest] = [ref.slice(0, ref.indexOf(".")), ref.slice(ref.indexOf(".")+1)];
+  let nth = 0; const at = rest.lastIndexOf("@");
+  if(at > -1){ nth = +rest.slice(at+1); rest = rest.slice(0, at); }
+  const rows = [...graph.querySelectorAll(`.row.${dir}[data-n="${id}"]`)].filter(r=>r.dataset.s === rest);
+  return rows[nth] ? rows[nth].querySelector(".s") : null;
+}
+function drawLinks(el, g){
+  if(!g || g.kind === "stack") return;
+  const svg = el.querySelector("svg.links");
+  // size the canvas to fit its nodes, whatever the fonts did to their heights
+  let mw = 0, mh = 0;
+  el.querySelectorAll(".node").forEach(n=>{ mw = Math.max(mw, n.offsetLeft + n.offsetWidth); mh = Math.max(mh, n.offsetTop + n.offsetHeight); });
+  const W = Math.max(g.w, mw + 20), H = mh + 24;
+  el.style.width = W + "px"; el.style.height = H + "px";
+  const base = el.getBoundingClientRect();
+  const cs = getComputedStyle(document.documentElement);
+  let paths = "";
+  g.links.forEach(([a,b])=>{
+    const s1 = findSock(el, a, "out"), s2 = findSock(el, b, "in");
+    if(!s1 || !s2){ console.warn("missing socket", a, b); return; }
+    const r1 = s1.getBoundingClientRect(), r2 = s2.getBoundingClientRect();
+    const x1 = r1.left + r1.width/2 - base.left, y1 = r1.top + r1.height/2 - base.top;
+    const x2 = r2.left + r2.width/2 - base.left, y2 = r2.top + r2.height/2 - base.top;
+    const dx = Math.max(40, Math.abs(x2-x1) * .5);
+    const col = s1.style.getPropertyValue("--c");
+    const c = cs.getPropertyValue(col.replace(/var\(|\)/g,"").trim()) || "#aaa";
+    paths += `<path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}" stroke="#111" stroke-width="4.5" fill="none" opacity=".6"/><path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}" stroke="${c.trim()}" stroke-width="2" fill="none"/>`;
+  });
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.innerHTML = paths;
+}
+
+/* ===================== VIEWS ===================== */
+const main = document.getElementById("main");
+function homeView(){
+  const startL = LESSONS.find(L=>pct(L) < 1) || LESSONS[0];
+  return `
+  <section class="hero">
+    <div class="kick">Fast track · Unreal Engine ${COURSE.engine} · module names checked in a 5.8 editor</div>
+    <h2>Niagara VFX by building effects you'd actually ship</h2>
+    <p>No "fountain of sprites" exercises. Every lesson is a layered production effect: a ground-slam impact, an energy blade trail, a rift tearing open the floor, then a dissolve effect turned into a reusable, budgeted tool driven by Blueprints. Every material is built from maths nodes by you, with no packs and no Starter Content.</p>
+    <div class="chips"><span class="chip g">4 lessons in Module 1</span><span class="chip">~5–6 hours total</span><span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">4 boss fights</span></div>
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn pri" href="#${startL.id}">${pct(startL)>0?"Continue":"Start"}: Lesson ${startL.num} →</a><button class="btn" onclick="openReview()">Run the review deck</button></div>
+  </section>
+
+  <h3 class="sec">How to make it stick <span class="tag">the loop</span></h3>
+  <div class="loop">
+    <div><b><i>1</i>Understand</b>Read the 4 core ideas. Study the stack diagram and material graphs before you touch the editor.</div>
+    <div><b><i>2</i>Build</b>Follow the steps in Unreal and tick each one only when it <i>works</i> in the preview or in Play.</div>
+    <div><b><i>3</i>Recall</b>Flip the cards. Tick "knew it" only if you answered before flipping. Use the Review deck on later days.</div>
+    <div><b><i>4</i>Rebuild</b>Boss fight: Memory mode on, timer running, blank file. This is where it locks in.</div>
+  </div>
+  <p class="cap" style="margin-top:12px">🧠 <b>Memory mode</b> (sidebar) blurs every graph and step detail. Click a blurred block to peek at just that one. Lesson 2 and 3 reuse the M_FX_Glow material from Lesson 1, so do them in order. Your ticks, notes and boss times save automatically: in this browser, or to <code>progress.json</code> when you run the page with <code>serve.py</code>.</p>
+
+  <h3 class="sec">Module 1 <span class="tag">foundations by real projects</span></h3>
+  <div class="road">
+    ${LESSONS.map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
+  </div>
+
+  <h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
+  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+
+  <h3 class="sec">The basic moves <span class="tag">read once before Lesson 1</span></h3>
+  ${basicsHTML()}
+
+  <h3 class="sec">Shortcuts you'll use every minute <span class="tag">material, Niagara, Blueprint</span></h3>
+  <div class="concept"><table class="keys">${KEYS.map(k=>`<tr><td>${k[0]}</td><td>${k[1]}</td></tr>`).join("")}</table></div>
+
+  <h3 class="sec">How to read the diagrams</h3>
+  <div class="concepts">
+    <div class="concept"><h4>Stack diagrams</h4><p>One column per emitter, exactly as it appears in the Niagara stack: <span style="color:#ffb066">orange</span> Emitter groups, <span style="color:#7fd17f">green</span> Particle groups, <span style="color:#ff8aa6">red</span> Render. Grey pills are the values you type.</p></div>
+    <div class="concept"><h4>Material graphs</h4><p>Wires run left to right into the big result node. A grey pill on an input means "type this in the Details panel" (Const B, Const Exponent…).</p></div>
+    <div class="concept"><h4>Blueprint graphs</h4><p>White ▶ pins are the order things happen; coloured pins carry values (green float, blue object, purple name).</p></div>
+    <div class="concept"><h4>📍 Show where</h4><p>Each step's button lights up exactly the modules or nodes that step adds, in the diagram above it.</p></div>
+  </div>`;
+}
+
+function lessonView(L){
+  const idx = LESSONS.indexOf(L);
+  const prev = LESSONS[idx-1], next = LESSONS[idx+1];
+  const ck = (k)=> S.done[k] ? "checked" : "";
+  return `
+  <section class="hero">
+    <div class="kick">${L.kick} · ${L.time}</div>
+    <h2>${L.title}</h2>
+    <p>${L.intro}</p>
+    <div class="chips">${L.learn.map(x=>`<span class="chip g">${x}</span>`).join("")}</div>
+    <div class="use">${L.use}</div>
+    <div class="use" id="stepPct" data-l="${L.id}"></div>
+  </section>
+  <div class="memnote">🧠 Memory mode is on. Graphs and step details are blurred. Try to recall each step from its title, then click to check yourself.</div>
+
+  <h3 class="sec">Core ideas <span class="tag">read first</span></h3>
+  <div class="concepts">${L.concepts.map(c=>`<div class="concept"><h4>${c.h}</h4><p>${c.p}</p></div>`).join("")}</div>
+
+  <h3 class="sec">The diagrams <span class="tag">what you're building</span></h3>
+  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}
+
+  <h3 class="sec">Build it <span class="tag">tick when it works in Unreal</span></h3>
+  <details class="basics" ${L.num===1?"open":""}><summary>🖱️ The basic moves: Content Browser, material editor, Niagara stack, Blueprints (read once)</summary>${basicsHTML()}</details>
+  <div class="steps">
+  ${L.steps.map((s,i)=>{const k=`${L.id}.s${i}`; return `
+    <div class="step ${S.done[k]?"done":""}" data-k="${k}">
+      <input type="checkbox" class="cb" data-k="${k}" ${ck(k)} aria-label="Step ${i+1} done">
+      <div><div class="st" data-tog="${k}"><small>${String(i+1).padStart(2,"0")}</small>${s.t}</div>
+      <div class="sd mem">
+        ${s.goal?`<div class="goal"><b>Goal:</b> ${s.goal}</div>`:""}
+        ${s.hl?`<button class="btn where" data-hl="${s.hl.g}|${s.hl.n.join(",")}">📍 Show where this goes</button>`:""}
+        <ol class="do">${s.do.map(x=>`<li>${x}</li>`).join("")}</ol>
+        ${s.see?`<div class="see"><b>You should see:</b> ${s.see}</div>`:""}
+        ${s.why?`<div class="why">${s.why}</div>`:""}${s.pro?`<div class="pro">${s.pro}</div>`:""}
+      </div></div>
+    </div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">Check yourself</h3>
+  <div class="check">${L.check}</div>
+
+  <h3 class="sec">Recall drill <span class="tag">answer out loud, then flip</span></h3>
+  <div class="cards">
+  ${L.cards.map((c,i)=>{const k=`${L.id}.c${i}`; return `
+    <div class="fc ${S.done[k]?"known":""}" data-k="${k}"><div class="in">
+      <div class="face front"><div class="lab">Card ${i+1}</div><div class="q">${c[0]}</div><div class="foot"><span>click to flip</span>${S.done[k]?'<span style="color:#7fe3c6">✓ known</span>':""}</div></div>
+      <div class="face back"><div class="lab">Answer</div><div>${c[1]}</div><div class="foot"><label class="knew" onclick="event.stopPropagation()"><input type="checkbox" class="cb" data-k="${k}" ${ck(k)}> I knew it</label><span>click to flip back</span></div></div>
+    </div></div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">${L.boss.title}</h3>
+  <div class="boss">
+    <div class="brief">${L.boss.brief}</div>
+    <div class="timer"><span class="clock" id="clock">00:00</span><button class="btn" id="tStart">▶ Start</button><button class="btn" id="tReset">Reset</button><span style="font-size:.82rem;color:#a89e93">Target: under ${L.boss.goal} min · Best: <b id="best" style="color:#ffd2a6">${S.timers[L.id+".best"]?fmt(S.timers[L.id+".best"]):"–"}</b></span></div>
+    ${L.boss.items.map((b,i)=>{const k=`${L.id}.b${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}">${b[0]}${b[1]?`<small>${b[1]}</small>`:""}</label></div>`;}).join("")}
+    <div style="margin:14px 0 4px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#a89e93">Stretch goals (optional, not counted)</div>
+    ${L.boss.stretch.map((b,i)=>{const k=`${L.id}.x${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}"><b>${b[0]}</b><small>${b[1]}</small></label></div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">My notes <span class="tag">saved automatically</span></h3>
+  <textarea class="notes" id="notes" placeholder="What tripped you up? What would you do differently? Write it in your own words. That's what makes it stick.">${esc(S.notes[L.id]||"")}</textarea>
+
+  <div class="navrow">
+    ${prev?`<a class="btn" href="#${prev.id}">← Lesson ${prev.num}: ${prev.short}</a>`:`<a class="btn" href="#home">← Overview</a>`}
+    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:`<a class="btn pri" href="#home">Module 1 done → Overview</a>`}
+  </div>`;
+}
+
+function basicsHTML(){
+  return `<div class="bgrid">${BASICS.map((b,i)=>`<div class="bcard"><b><i>${i+1}</i>${b[0]}</b><div>${b[1]}</div></div>`).join("")}</div>`;
+}
+let hlT = null;
+function showWhere(btn){
+  const [g, ids] = btn.dataset.hl.split("|");
+  const graph = document.querySelector(`.graph[data-g="${g}"]`); if(!graph) return;
+  document.querySelectorAll(".node.hl,.smod.hl").forEach(n=>n.classList.remove("hl"));
+  const nodes = ids.split(",").map(id=>graph.querySelector(`[data-id="${id}"]`)).filter(Boolean);
+  nodes.forEach(n=>n.classList.add("hl"));
+  const sc = graph.closest(".graphscroll"); sc.classList.add("peek");
+  const wrap = graph.closest(".graphwrap");
+  wrap.scrollIntoView({block:"center", behavior:"smooth"});
+  if(nodes[0]){ const left = Math.min(...nodes.map(n=>n.offsetLeft)); sc.scrollTo({left:Math.max(0,left-40), behavior:"smooth"}); }
+  let back = document.getElementById("backBtn");
+  if(!back){ back = document.createElement("button"); back.id = "backBtn"; back.className = "btn pri backbtn"; document.body.appendChild(back); }
+  back.textContent = "↩ Back to step " + btn.closest(".step").querySelector(".st small").textContent;
+  back.onclick = ()=>{ btn.closest(".step").scrollIntoView({block:"center", behavior:"smooth"}); back.remove(); };
+  clearTimeout(hlT); hlT = setTimeout(()=>nodes.forEach(n=>n.classList.remove("hl")), 6000);
+}
+
+/* ===================== TIMER ===================== */
+let tInt = null, tStart = 0, tLesson = null;
+function fmt(ms){ const s = Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function wireTimer(L){
+  const clock = document.getElementById("clock"), bS = document.getElementById("tStart"), bR = document.getElementById("tReset");
+  const run = S.timers[L.id+".run"];
+  const tick = ()=>{ clock.textContent = fmt(Date.now() - S.timers[L.id+".run"]); };
+  if(run){ bS.textContent = "■ Finish"; tick(); tInt = setInterval(tick, 500); }
+  bS.onclick = ()=>{
+    if(S.timers[L.id+".run"]){
+      const t = Date.now() - S.timers[L.id+".run"];
+      delete S.timers[L.id+".run"]; clearInterval(tInt);
+      const best = S.timers[L.id+".best"];
+      if(!best || t < best){ S.timers[L.id+".best"] = t; document.getElementById("best").textContent = fmt(t); }
+      clock.textContent = fmt(t); bS.textContent = "▶ Start"; save();
+    } else {
+      S.timers[L.id+".run"] = Date.now(); bS.textContent = "■ Finish"; tInt = setInterval(tick, 500); save();
+    }
+  };
+  bR.onclick = ()=>{ delete S.timers[L.id+".run"]; clearInterval(tInt); clock.textContent = "00:00"; bS.textContent = "▶ Start"; save(); };
+}
+
+/* ===================== ROUTER ===================== */
+function route(){
+  clearInterval(tInt);
+  const bb = document.getElementById("backBtn"); if(bb) bb.remove();
+  const id = (location.hash || "#home").slice(1);
+  const L = LESSONS.find(x=>x.id===id);
+  main.innerHTML = L ? lessonView(L) : homeView();
+  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:"home")));
+  document.getElementById("side").classList.remove("open");
+  if(L){
+    document.title = `L${L.num} ${L.short} · Niagara VFX Fast Track`;
+    setTimeout(redraw, 0);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+    wireTimer(L);
+    document.getElementById("notes").addEventListener("input", e=>{ S.notes[L.id] = e.target.value; save(); });
+  } else document.title = "Niagara VFX Fast Track";
+  window.scrollTo(0,0);
+  refreshProgress();
+}
+function redraw(){
+  const id = (location.hash || "#home").slice(1); const L = LESSONS.find(x=>x.id===id);
+  if(L) document.querySelectorAll(".graph").forEach(el=>drawLinks(el, L.graphs[+el.dataset.g]));
+}
+
+/* ===================== EVENTS ===================== */
+document.addEventListener("change", e=>{
+  const t = e.target; if(!t.classList.contains("cb") || !t.dataset.k) return;
+  const k = t.dataset.k;
+  if(t.checked) S.done[k] = true; else delete S.done[k];
+  const st = t.closest(".step"); if(st) st.classList.toggle("done", t.checked);
+  const fc = t.closest(".fc"); if(fc) fc.classList.toggle("known", t.checked);
+  document.querySelectorAll(`.cb[data-k="${k}"]`).forEach(c=>{ if(c!==t) c.checked = t.checked; });
+  save(); refreshProgress();
+  if(t.checked && st){ const n = st.nextElementSibling; if(n && !n.classList.contains("done")) n.scrollIntoView({block:"nearest", behavior:"smooth"}); }
+});
+document.addEventListener("click", e=>{
+  const wb = e.target.closest(".where");
+  if(wb && (!document.body.classList.contains("memory") || wb.closest(".mem.peek"))){ showWhere(wb); return; }
+  const mem = e.target.closest(".mem");
+  if(document.body.classList.contains("memory") && mem && !mem.classList.contains("peek")){ mem.classList.add("peek"); e.preventDefault(); return; }
+  const tog = e.target.closest("[data-tog]");
+  if(tog){ const cb = document.querySelector(`.cb[data-k="${tog.dataset.tog}"]`); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change", {bubbles:true})); return; }
+  const fc = e.target.closest(".fc");
+  if(fc && !e.target.closest(".knew")) fc.classList.toggle("flip");
+});
+const memT = document.getElementById("memToggle");
+function applyMem(){ document.body.classList.toggle("memory", !!S.memory); memT.classList.toggle("on", !!S.memory); memT.setAttribute("aria-checked", !!S.memory); document.querySelectorAll(".mem.peek").forEach(m=>m.classList.remove("peek")); }
+memT.onclick = ()=>{ S.memory = !S.memory; applyMem(); save(); };
+memT.onkeydown = e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); memT.click(); } };
+document.getElementById("menuBtn").onclick = ()=>document.getElementById("side").classList.toggle("open");
+document.getElementById("resetBtn").onclick = ()=>{
+  if(confirm("Clear every tick, note and best time? This can't be undone.")){ S = {done:{}, notes:{}, memory:S.memory, timers:{}}; save(); route(); }
+};
+window.addEventListener("hashchange", route);
+let rT; window.addEventListener("resize", ()=>{ clearTimeout(rT); rT = setTimeout(redraw, 120); });
+
+/* ===================== REVIEW DECK ===================== */
+let deck = [], di = 0;
+function openReview(){
+  const started = LESSONS.filter(L=>pct(L) > 0);
+  const pool = (started.length ? started : [LESSONS[0]]);
+  deck = [];
+  pool.forEach(L=>L.cards.forEach((c,i)=>deck.push({L, i, q:c[0], a:c[1], k:`${L.id}.c${i}`})));
+  // weakest first: unknown cards ahead of known ones, shuffled within
+  deck.sort(()=>Math.random()-.5).sort((a,b)=>(S.done[a.k]?1:0)-(S.done[b.k]?1:0));
+  di = 0; showCard(); document.getElementById("modal").classList.add("on");
+}
+window.openReview = openReview;
+function showCard(){
+  const box = document.getElementById("mbox"); box.classList.remove("show");
+  if(di >= deck.length){
+    document.getElementById("mfrom").textContent = "Deck finished";
+    document.getElementById("mq").textContent = `Done: ${deck.filter(c=>S.done[c.k]).length} of ${deck.length} marked as known.`;
+    document.getElementById("ma").innerHTML = ""; ["mshow","magain","mgot"].forEach(id=>document.getElementById(id).style.display="none");
+    document.getElementById("mcnt").textContent = ""; return;
+  }
+  const c = deck[di];
+  document.getElementById("mfrom").textContent = `Lesson ${c.L.num} · ${c.L.short}${S.done[c.k]?" · known before":""}`;
+  document.getElementById("mq").innerHTML = c.q; document.getElementById("ma").innerHTML = c.a;
+  document.getElementById("mcnt").textContent = `${di+1} / ${deck.length}`;
+  document.getElementById("mshow").style.display = ""; document.getElementById("magain").style.display = "none"; document.getElementById("mgot").style.display = "none";
+}
+function reveal(){ document.getElementById("mbox").classList.add("show"); document.getElementById("mshow").style.display="none"; document.getElementById("magain").style.display=""; document.getElementById("mgot").style.display=""; }
+document.getElementById("mshow").onclick = reveal;
+document.getElementById("mgot").onclick = ()=>{ S.done[deck[di].k] = true; save(); refreshProgress(); di++; showCard(); };
+document.getElementById("magain").onclick = ()=>{ delete S.done[deck[di].k]; deck.push(deck[di]); save(); refreshProgress(); di++; showCard(); };
+document.getElementById("mclose").onclick = ()=>{ document.getElementById("modal").classList.remove("on"); route(); };
+document.getElementById("reviewBtn").onclick = openReview;
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("modal").classList.contains("on")) return;
+  if(e.key===" "){ e.preventDefault(); if(!document.getElementById("mbox").classList.contains("show")) reveal(); else document.getElementById("mgot").click(); }
+  if(e.key==="Escape") document.getElementById("mclose").click();
+});
+
+/* ===================== BOOT ===================== */
+(async()=>{ buildNav(); await load(); applyMem(); route(); })();
+</script>
+</body>
+</html>
