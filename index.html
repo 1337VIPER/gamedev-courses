@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game Dev Courses</title>
+<meta name="description" content="Interactive, click-by-click courses for Blender and Unreal Engine, built around real production projects.">
+<style>
+:root{--bg:#17181b;--panel:#1f2125;--card:#25272c;--line:#363941;--ink:#e8e9ec;--mut:#9a9ea8;--dim:#6d717b;--acc:#00d6a3;--acc2:#4fb3ff;--warn:#f0a35a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:56px 16px 80px}
+.kick{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);font-weight:700}
+h1{font-size:2.3rem;line-height:1.12;margin:8px 0 12px}
+.lead{color:#c9ccd3;max-width:680px;margin:0 0 34px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.c{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;text-decoration:none;color:inherit;transition:border-color .2s,transform .2s}
+a.c:hover{border-color:var(--acc);transform:translateY(-2px)}
+.c .tool{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.c h2{font-size:1.25rem;margin:6px 0 8px;line-height:1.25}
+.c p{color:#c3c6cd;font-size:.92rem;margin:0 0 14px}
+.c ul{margin:0 0 16px;padding-left:18px;color:#c3c6cd;font-size:.88rem}
+.c .go{margin-top:auto;font-weight:700;color:var(--acc)}
+.c.soon{opacity:.7;border-style:dashed}
+.c.soon .go{color:var(--warn)}
+.how{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.how div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.88rem;color:#c3c6cd}
+.how b{display:block;color:#fff;margin-bottom:2px}
+footer{margin-top:40px;color:var(--dim);font-size:.82rem}
+</style>
+</head>
+<body>
+<main>
+  <div class="kick">Interactive courses</div>
+  <h1>Learn game-dev tools by building things you'd actually ship</h1>
+  <p class="lead">Every lesson is a real production result, explained click by click: which key to press, what to type, which socket to drag where, and what you should see after. Tick steps as you go, drill the recall cards, then rebuild it from memory against the clock.</p>
+
+  <div class="grid">
+    <a class="c" href="geometry-nodes/">
+      <span class="tool">Blender 5.3 · Geometry Nodes</span>
+      <h2>Geometry Nodes Fast Track</h2>
+      <p>Procedural tools from a blank file, with no downloaded assets.</p>
+      <ul><li>A terrain that scatters its own grass and rocks</li><li>Parametric spiral staircase</li><li>A fence that follows a curve and snaps to the ground</li><li>Shipping it as a real tool and exporting to Unreal</li></ul>
+      <span class="go">Start the course →</span>
+    </a>
+    <div class="c soon">
+      <span class="tool">Unreal Engine · Niagara</span>
+      <h2>Real-time VFX with Niagara</h2>
+      <p>Layered, production-grade effects built step by step.</p>
+      <span class="go">In production</span>
+    </div>
+    <div class="c soon">
+      <span class="tool">Blender · Compositor</span>
+      <h2>Compositing in Blender</h2>
+      <p>Render passes and compositing nodes for a finished, cinematic image.</p>
+      <span class="go">In production</span>
+    </div>
+  </div>
+
+  <div class="how">
+    <div><b>Your progress stays with you</b>Ticks, notes and best times save in your browser. No account needed.</div>
+    <div><b>Memory mode</b>Blurs the answers so you recall each step before checking it.</div>
+    <div><b>Review deck</b>Flashcards from every lesson you've started, the ones you missed first.</div>
+  </div>
+  <footer>Made with Blender and Unreal Engine. Both are trademarks of their owners. These courses aren't affiliated with them.</footer>
+</main>
+</body>
+</html>

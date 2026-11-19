@@ -1,0 +1,1552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Geometry Nodes Fast Track</title>
+<style>
+:root{
+  --bg:#17181b;--panel:#1f2125;--card:#25272c;--card2:#2c2f35;--line:#363941;--ink:#e8e9ec;--mut:#9a9ea8;--dim:#6d717b;
+  --acc:#00d6a3;--acc2:#4fb3ff;--warn:#f0a35a;--good:#5fd38d;--bad:#ef6b6b;
+  --geo:#00d6a3;--float:#a1a1a1;--int:#598c5c;--vec:#6363c7;--bool:#cca6d6;--rot:#a663c7;--menu:#7c7c7c;--obj:#ed9e5c;--str:#70b2ff;--mat:#eb7582;--col:#c7c729;--shd:#63c763;
+  --h-input:#83314a;--h-geo:#1d725e;--h-util:#2f4f86;--h-tex:#7a4a1f;--h-group:#3d3f45;--h-shader:#2b652b;--h-curve:#1d725e;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc2)}
+kbd{font:600 .78em/1 ui-monospace,Consolas,monospace;background:#0f1012;border:1px solid #444851;border-bottom-width:2px;border-radius:4px;padding:.18em .42em;color:#f1f1f1;white-space:nowrap}
+code{font:.88em ui-monospace,Consolas,monospace;background:#0f1012;border:1px solid #33363d;border-radius:4px;padding:.05em .35em;color:#d9f7ee}
+b.n{color:var(--acc);font-weight:600}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow:auto;padding:20px 16px}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.brand svg{flex:none}
+.brand h1{font-size:1.02rem;margin:0;line-height:1.2}
+.brand small{display:block;color:var(--mut);font-weight:400;font-size:.78rem}
+.ring{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:16px 0}
+.ring svg{flex:none}
+.ring .t{font-size:.82rem;color:var(--mut);line-height:1.35}
+.ring .t b{display:block;color:var(--ink);font-size:1rem}
+nav .grp{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:18px 4px 6px}
+nav a.l{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink);padding:8px 8px;border-radius:8px;font-size:.9rem;line-height:1.25}
+nav a.l:hover{background:var(--card)}
+nav a.l.on{background:var(--card2);box-shadow:inset 3px 0 0 var(--acc)}
+nav a.l .nb{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;background:#2d3036;color:var(--mut)}
+nav a.l.done .nb{background:var(--acc);color:#04261d}
+nav a.l .bar{height:3px;background:#30333a;border-radius:2px;margin-top:5px;overflow:hidden}
+nav a.l .bar i{display:block;height:100%;background:var(--acc);width:0}
+nav .lock{display:flex;gap:10px;align-items:center;color:var(--dim);padding:6px 8px;font-size:.85rem;line-height:1.25}
+nav .lock .nb{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;border:1px dashed #444851}
+.tools{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;font:600 .85rem system-ui,sans-serif;cursor:pointer;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.btn:hover{border-color:#50545e;background:var(--card2)}
+a.btn{text-decoration:none}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#04261d}
+.btn.pri:hover{filter:brightness(1.08)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer;user-select:none}
+.toggle .sw{width:34px;height:20px;border-radius:10px;background:#3a3d44;position:relative;flex:none;transition:.2s}
+.toggle .sw::after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#cfd2d8;transition:.2s}
+.toggle.on .sw{background:var(--acc)}.toggle.on .sw::after{left:17px;background:#04261d}
+.save{font-size:.75rem;color:var(--dim);margin-top:10px;display:flex;gap:6px;align-items:center}
+.save i{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.save.ok i{background:var(--good)}.save.local i{background:var(--warn)}
+main{min-width:0;padding:34px 40px 120px;max-width:1180px}
+.hero{border:1px solid var(--line);border-radius:14px;padding:26px 28px;background:radial-gradient(1200px 300px at 0% 0%,rgba(0,214,163,.13),transparent 60%),var(--panel);margin-bottom:26px;position:relative;overflow:hidden}
+.hero .kick{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.hero h2{font-size:2rem;line-height:1.15;margin:6px 0 10px}
+.hero p{color:#c9ccd3;max-width:760px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font-size:.76rem;border:1px solid #3d4048;border-radius:999px;padding:3px 10px;color:#cdd0d6;background:#1b1d20}
+.chip.g{border-color:rgba(0,214,163,.45);color:#9ff3dc}
+.use{margin-top:14px;font-size:.88rem;color:var(--mut)}
+.use b{color:var(--ink)}
+h3.sec{font-size:1.2rem;margin:38px 0 12px;display:flex;align-items:center;gap:10px}
+h3.sec .tag{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;background:#2b2e34;color:var(--mut);border-radius:4px;padding:2px 7px}
+.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.concept{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.concept h4{margin:0 0 6px;font-size:.95rem;color:#fff}
+.concept p{margin:0;color:#c3c6cd;font-size:.9rem}
+.graphwrap{background:#1d1e21;border:1px solid var(--line);border-radius:12px;margin:14px 0 6px;overflow:hidden}
+.graphhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.88rem}
+.graphhead b{color:#fff}
+.graphhead .hint{color:var(--dim);font-size:.78rem}
+.graphscroll{overflow:auto;position:relative}
+.graph{position:relative;background-color:#1d1e21;background-image:radial-gradient(#2a2c31 1px,transparent 1px);background-size:22px 22px}
+.graph svg.links{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.node{position:absolute;background:#303236;border:1px solid #17181a;border-radius:7px;box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:12px;line-height:1;color:#e6e6e6}
+.node .nh{padding:6px 10px;border-radius:6px 6px 0 0;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.node .nb{padding:4px 0 6px}
+.node .prop{margin:3px 10px 4px;background:#222326;border:1px solid #3c3e43;border-radius:4px;padding:3px 7px;font-size:11px;color:#d7d7d7;display:flex;justify-content:space-between}
+.node .prop::after{content:"▾";color:#888;margin-left:6px}
+.node .row{position:relative;height:22px;display:flex;align-items:center;padding:0 12px;gap:6px}
+.node .row.out{justify-content:flex-end}
+.node .row span{white-space:nowrap}
+.node .row em{font-style:normal;margin-left:auto;background:#545659;border-radius:4px;padding:2px 6px;font-size:11px;color:#f2f2f2;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.node .row em.ok{background:#4772b3}
+.node .s{position:absolute;top:50%;width:11px;height:11px;margin-top:-5.5px;border-radius:50%;border:1px solid #111;background:var(--c)}
+.node .row.in .s{left:-6px}.node .row.out .s{right:-6px}
+.node .s.f{border-radius:2px;transform:rotate(45deg) scale(.88)}
+.node .s.m{height:20px;margin-top:-10px;border-radius:6px}
+.node.note{background:transparent;border:1px dashed #4a4d55;box-shadow:none;color:var(--mut);font-size:11.5px;line-height:1.35;padding:8px 10px;white-space:normal}
+.cap{font-size:.85rem;color:var(--mut);margin:0 2px 18px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--mut);padding:8px 14px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block;border:1px solid #111}
+.legend i.f{border-radius:1px;transform:rotate(45deg)}
+.steps{counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 14px;display:grid;grid-template-columns:30px 1fr;gap:10px;transition:border-color .2s,background .2s}
+.step.done{border-color:rgba(0,214,163,.4);background:linear-gradient(90deg,rgba(0,214,163,.07),transparent 40%),var(--card)}
+.cb{appearance:none;width:22px;height:22px;border-radius:6px;border:2px solid #555963;background:#1a1b1e;cursor:pointer;margin:1px 0 0;display:grid;place-items:center;transition:.15s}
+.cb:checked{background:var(--acc);border-color:var(--acc)}
+.cb:checked::after{content:"";width:6px;height:11px;border:solid #04261d;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.cb:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.step .st{font-weight:650;color:#fff;cursor:pointer}
+.step .st small{color:var(--acc);font-weight:700;margin-right:8px}
+.step .sd{color:#c6c9d0;font-size:.92rem;margin-top:6px}
+.step .sd p{margin:.4em 0}
+.step .sd ul{margin:.3em 0;padding-left:20px}
+.why{margin-top:8px;border-left:3px solid var(--acc2);background:rgba(79,179,255,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#c9dcef}
+.why b{color:#8fcbff}
+.pro{margin-top:8px;border-left:3px solid var(--warn);background:rgba(240,163,90,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#ecd9c6}
+.pro b{color:#ffc58f}
+.check{background:linear-gradient(135deg,rgba(0,214,163,.1),rgba(79,179,255,.06));border:1px solid rgba(0,214,163,.3);border-radius:10px;padding:14px 16px;color:#d6efe8;font-size:.92rem}
+.check b{color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.fc{perspective:900px;min-height:150px;cursor:pointer}
+.fc .in{position:relative;width:100%;height:100%;min-height:150px;transition:transform .45s;transform-style:preserve-3d}
+.fc.flip .in{transform:rotateY(180deg)}
+.fc .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;border:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;font-size:.9rem}
+.fc .front{background:var(--card)}
+.fc .back{background:#1d2a27;border-color:rgba(0,214,163,.35);transform:rotateY(180deg);color:#d9f3ec}
+.fc .q{font-weight:600;color:#fff}
+.fc .lab{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.fc .back .lab{color:#6fcfb4}
+.fc .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--dim);padding-top:8px}
+.fc .knew{display:flex;gap:6px;align-items:center;color:#9fe9d4;cursor:pointer}
+.fc .knew .cb{width:18px;height:18px}
+.fc.known .front{border-color:rgba(0,214,163,.45)}
+.boss{background:radial-gradient(600px 200px at 100% 0%,rgba(240,163,90,.14),transparent 60%),var(--card);border:1px solid rgba(240,163,90,.4);border-radius:12px;padding:18px 18px 8px}
+.boss h4{margin:0 0 4px;color:#ffd2a6;font-size:1.05rem}
+.boss .brief{color:#d8cfc6;font-size:.92rem;margin-bottom:10px}
+.ck{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:7px 0;border-top:1px solid #3a3530;font-size:.92rem;color:#e8e1da}
+.ck:first-of-type{border-top:0}
+.ck label{cursor:pointer}
+.ck small{display:block;color:#a89e93;font-size:.82rem;margin-top:2px}
+.timer{display:flex;align-items:center;gap:10px;margin:6px 0 12px;flex-wrap:wrap}
+.timer .clock{font:700 1.3rem ui-monospace,Consolas,monospace;color:#ffd2a6;min-width:84px}
+textarea.notes{width:100%;min-height:110px;background:#141518;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:14px/1.5 system-ui,sans-serif;resize:vertical}
+textarea.notes:focus{outline:none;border-color:var(--acc)}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:40px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.road{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.mod .mk{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.mod.lockd .mk{color:var(--dim)}
+.mod h4{margin:4px 0 6px;font-size:1rem}
+.mod ul{margin:0;padding-left:18px;color:#c3c6cd;font-size:.88rem}
+.mod.lockd{opacity:.78;border-style:dashed}
+.mod a{text-decoration:none}
+table.keys{width:100%;border-collapse:collapse;font-size:.9rem}
+table.keys td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+table.keys td:first-child{white-space:nowrap;width:1%}
+table.keys tr:first-child td{border-top:0}
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.loop div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.88rem;color:#c3c6cd}
+.loop b{display:block;color:#fff;margin-bottom:3px}
+.loop i{font-style:normal;color:var(--acc);font-weight:800;margin-right:6px}
+/* literal steps */
+.goal{color:#e9ebef;margin:2px 0 8px}
+.goal b{color:var(--acc)}
+ol.do{margin:6px 0 4px;padding-left:24px;display:flex;flex-direction:column;gap:7px}
+ol.do li{padding-left:4px;line-height:1.55}
+ol.do li::marker{color:var(--acc);font-weight:700}
+ol.do li > b:first-child{color:#fff}
+ol.do u{text-decoration:none;border-bottom:1px dashed #8fcbff;color:#d7ebff}
+.so,.si{display:inline-block;border-radius:4px;padding:0 6px;font-size:.86em;font-weight:600;line-height:1.5}
+.so{background:#20302c;color:#9ff3dc;border:1px solid #2f5a4f}
+.si{background:#262a3a;color:#c3c9ff;border:1px solid #3d4466}
+ol.do small{color:var(--dim)}
+.see{margin-top:8px;border-left:3px solid var(--good);background:rgba(95,211,141,.07);padding:7px 10px;border-radius:0 6px 6px 0;font-size:.87rem;color:#d3efdd}
+.see b{color:#8fe6b0}
+.btn.where{font-size:.78rem;padding:5px 10px;margin:2px 0 6px;font-weight:600}
+.node.hl{outline:3px solid #ffd166;outline-offset:2px;box-shadow:0 0 0 8px rgba(255,209,102,.18),0 6px 18px rgba(0,0,0,.35);z-index:3;animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{box-shadow:0 0 0 14px rgba(255,209,102,.05),0 6px 18px rgba(0,0,0,.35)}}
+.backbtn{position:fixed;right:20px;bottom:20px;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+details.basics{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:0 0 14px;padding:0 14px}
+details.basics summary{cursor:pointer;padding:12px 0;font-weight:650;color:#fff}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:0 0 14px}
+.bcard{background:#1d1f23;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:#c6c9d0}
+.bcard b{display:block;color:#fff;margin-bottom:4px}
+.bcard b i{font-style:normal;color:var(--acc);margin-right:6px}
+/* memory mode */
+body.memory .mem{filter:blur(7px) saturate(.4);opacity:.55;cursor:pointer;transition:filter .25s,opacity .25s;user-select:none}
+body.memory .mem.peek{filter:none;opacity:1;user-select:auto}
+body.memory .graphwrap .mem{pointer-events:auto}
+.memnote{display:none;background:#2a2433;border:1px solid #574a6b;color:#dccbf3;border-radius:10px;padding:10px 14px;font-size:.88rem;margin:0 0 18px}
+body.memory .memnote{display:block}
+/* review modal */
+.modal{position:fixed;inset:0;background:rgba(5,6,8,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:560px;width:100%;padding:22px}
+.mbox .from{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.mbox .q{font-size:1.15rem;font-weight:650;margin:8px 0 14px}
+.mbox .a{background:#1d2a27;border:1px solid rgba(0,214,163,.35);border-radius:10px;padding:12px 14px;color:#d9f3ec;display:none}
+.mbox.show .a{display:block}
+.mbox .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.mbox .cnt{font-size:.8rem;color:var(--dim);margin-right:auto;align-self:center}
+.mtop{display:none;position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;align-items:center;justify-content:space-between;gap:10px}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  aside{position:fixed;inset:0 auto 0 0;width:290px;z-index:40;transform:translateX(-100%);transition:transform .25s}
+  aside.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.5)}
+  .mtop{display:flex}
+  main{padding:20px 16px 100px}
+  .hero{padding:20px}.hero h2{font-size:1.55rem}
+  .grid2,.loop{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="mtop"><button class="btn" id="menuBtn">☰ Lessons</button><span id="mtopPct" style="font-size:.85rem;color:var(--mut)"></span></div>
+<div class="app">
+<aside id="side">
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="8" fill="#1d725e"/><circle cx="9" cy="11" r="3" fill="#00d6a3"/><rect x="21.5" y="18.5" width="5" height="5" transform="rotate(45 24 21)" fill="#a663c7"/><path d="M12 11 C18 11 16 21 22 21" stroke="#00d6a3" stroke-width="2" fill="none"/></svg>
+    <h1>Geometry Nodes<small>Fast Track · Blender 5.3</small></h1>
+  </div>
+  <div class="ring">
+    <svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" stroke="#30333a" stroke-width="6" fill="none"/><circle id="ringArc" cx="27" cy="27" r="22" stroke="#00d6a3" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" transform="rotate(-90 27 27)"/><text id="ringTxt" x="27" y="31" text-anchor="middle" fill="#e8e9ec" font-size="12" font-weight="700">0%</text></svg>
+    <div class="t"><b id="ringCount">0 / 0</b>tasks, cards and challenges ticked</div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="tools">
+    <div class="toggle" id="memToggle" role="switch" aria-checked="false" tabindex="0"><span>🧠 Memory mode<br><small style="color:var(--dim)">blur the answers, recall first</small></span><span class="sw"></span></div>
+    <button class="btn pri" id="reviewBtn">⟳ Review deck</button>
+    <button class="btn" id="resetBtn" style="color:var(--mut)">Reset progress…</button>
+  </div>
+  <div class="save" id="save"><i></i><span>connecting…</span></div>
+</aside>
+<main id="main"></main>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mq">
+  <div class="mbox" id="mbox">
+    <div class="from" id="mfrom"></div>
+    <div class="q" id="mq"></div>
+    <div class="a" id="ma"></div>
+    <div class="row">
+      <span class="cnt" id="mcnt"></span>
+      <button class="btn" id="mshow">Show answer <kbd>Space</kbd></button>
+      <button class="btn" id="magain" style="display:none">Again</button>
+      <button class="btn pri" id="mgot" style="display:none">Knew it ✓</button>
+      <button class="btn" id="mclose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+/* ===================== LITERAL STEP HELPERS ===================== */
+const K = (...k)=>k.map(x=>`<kbd>${x}</kbd>`).join("");
+// Add a node
+function A(name, search, where){
+  return `<b>Add ${name}:</b> mouse over the node editor → ${K("Shift","A")} → type <code>${search}</code> → click <b>${name}</b> in the list. The node now follows your mouse: move it <u>${where}</u> and left-click to drop it.`;
+}
+// Connect two sockets
+function C(fn, fs, tn, ts){
+  return `<b>Wire:</b> press and hold on <b>${fn}</b> › <span class="so">${fs}</span> <small>(dot on its right edge)</small>, drag to <b>${tn}</b> › <span class="si">${ts}</span> <small>(dot on its left edge)</small>, let go.`;
+}
+// Type a value
+function V(node, field, val, was){
+  return `<b>Type:</b> on <b>${node}</b>, click once on the <b>${field}</b> number${was!==undefined?` (it shows <i>${was}</i>)`:""}, type <code>${val}</code>, press ${K("Enter")}.`;
+}
+// Change a dropdown
+function D(node, cur, pick){
+  return `<b>Dropdown:</b> on <b>${node}</b>, click the box that says <i>${cur}</i> and choose <b>${pick}</b>.`;
+}
+// View a node
+function VW(node){
+  return `<b>Look:</b> hold ${K("Ctrl","Shift")} and left-click the coloured title bar of <b>${node}</b>. The viewport and Spreadsheet now show that node's result.`;
+}
+
+const BASICS = [
+  ["Mouse first, then key","Blender sends a shortcut to whichever panel the <b>mouse is over</b>. Before pressing a key for the nodes, move the mouse over the node editor (the big bottom panel)."],
+  ["Find your way around","Scroll wheel = zoom. Hold the <b>middle mouse button</b> and drag = pan. "+K("Home")+" = fit all nodes on screen."],
+  ["Add a node",K("Shift","A")+" → start typing the name → click the node in the list → it follows your mouse → move it where you want → <b>left-click</b> to drop it."],
+  ["Move a node","Press and drag its coloured <b>title bar</b>. Or click the node once, press "+K("G")+", move, click."],
+  ["Wire two nodes","<b>Outputs</b> are dots on a node's <b>right</b> edge, <b>inputs</b> are dots on the <b>left</b> edge. Press and hold on an output dot, drag to an input dot, let go. An input takes one wire (a new one replaces the old one). An output can feed as many inputs as you like."],
+  ["Remove a wire","Hold "+K("Ctrl")+" and drag with the <b>right</b> mouse button across the wire (a dashed knife line appears). Or grab the wire's end at the input dot and drop it on empty space."],
+  ["Type a value","Click <b>once</b> on the number without dragging. It turns into a text box with the number selected. Type the new value, press "+K("Enter")+". Dragging left/right slides the value instead, so press "+K("Ctrl","Z")+" if that happens."],
+  ["XYZ fields","Vectors (Size, Offset, Translation…) show three stacked boxes: X on top, then Y, then Z. Each one is typed separately."],
+  ["Dropdowns","A box with a small ▾ (like <i>Add</i> on a Math node) is a dropdown. Click it and pick the option."],
+  ["Splice into a wire","Drag a node over an existing wire until the wire lights up, then let go. It plugs itself in between."],
+  ["Delete / copy a node","Click its title bar, press "+K("X")+" (delete) or "+K("Ctrl","X")+" (delete and keep the wire joined through). "+K("Shift","D")+" copies it: move the copy and click to drop."],
+  ["See a node's result","Hold "+K("Ctrl","Shift")+" and click the node's title bar. A <b>Viewer</b> node appears and the viewport + Spreadsheet show that node's output. Click the Viewer and press "+K("X")+" when you're done."],
+  ["The Geometry Nodes workspace","Click the <b>Geometry Nodes</b> tab at the very top of Blender (scroll the tab row if it's hidden). Default layout: <b>Spreadsheet</b> (table of numbers) top-left, <b>3D Viewport</b> top-right, <b>node editor</b> along the bottom, <b>Properties</b> editor on the far right (the blue wrench tab holds the modifier and its sliders)."],
+  ["Side panel (N)","With the mouse over the node editor press "+K("N")+". Its <b>Group</b> tab lists the tree's inputs and outputs (names, types, defaults). Its <b>Node</b> tab shows the selected node's name, label and extra options."]
+];
+
+const STEPS = {
+/* ============================== L1 ============================== */
+l1:[
+ {t:"Set up the host object", goal:"A plane with an empty Geometry Nodes tree on it.", do:[
+   `Open Blender. In the splash screen click <b>General</b> (or top menu <b>File → New → General</b>).`,
+   `Mouse over the 3D viewport. Left-click the cube, press ${K("Delete")}.`,
+   `Still over the viewport: ${K("Shift","A")} → <b>Mesh</b> → <b>Plane</b>.`,
+   `At the very top of the window, click the workspace tab <b>Geometry Nodes</b>.`,
+   `In the node editor (bottom panel), click the <b>New</b> button in its top bar.`
+ ], see:`Two nodes, <b>Group Input</b> on the left and <b>Group Output</b> on the right, joined by a teal wire. The plane looks the same. Properties (far right) → blue wrench tab now lists a <i>GeometryNodes</i> modifier.`,
+ why:`<b>Why a plane?</b> Geometry Nodes is a modifier, so it has to sit on an object. We'll ignore the plane's own shape and make our own.`},
+
+ {t:"Make room, then add a 20 m Grid", goal:"A big flat 20 × 20 m grid replacing the plane.", hl:{g:0,n:["grid","out"]}, do:[
+   `Press and drag the title bar of <b>Group Output</b> to the right, about four node-widths away. You'll build everything in that gap.`,
+   A("Grid","grid","to just below Group Input"),
+   V("Grid","Size X","20","1 m"),
+   V("Grid","Size Y","20","1 m"),
+   V("Grid","Vertices X","200","3"),
+   V("Grid","Vertices Y","200","3"),
+   C("Grid","Mesh","Group Output","Geometry") + ` The old wire from Group Input disappears, because an input only takes one wire.`
+ ], see:`A large flat grid in the viewport (mouse over the viewport, press ${K("Home")} if you can't see all of it). The Spreadsheet (top-left) says <b>40,000</b> vertices.`},
+
+ {t:"Splice in a Set Position node", goal:"Grid → Set Position → Group Output.", hl:{g:0,n:["setp"]}, do:[
+   `${K("Shift","A")} → type <code>set position</code> → click <b>Set Position</b>. <b>Don't click to drop yet.</b>`,
+   `Move it so it sits <u>on top of the teal wire</u> between Grid and Group Output. When the wire lights up, left-click.`,
+   `Check: there should now be a wire Grid › Mesh → Set Position › Geometry, and Set Position › Geometry → Group Output › Geometry. If not, make those two wires by hand.`
+ ], see:`Nothing changes yet. That's correct, because the Offset is still 0, 0, 0.`},
+
+ {t:"Raise hills with noise", goal:"Four nodes in a row <u>under</u> the Grid / Set Position line: Noise Texture → Math (Subtract) → Math (Multiply) → Combine XYZ → Set Position's Offset.", hl:{g:0,n:["noise","sub","mul","cxyz"]}, do:[
+   A("Noise Texture","noise","to directly under the Grid node, leaving a small gap"),
+   V("Noise Texture","Scale","0.15","5.000"),
+   V("Noise Texture","Detail","4","2.000") + ` Leave the two dropdowns (<i>3D</i>, <i>fBM</i>) as they are.`,
+   A("Math","math","to the right of Noise Texture") + ` Pick <b>Math</b> exactly, not Vector Math or Integer Math.`,
+   D("Math","Add","Subtract") + ` It now reads <i>Subtract</i> and has two <b>Value</b> inputs, both showing 0.500.`,
+   C("Noise Texture","Factor","Subtract","Value (the top one)") + ` Leave the <b>bottom</b> Value at <code>0.5</code>.`,
+   A("Math","math","to the right of the Subtract node"),
+   D("that second Math node","Add","Multiply"),
+   C("Subtract","Value","Multiply","Value (the top one)"),
+   V("Multiply","bottom Value","8","0.500") + ` This is the hill height in metres.`,
+   A("Combine XYZ","combine xyz","to the right of Multiply, so it ends up below and a little left of Set Position"),
+   C("Multiply","Value","Combine XYZ","Z") + ` (the third input). Leave X and Y at 0.`,
+   C("Combine XYZ","Vector","Set Position","Offset") + ` (the <b>bottom</b> input, not Position).`
+ ], see:`The grid turns into rolling hills about 2 m up and down. All spikes = Scale is too big (should be 0.15). Still flat = the wire went into <b>Position</b> instead of <b>Offset</b>, or into the wrong Combine XYZ socket.`,
+ why:`<b>Offset vs Position:</b> Offset <i>adds</i> to where each vertex already is. Position <i>replaces</i> it. <b>Why subtract 0.5?</b> Noise gives values around 0.5. Centring them on 0 lets the hills go down into valleys as well as up.`},
+
+ {t:"Look inside a field with the Viewer", goal:"See the noise numbers that drive the hills.", hl:{g:0,n:["noise"]}, do:[
+   VW("Noise Texture"),
+   `A new <b>Viewer</b> node appears, wired from the noise. In the viewport the noise shows as light and dark patches. In the Spreadsheet a <b>Viewer</b> column shows one number per vertex.`,
+   `If the viewport shows nothing: drag Set Position › Geometry into the Viewer node's empty input dot as well.`,
+   `Done looking? Click the Viewer node's title bar and press ${K("X")}.`
+ ], why:`<b>This is your debugger.</b> Whenever something looks wrong, view the node one step <i>before</i> the problem.`},
+
+ {t:"Build the slope mask", goal:"A yes/no answer per face: is this ground flat?", hl:{g:1,n:["nrm","sep","cf"]}, do:[
+   `Pan down (hold the middle mouse button and drag up) so you have empty space <u>below the noise row</u>.`,
+   A("Normal","normal","into that empty space, on the left") + ` Pick <b>Normal</b> (the input, not <i>Set Mesh Normal</i>).`,
+   A("Separate XYZ","separate xyz","to the right of Normal"),
+   C("Normal","Normal","Separate XYZ","Vector"),
+   A("Compare","compare","to the right of Separate XYZ"),
+   `Check the Compare node's two dropdowns read <i>Float</i> and <i>Greater Than</i> (they do by default).`,
+   C("Separate XYZ","Z","Compare","A"),
+   V("Compare","B","0.92","0.000"),
+   VW("Compare") + ` White = flat enough, black = too steep.`
+ ], why:`<b>Normal Z</b> is 1 on flat ground and 0 on a vertical wall (it's the cosine of the slope). 0.92 ≈ 23°, 0.85 ≈ 32°.`},
+
+ {t:"Scatter grass points on the flat", goal:"Points only where Compare says yes.", hl:{g:1,n:["df","cf","terr"]}, do:[
+   A("Distribute Points on Faces","distribute","to the right of Compare and a bit higher"),
+   C("Set Position","Geometry","Distribute Points on Faces","Mesh") + ` Set Position keeps its wire to Group Output too. Outputs can feed many inputs.`,
+   C("Compare","Result","Distribute Points on Faces","Selection"),
+   V("Distribute Points on Faces","Density","15","10.000"),
+   VW("Distribute Points on Faces")
+ ], see:`Tiny dots only on the flatter parts of the hills.`},
+
+ {t:"Scatter rock points on the steep parts", goal:"A second point set, spaced out, only on steep ground.", hl:{g:1,n:["cs","ds"]}, do:[
+   `Click the <b>Compare</b> title bar, press ${K("Shift","D")}, move the copy <u>straight down below the first Compare</u>, left-click.`,
+   D("the copied Compare","Greater Than","Less Than"),
+   V("the copied Compare","B","0.85","0.920"),
+   C("Separate XYZ","Z","copied Compare","A"),
+   A("Distribute Points on Faces","distribute","below the first Distribute node"),
+   D("the new Distribute","Random","Poisson Disk") + ` Its inputs change to Distance Min, Density Max, Density Factor.`,
+   C("Set Position","Geometry","new Distribute","Mesh"),
+   C("copied Compare","Result","new Distribute","Selection"),
+   V("the new Distribute","Distance Min","0.8"),
+   V("the new Distribute","Density Max","3","10.000")
+ ], why:`<b>Poisson Disk</b> keeps every point at least <i>Distance Min</i> away from the others, so the rocks never overlap. Random can clump.`},
+
+ {t:"Model a rock with nodes", goal:"A lumpy rock made from a sphere, in its own little group of nodes.", hl:{g:2,n:["ico","rnoise","rmul","rn","vs","rsp"]}, do:[
+   `Pan to empty space <u>below everything you've built so far</u>. The rock gets its own area.`,
+   A("Ico Sphere","ico sphere","to the left side of that empty space"),
+   V("Ico Sphere","Radius","0.5","1 m"),
+   V("Ico Sphere","Subdivisions","3","1"),
+   A("Set Position","set position","to the right of Ico Sphere, leaving room for three nodes between them"),
+   C("Ico Sphere","Mesh","this new Set Position","Geometry"),
+   A("Noise Texture","noise","to under the Ico Sphere"),
+   V("this Noise Texture","Scale","2.5","5.000"),
+   V("this Noise Texture","Detail","6","2.000"),
+   A("Math","math","to the right of this Noise Texture"),
+   D("this Math","Add","Multiply"),
+   C("Noise Texture","Factor","Multiply","Value (top)"),
+   V("Multiply","bottom Value","0.35","0.500"),
+   A("Normal","normal","to under the Multiply"),
+   A("Vector Math","vector math","to the right of Multiply and Normal"),
+   D("Vector Math","Add","Scale") + ` Its inputs become <b>Vector</b> and <b>Scale</b>.`,
+   C("Normal","Normal","Vector Math","Vector"),
+   C("Multiply","Value","Vector Math","Scale"),
+   C("Vector Math","Vector","rock Set Position","Offset"),
+   VW("the rock Set Position") + ` A single lumpy rock appears at the centre.`
+ ], why:`<b>Field context:</b> these Normal and Noise nodes are worked out on the <i>sphere's</i> vertices, because the Set Position they feed is working on the sphere and not the terrain.`},
+
+ {t:"Put rocks on the rock points", goal:"Hundreds of rocks, leaning with the slope, in random sizes.", hl:{g:2,n:["iop","rpts","rv","rsp"]}, do:[
+   A("Instance on Points","instance on points","to the right of the rock Set Position"),
+   C("Poisson Distribute (the lower one)","Points","Instance on Points","Points") + ` This wire will be long. That's fine.`,
+   C("rock Set Position","Geometry","Instance on Points","Instance"),
+   C("Poisson Distribute","Rotation","Instance on Points","Rotation") + ` (purple diamond, its third output).`,
+   A("Random Value","random value","to under Instance on Points") + ` It says <i>Float</i>, which is what we want.`,
+   V("Random Value","Min","0.4","0.000"),
+   V("Random Value","Max","1.3","1.000"),
+   C("Random Value","Value","Instance on Points","Scale"),
+   VW("Instance on Points")
+ ], why:`<b>The Rotation output</b> tilts each rock to match the ground under it, so rocks lean into the slope instead of standing straight up.`},
+
+ {t:"Grass blades on the flat points", goal:"A thin three-sided cone, copied onto every grass point with a random spin.", hl:{g:2,n:["grass"]}, do:[
+   A("Cone","cone","to empty space below the rock nodes"),
+   V("Cone","Vertices","3","32"),
+   V("Cone","Radius Bottom","0.03","1 m") + ` (Radius Top already shows 0.)`,
+   V("Cone","Depth","0.35","2 m"),
+   A("Transform Geometry","transform geometry","to the right of Cone"),
+   C("Cone","Mesh","Transform Geometry","Geometry"),
+   V("Transform Geometry","Translation <b>Z</b> (third box)","0.175","0 m") + ` This lifts the blade so it stands on the ground.`,
+   A("Instance on Points","instance on points","to the right of Transform Geometry"),
+   C("Random Distribute (the upper one)","Points","this Instance on Points","Points"),
+   C("Transform Geometry","Geometry","this Instance on Points","Instance"),
+   A("Random Value","random value","to under this Instance on Points"),
+   D("Random Value","Float","Vector") + ` Min and Max now each have X, Y, Z boxes.`,
+   `<b>Type</b> Max: X <code>0.3</code>, Y <code>0.3</code>, Z <code>6.28</code> (one box at a time, ${K("Enter")} after each). Leave Min at 0, 0, 0.`,
+   C("Random Value","Value","this Instance on Points","Rotation")
+ ]},
+
+ {t:"Join everything", goal:"Terrain + rocks + grass all in the final output.", hl:{g:2,n:["join","out","terr"]}, do:[
+   A("Join Geometry","join","to just left of Group Output (drag Group Output further right if there's no room)"),
+   C("terrain Set Position (the first one you made)","Geometry","Join Geometry","Geometry (the tall socket)"),
+   C("rocks Instance on Points","Instances","Join Geometry","the same tall socket") + ` It accepts many wires.`,
+   C("grass Instance on Points","Instances","Join Geometry","the same tall socket"),
+   C("Join Geometry","Geometry","Group Output","Geometry") + ` This replaces the old wire.`,
+   `If a Viewer node is still in the tree, click it and press ${K("X")}.`,
+   `Play: change <b>Seed</b> on either Distribute node, or the Multiply's 8.0, and watch it all rebuild.`
+ ], see:`Hills with grass on the gentle parts and separated rocks on the steep parts.`},
+
+ {t:"Turn your numbers into modifier sliders", goal:"Hill height, both slope limits and both seeds on the modifier panel.", hl:{g:0,n:["mul"]}, do:[
+   `Find <b>Group Input</b> (far left). Its last output is an <b>empty hollow dot</b>.`,
+   `On the <b>Multiply</b> node (the ×8 one), press and hold on the dot <u>left of its bottom Value (8.000)</u>, drag it to Group Input's <b>empty hollow dot</b>, let go. Group Input gains an output called <i>Value</i>, wired to it.`,
+   `Mouse over the node editor → ${K("N")} → click the <b>Group</b> tab. In the list, double-click <i>Value</i>, type <code>Hill Height</code>, ${K("Enter")}.`,
+   `Do the same for: the first Compare's <b>B</b> → name it <code>Grass Flatness</code>, the copied Compare's <b>B</b> → <code>Rock Steepness</code>, and the <b>Seed</b> of each Distribute → <code>Grass Seed</code>, <code>Rock Seed</code>.`,
+   `Open Properties (far right) → blue wrench tab. Your five sliders are on the modifier. Change them there.`
+ ], pro:`<b>Long wires?</b> Add a second Group Input node anywhere (${K("Shift","A")} → <code>group input</code>). Every copy has the same outputs, so you can drop one right next to the node that needs it.`,
+ why:`<b>This is the whole point:</b> someone who never opens the node tree now has a terrain-dressing tool.`}
+],
+
+/* ============================== L2 ============================== */
+l2:[
+ {t:"Host object and an empty tree", goal:"A plane with a tree whose Group Input and Group Output are NOT wired together.", do:[
+   `<b>File → New → General</b>. Click the cube in the viewport, press ${K("Delete")}. ${K("Shift","A")} → <b>Mesh → Plane</b>.`,
+   `Click the <b>Geometry Nodes</b> workspace tab at the top, then <b>New</b> in the node editor's top bar.`,
+   `Cut the wire between Group Input and Group Output: hold ${K("Ctrl")}, then with the <b>right</b> mouse button drag a line across the teal wire, let go.`,
+   `Drag Group Output's title bar far to the right (about six node-widths).`
+ ], see:`The plane disappears from the viewport. Nothing reaches the output yet.`},
+
+ {t:"Create the four inputs", goal:"Group Input shows Steps, Rise, Turn, Width.", hl:{g:0,n:["gi"]}, do:[
+   `Mouse over the node editor → ${K("N")} → <b>Group</b> tab. You'll see a list holding <i>Geometry</i> (output) and <i>Geometry</i> (input).`,
+   `Click the <b>+</b> button next to the list → choose <b>Input</b>. A new item appears and is selected.`,
+   `Double-click the new item's name in the list, type <code>Steps</code>, ${K("Enter")}. Below the list set the <b>Type</b> dropdown to <b>Integer</b>. <b>Default</b> <code>24</code>, <b>Min</b> <code>3</code>.`,
+   `<b>+ → Input</b> again: name <code>Rise</code>, Type <b>Float</b>, <b>Subtype</b> <b>Distance</b>, Default <code>0.18</code>.`,
+   `<b>+ → Input</b>: name <code>Turn</code>, Type <b>Float</b>, Subtype <b>Angle</b>, Default <code>15</code> (it shows 15°).`,
+   `<b>+ → Input</b>: name <code>Width</code>, Type <b>Float</b>, Subtype <b>Distance</b>, Default <code>1.2</code>.`,
+   `You can delete the <i>Geometry</i> input from the list (select it, click <b>−</b>), because this tool makes its own geometry.`
+ ], why:`<b>Angle subtype</b> lets you type degrees while the nodes receive radians, which is what rotation maths expects.`},
+
+ {t:"One point per step", goal:"A vertical line of points, 0.18 m apart.", hl:{g:0,n:["c1","ml"]}, do:[
+   A("Mesh Line","mesh line","about two node-widths right of Group Input, near the top"),
+   A("Combine XYZ","combine xyz","between Group Input and Mesh Line"),
+   C("Group Input","Rise","Combine XYZ","Z"),
+   C("Combine XYZ","Vector","Mesh Line","Offset"),
+   C("Group Input","Steps","Mesh Line","Count"),
+   VW("Mesh Line")
+ ], see:`A vertical line of 24 points. Spreadsheet → Position Z column reads 0, 0.18, 0.36…`},
+
+ {t:"Build the tread and move its pivot", goal:"One tread, shifted out from the centre so it can swing around a column.", hl:{g:0,n:["csz","cube","ma","ct","tg"]}, do:[
+   A("Cube","cube","to below Mesh Line"),
+   A("Combine XYZ","combine xyz","to the left of the Cube"),
+   C("Group Input","Width","this Combine XYZ","X"),
+   V("this Combine XYZ","Y","0.35","0.000"),
+   V("this Combine XYZ","Z","0.05","0.000"),
+   C("Combine XYZ","Vector","Cube","Size"),
+   A("Math","math","to below that Combine XYZ"),
+   D("Math","Add","Multiply Add") + ` Its inputs become <b>Value</b>, <b>Multiplier</b>, <b>Addend</b>.`,
+   C("Group Input","Width","Multiply Add","Value"),
+   V("Multiply Add","Multiplier","0.5"),
+   V("Multiply Add","Addend","0.15"),
+   A("Combine XYZ","combine xyz","to the right of Multiply Add"),
+   C("Multiply Add","Value","this Combine XYZ","X"),
+   A("Transform Geometry","transform geometry","to the right of the Cube"),
+   C("Cube","Mesh","Transform Geometry","Geometry"),
+   C("the X Combine XYZ","Vector","Transform Geometry","Translation")
+ ], why:`<b>Pivot trick:</b> copies turn around their own centre. Moving the tread out by Width/2 + 0.15 makes its inner end start at the column surface, so it swings around the column instead of spinning in place.`},
+
+ {t:"Copy the tread onto every point", goal:"A straight stack of treads.", hl:{g:0,n:["iop"]}, do:[
+   A("Instance on Points","instance on points","to the right of Mesh Line"),
+   C("Mesh Line","Mesh","Instance on Points","Points"),
+   C("Transform Geometry","Geometry","Instance on Points","Instance"),
+   C("Instance on Points","Instances","Group Output","Geometry")
+ ], see:`A tall, straight stack of treads all pointing the same way.`},
+
+ {t:"Index × Turn = spiral", goal:"Each tread turned 15° more than the one below.", hl:{g:0,n:["idx","im","cr"]}, do:[
+   A("Index","index","to below Transform Geometry"),
+   A("Math","math","to the right of Index"),
+   D("Math","Add","Multiply"),
+   C("Index","Index","Multiply","Value (top)"),
+   C("Group Input","Turn","Multiply","Value (bottom)"),
+   A("Combine XYZ","combine xyz","to the right of Multiply"),
+   C("Multiply","Value","Combine XYZ","Z"),
+   C("Combine XYZ","Vector","Instance on Points","Rotation")
+ ], see:`The stack fans out into a spiral.`, why:`<b>Vector → Rotation</b> converts by itself (read as X, Y, Z angles). The wire stays a normal colour, which means it's allowed.`},
+
+ {t:"The central column", goal:"A pole exactly as tall as the stair, standing on the floor.", hl:{g:1,n:["tot","cyl","tgc"]}, do:[
+   A("Math","math","to empty space below the spiral nodes"),
+   D("Math","Add","Multiply"),
+   C("Group Input","Steps","Multiply","Value (top)"),
+   C("Group Input","Rise","Multiply","Value (bottom)") + ` This is the <b>total height</b>. Optional: N → Node tab → Label → <code>total height</code>.`,
+   A("Cylinder","cylinder","to the right of total height"),
+   V("Cylinder","Radius","0.15","1 m"),
+   C("total height","Value","Cylinder","Depth"),
+   A("Math","math","to below total height"),
+   D("this Math","Add","Multiply"),
+   C("total height","Value","this Multiply","Value (top)") + ` Leave the bottom Value at 0.5.`,
+   A("Combine XYZ","combine xyz","to the right of it"),
+   C("Multiply (× 0.5)","Value","Combine XYZ","Z"),
+   A("Transform Geometry","transform geometry","to the right of Cylinder"),
+   C("Cylinder","Mesh","Transform Geometry","Geometry"),
+   C("Combine XYZ","Vector","Transform Geometry","Translation")
+ ], why:`<b>Why lift by half?</b> Cylinder is built centred on its middle, so half of it would be under the floor.`},
+
+ {t:"The handrail curve", goal:"A spiral curve that winds with the steps.", hl:{g:1,n:["m2","div","rr","sp"]}, do:[
+   A("Math","math","to empty space below the column nodes"),
+   D("Math","Add","Multiply") + ` Label it <code>total turn</code>.`,
+   C("Group Input","Steps","total turn","Value (top)"),
+   C("Group Input","Turn","total turn","Value (bottom)"),
+   A("Math","math","to the right of total turn"),
+   D("this Math","Add","Divide"),
+   C("total turn","Value","Divide","Value (top)"),
+   V("Divide","bottom Value","6.2832","0.500") + ` (that's 2π, one full circle in radians).`,
+   A("Math","math","to below total turn") + ` Leave it on <i>Add</i>. Label it <code>rail radius</code>.`,
+   C("Group Input","Width","rail radius","Value (top)"),
+   V("rail radius","bottom Value","0.15","0.500"),
+   A("Spiral","spiral","to the right of Divide"),
+   V("Spiral","Resolution","64","32"),
+   C("Divide","Value","Spiral","Rotations"),
+   C("rail radius","Value","Spiral","Start Radius"),
+   C("rail radius","Value","Spiral","End Radius"),
+   C("total height","Value","Spiral","Height"),
+   `Tick the <b>Reverse</b> checkbox on Spiral.`
+ ], why:`<b>Reverse:</b> checked in 5.3, Spiral winds clockwise by default while the steps turn anticlockwise. Reverse makes them match.`},
+
+ {t:"Give the rail thickness", goal:"A round tube 0.9 m above the treads.", hl:{g:1,n:["tu","cc","c2m"]}, do:[
+   A("Transform Geometry","transform geometry","to the right of Spiral"),
+   C("Spiral","Curve","Transform Geometry","Geometry"),
+   V("Transform Geometry","Translation Z (third box)","0.9","0 m"),
+   A("Curve Circle","curve circle","to below that Transform"),
+   V("Curve Circle","Resolution","12","32"),
+   V("Curve Circle","Radius","0.03","1 m"),
+   A("Curve to Mesh","curve to mesh","to the right of both"),
+   C("Transform Geometry","Geometry","Curve to Mesh","Curve"),
+   C("Curve Circle","Curve","Curve to Mesh","Profile Curve"),
+   `Tick <b>Fill Caps</b> on Curve to Mesh.`,
+   A("Set Shade Smooth","shade smooth","to the right of Curve to Mesh"),
+   C("Curve to Mesh","Mesh","Set Shade Smooth","Mesh")
+ ]},
+
+ {t:"Balusters reusing the same rotation", goal:"One thin post per step, at the outer edge.", do:[
+   A("Cylinder","cylinder","to empty space below everything"),
+   V("Cylinder","Vertices","8","32"), V("Cylinder","Radius","0.015","1 m"), V("Cylinder","Depth","0.9","2 m"),
+   A("Combine XYZ","combine xyz","to under that Cylinder"),
+   C("rail radius","Value","Combine XYZ","X"),
+   V("Combine XYZ","Z","0.47"),
+   A("Transform Geometry","transform geometry","to the right of the Cylinder"),
+   C("Cylinder","Mesh","Transform Geometry","Geometry"),
+   C("Combine XYZ","Vector","Transform Geometry","Translation"),
+   A("Instance on Points","instance on points","to the right of it"),
+   C("Mesh Line","Mesh","this Instance on Points","Points") + ` (a second wire from the same output).`,
+   C("Transform Geometry","Geometry","this Instance on Points","Instance"),
+   C("the Combine XYZ from the spiral step","Vector","this Instance on Points","Rotation")
+ ], why:`<b>Reuse:</b> a field is a recipe, so the same rotation can drive as many nodes as you like.`},
+
+ {t:"Join and stress-test", goal:"The full stair in the output, driven by four sliders.", do:[
+   A("Join Geometry","join","to just left of Group Output"),
+   `Wire into Join Geometry's tall socket, one after the other: <b>treads</b> Instance on Points › Instances, <b>balusters</b> Instance on Points › Instances, <b>column</b> Transform Geometry › Geometry, <b>rail</b> Set Shade Smooth › Mesh.`,
+   C("Join Geometry","Geometry","Group Output","Geometry"),
+   `Properties → wrench: set Steps <code>40</code>, Turn <code>9</code> (grand atrium stair). Then Steps <code>16</code>, Turn <code>30</code> (tight tower stair).`
+ ], see:`The treads, column, rail and balusters all move together.`}
+],
+
+/* ============================== L3 ============================== */
+l3:[
+ {t:"Draw a path", goal:"A winding Bezier curve about 20 m long.", do:[
+   `<b>File → New → General</b>. Click the cube, ${K("Delete")}.`,
+   `Mouse over the viewport: ${K("Shift","A")} → <b>Curve → Bezier</b>.`,
+   `Press ${K("S")}, type <code>6</code>, press ${K("Enter")} (6× bigger).`,
+   `Press ${K("Ctrl","A")} → <b>Scale</b>. This makes 1 unit = 1 metre again.`,
+   `Press ${K("Tab")} for Edit Mode. Click the <b>dot at one end</b> of the curve (the middle dot of that end's handle, not the handle tips).`,
+   `Press ${K("E")}, move the mouse to pull out a new point, left-click. Repeat 3–4 times, turning a bit each time, to make a winding path.`,
+   `Press ${K("Tab")} to go back to Object Mode.`
+ ], why:`<b>Apply scale</b> so a spacing of 1.5 in the nodes really means 1.5 m between posts.`},
+
+ {t:"Geometry Nodes on the curve", goal:"A tree whose Group Input Geometry is your curve.", do:[
+   `With the curve still selected, click the <b>Geometry Nodes</b> tab → <b>New</b>.`,
+   `Drag Group Output far to the right.`
+ ], see:`The curve looks the same. Group Input › Geometry <i>is</i> the curve, so the tool will work on any curve you put it on.`},
+
+ {t:"Points along the curve", goal:"A point every 1.5 m, with a direction.", hl:{g:0,n:["gi","c2p"]}, do:[
+   `${K("Shift","A")} → type <code>curve to points</code> → click <b>Curve to Points</b>, and drop it <u>onto the wire</u> between Group Input and Group Output so it splices in.`,
+   D("Curve to Points","Count","Length"),
+   `Press and hold on the dot left of Curve to Points' <b>Length</b> input, drag to Group Input's <b>empty hollow dot</b>, let go.`,
+   `${K("N")} → Group tab → double-click the new item, rename it <code>Post Spacing</code>, Default <code>1.5</code>, Min <code>0.3</code>.`,
+   VW("Curve to Points") + ` In the Spreadsheet note the <b>rotation</b> column.`
+ ]},
+
+ {t:"A post that stands on its point", goal:"A 12 cm square post with its pivot at the bottom.", hl:{g:0,n:["pz","cube","hh","hz","tg"]}, do:[
+   `N → Group tab → <b>+ → Input</b>, name <code>Height</code>, Type <b>Float</b>, Default <code>1.2</code>.`,
+   A("Cube","cube","to below Curve to Points"),
+   A("Combine XYZ","combine xyz","to the left of the Cube"),
+   V("Combine XYZ","X","0.12"), V("Combine XYZ","Y","0.12"),
+   C("Group Input","Height","Combine XYZ","Z"),
+   C("Combine XYZ","Vector","Cube","Size"),
+   A("Math","math","to below that Combine XYZ"),
+   D("Math","Add","Multiply"),
+   C("Group Input","Height","Multiply","Value (top)") + ` Bottom stays 0.5.`,
+   A("Combine XYZ","combine xyz","to the right of Multiply"),
+   C("Multiply","Value","this Combine XYZ","Z"),
+   A("Transform Geometry","transform geometry","to the right of the Cube"),
+   C("Cube","Mesh","Transform Geometry","Geometry"),
+   C("the Z-only Combine XYZ","Vector","Transform Geometry","Translation")
+ ]},
+
+ {t:"Posts follow the path", goal:"Posts on every point, facing along the curve.", hl:{g:0,n:["iop"]}, do:[
+   A("Instance on Points","instance on points","to the right of Curve to Points"),
+   C("Curve to Points","Points","Instance on Points","Points"),
+   C("Transform Geometry","Geometry","Instance on Points","Instance"),
+   C("Curve to Points","Rotation","Instance on Points","Rotation") + ` (Curve to Points' fourth output).`,
+   C("Instance on Points","Instances","Group Output","Geometry"),
+   `Test: select the curve, ${K("Tab")}, move a point with ${K("G")}, ${K("Tab")} back. The posts follow.`
+ ]},
+
+ {t:"Weathered lean", goal:"Each post tilted a tiny random amount.", hl:{g:0,n:["rvv","rr"]}, do:[
+   A("Random Value","random value","to above Instance on Points"),
+   D("Random Value","Float","Vector"),
+   `<b>Type</b> Min: X <code>-0.06</code>, Y <code>-0.06</code>, Z <code>0</code>.`,
+   `<b>Type</b> Max: X <code>0.06</code>, Y <code>0.06</code>, Z <code>0</code>.`,
+   A("Rotate Rotation","rotate rotation","between Random Value and Instance on Points"),
+   C("Curve to Points","Rotation","Rotate Rotation","Rotation (top)"),
+   C("Random Value","Value","Rotate Rotation","Rotate By"),
+   C("Rotate Rotation","Rotation","Instance on Points","Rotation") + ` This replaces the direct wire from Curve to Points.`
+ ], why:`<b>Rotate Rotation</b> stacks one rotation on another: the curve direction plus a small random tilt.`},
+
+ {t:"Rails", goal:"Two flat rails swept along the curve.", hl:{g:1,n:["rs","q","c2m","t1","t2","j"]}, do:[
+   A("Resample Curve","resample","to empty space below everything, near Group Input"),
+   C("Group Input","Geometry","Resample Curve","Curve") + ` (a second wire from the same output).`,
+   D("Resample Curve","Count","Length"),
+   V("Resample Curve","Length","0.25","0.1 m"),
+   A("Quadrilateral","quadrilateral","to below Resample Curve"),
+   V("Quadrilateral","Width","0.04","2 m"), V("Quadrilateral","Height","0.12","2 m"),
+   A("Curve to Mesh","curve to mesh","to the right of both"),
+   C("Resample Curve","Curve","Curve to Mesh","Curve"),
+   C("Quadrilateral","Curve","Curve to Mesh","Profile Curve"),
+   `Tick <b>Fill Caps</b>.`,
+   A("Transform Geometry","transform geometry","to the right of Curve to Mesh, upper"),
+   A("Transform Geometry","transform geometry","to below the first one"),
+   C("Curve to Mesh","Mesh","first Transform","Geometry"), C("Curve to Mesh","Mesh","second Transform","Geometry"),
+   V("first Transform","Translation Z","0.95"), V("second Transform","Translation Z","0.45"),
+   A("Join Geometry","join","to just left of Group Output"),
+   `Wire into Join Geometry's tall socket: Instance on Points › Instances, first Transform › Geometry, second Transform › Geometry.`,
+   C("Join Geometry","Geometry","Group Output","Geometry")
+ ], pro:`<b>Rail lying flat?</b> Swap the Width and Height numbers on the Quadrilateral. The profile turns with the curve.`},
+
+ {t:"Make some ground (with what you learned in Lesson 1)", goal:"A hilly Ground object.", do:[
+   `Mouse over the viewport: ${K("Shift","A")} → <b>Mesh → Grid</b>.`,
+   `A small <b>Add Grid</b> panel appears at the bottom-left of the viewport. Click it to open, set X Subdivisions <code>60</code>, Y Subdivisions <code>60</code>, Size <code>30</code>.`,
+   `Press ${K("F2")}, type <code>Ground</code>, ${K("Enter")}.`,
+   `With Ground selected, in the node editor click <b>New</b> (Ground gets its own tree).`,
+   `Splice in <b>Set Position</b> between Group Input and Group Output, then build the hills exactly as in Lesson 1 step 4: Noise Texture (Scale 0.15) → Math Subtract 0.5 → Math Multiply 3 → Combine XYZ Z → Set Position Offset.`,
+   `Click the fence curve in the viewport again. The node editor switches back to the fence tree.`
+ ]},
+
+ {t:"Bring the ground into the fence tree", goal:"A Ground picker on the fence's modifier.", hl:{g:2,n:["gi","oi"]}, do:[
+   A("Object Info","object info","to empty space above Curve to Points"),
+   `On Object Info click the two-way switch <b>Original | Relative</b> → choose <b>Relative</b>.`,
+   `Press and hold on the dot left of Object Info's <b>Object</b> input, drag to Group Input's empty hollow dot. Rename it <code>Ground</code> in N → Group.`,
+   `Properties → wrench → on the fence modifier click the <b>Ground</b> field → pick <b>Ground</b>.`
+ ], why:`<b>Relative</b> brings the ground into the fence's own space, so the positions line up even if the two objects sit in different places.`},
+
+ {t:"Fire rays down at the ground", goal:"A Raycast that knows where the ground is under every point.", hl:{g:2,n:["pos","add","rc"]}, do:[
+   A("Raycast","raycast","to the right of Object Info"),
+   C("Object Info","Geometry","Raycast","Target Geometry"),
+   A("Position","position","to below Object Info"),
+   A("Vector Math","vector math","to the right of Position") + ` It stays on <i>Add</i>.`,
+   C("Position","Position","Vector Math","Vector (top)"),
+   V("Vector Math","bottom Vector's Z box","50"),
+   C("Vector Math","Vector","Raycast","Source Position"),
+   `Ray Direction already shows 0, 0, −1 (straight down). Leave it.`,
+   V("Raycast","Ray Length","200","100 m")
+ ]},
+
+ {t:"Snap posts and rails to the ground", goal:"The fence drapes over the hills.", hl:{g:2,n:["sp","pts"]}, do:[
+   `${K("Shift","A")} → <code>set position</code> → drop it <u>onto the wire</u> Curve to Points › Points → Instance on Points › Points.`,
+   C("Raycast","Is Hit","that Set Position","Selection"),
+   C("Raycast","Hit Position","that Set Position","Position"),
+   `${K("Shift","A")} → <code>set position</code> again → drop it <u>onto the wire</u> Resample Curve → Curve to Mesh.`,
+   C("Raycast","Is Hit","second Set Position","Selection"),
+   C("Raycast","Hit Position","second Set Position","Position"),
+   `Mouse over the viewport, click the fence curve, press ${K("G")} and move it around. The fence re-drapes as it moves.`
+ ], why:`<b>One Raycast, two jobs:</b> it's a field, so each Set Position works it out on its own points.`}
+],
+
+/* ============================== L4 ============================== */
+l4:[
+ {t:"Open the fence and save a copy", goal:"A safe file to polish.", do:[
+   `Open your Lesson 3 file. <b>File → Save As</b> → name <code>fence_tool.blend</code> → <b>Save As</b>.`,
+   `Click the fence curve so its tree shows in the node editor.`
+ ]},
+
+ {t:"Tidy the graph", goal:"Labelled frames around Posts, Rails and Snap.", do:[
+   `Left-drag a box over empty space around all the post nodes (Cube, Combine XYZs, Transform, Instance on Points) to select them.`,
+   `Press ${K("Ctrl","J")}. A frame wraps them.`,
+   `With the frame selected: ${K("N")} → <b>Node</b> tab → <b>Label</b> → type <code>Posts</code>.`,
+   `Repeat for the rail nodes (<code>Rails</code>) and the Raycast nodes (<code>Snap</code>).`,
+   `Messy long wire? Hold ${K("Shift")} and right-drag across it. A small dot (reroute) appears that you can drag to bend the wire.`
+ ], why:`<b>Future you</b> opens this in six months. Frames are free documentation.`},
+
+ {t:"Polish the inputs", goal:"Limits, tooltips and a Rails panel.", do:[
+   `${K("N")} → <b>Group</b> tab. Click <i>Post Spacing</i> in the list. Below: <b>Min</b> <code>0.3</code>, <b>Max</b> <code>10</code>, <b>Description</b> <code>Distance between posts in metres</code> (this becomes the tooltip).`,
+   `Click <i>Height</i>: Min <code>0.3</code>, Max <code>3</code>.`,
+   A("Combine XYZ","combine xyz","to the left of the top rail's Transform Geometry"),
+   C("Combine XYZ","Vector","top rail Transform","Translation"),
+   `Drag from the dot left of this Combine XYZ's <b>Z</b> to Group Input's empty dot. Rename it <code>Top Rail Height</code>, Default <code>0.95</code>.`,
+   `Same for the low rail: new Combine XYZ → its Translation, expose Z as <code>Low Rail Height</code>, Default <code>0.45</code>.`,
+   `In the Group tab click <b>+ → Panel</b>, rename it <code>Rails</code>. Drag the two rail inputs in the list onto the Rails panel.`
+ ], see:`On the modifier the rail sliders sit inside a folding <b>Rails</b> section.`},
+
+ {t:"A post style dropdown", goal:"Square or Round posts, picked on the modifier.", hl:{g:0,n:["ms","cyl","cube","tg","gi"]}, do:[
+   A("Menu Switch","menu switch","to between the post Cube and its Transform Geometry") + ` Its type already says <i>Geometry</i>.`,
+   `With Menu Switch selected: ${K("N")} → <b>Node</b> tab → the item list shows <i>A</i> and <i>B</i>. Double-click A → <code>Square</code>, double-click B → <code>Round</code>.`,
+   C("Cube","Mesh","Menu Switch","Square"),
+   A("Cylinder","cylinder","to below the Cube"),
+   V("Cylinder","Vertices","10","32"), V("Cylinder","Radius","0.07","1 m"),
+   C("Group Input","Height","Cylinder","Depth"),
+   C("Cylinder","Mesh","Menu Switch","Round"),
+   C("Menu Switch","Output","post Transform Geometry","Geometry") + ` This replaces the Cube's direct wire.`,
+   `Drag from the dot left of Menu Switch's <b>Menu</b> input to Group Input's empty dot. Rename it <code>Post Style</code>.`
+ ], see:`Properties → wrench now has a <b>Post Style</b> dropdown: Square / Round.`},
+
+ {t:"Store a 'wear' value on every post", goal:"Each post carries its own random number.", hl:{g:1,n:["st","rv","iop"]}, do:[
+   `${K("Shift","A")} → <code>store named attribute</code> → drop it <u>onto the wire</u> posts' Instance on Points › Instances → Join Geometry.`,
+   `Its first dropdown says <i>Float</i>, so leave it. Second dropdown <i>Point</i> → choose <b>Instance</b>.`,
+   `Click the empty <b>Name</b> box, type <code>wear</code>, ${K("Enter")}.`,
+   A("Random Value","random value","to below Store Named Attribute") + ` Leave Float, Min 0, Max 1.`,
+   C("Random Value","Value","Store Named Attribute","Value"),
+   `Check: ${K("Ctrl","Shift")}-click Store Named Attribute. In the Spreadsheet's left column click <b>Instances</b>. A <code>wear</code> column is there.`
+ ]},
+
+ {t:"A material that reads 'wear'", goal:"Every post a slightly different wood colour.", hl:{g:2,n:["at","ramp","bsdf","mo"]}, do:[
+   `Properties → the red-sphere <b>Material</b> tab → <b>New</b>. Double-click the name and type <code>FenceWood</code>.`,
+   `${K("Shift","A")} → <code>set material</code> → drop it <u>onto the wire</u> Join Geometry → Group Output. Click its Material box → pick <b>FenceWood</b>.`,
+   `Click the <b>Shading</b> workspace tab at the top. The bottom panel shows Principled BSDF → Material Output.`,
+   `Mouse over that bottom panel: ${K("Shift","A")} → <code>attribute</code> → click <b>Attribute</b> → drop it on the left.`,
+   `On Attribute: <b>Type</b> dropdown <i>Geometry</i> → <b>Instancer</b>. Click <b>Name</b> → type <code>wear</code>.`,
+   `${K("Shift","A")} → <code>color ramp</code> → drop it between Attribute and Principled BSDF.`,
+   C("Attribute","Factor","Color Ramp","Factor"),
+   C("Color Ramp","Color","Principled BSDF","Base Color"),
+   `On the Color Ramp click the <b>left</b> marker under the colour bar, then the colour box below → pick a fresh brown. Click the <b>right</b> marker → pick a weathered grey.`,
+   `Mouse over the viewport, press ${K("Z")} → <b>Material Preview</b>.`
+ ], pro:`<b>All posts the same colour?</b> In the fence tree add <b>Realize Instances</b> just before Set Material, and switch the Attribute node's Type to <b>Geometry</b>.`},
+
+ {t:"A drag handle for Height", goal:"An arrow in the viewport that changes the fence height.", do:[
+   `Back to the <b>Geometry Nodes</b> tab, fence curve selected.`,
+   A("Linear Gizmo","linear gizmo","to next to Group Input"),
+   C("Group Input","Height","Linear Gizmo","Value") + ` Direction already shows 0, 0, 1 (up). Leave its Transform output unwired.`,
+   `In the viewport, with the fence selected, drag the arrow that appears.`
+ ], pro:`<b>No arrow?</b> In the viewport's top-right header, make sure the <b>Show Gizmo</b> toggle (arrow icon) is on.`},
+
+ {t:"Make it an asset", goal:"Fence Tool in the Add Modifier menu of any file.", do:[
+   `In the node editor's top bar, double-click the tree name (e.g. <i>Geometry Nodes</i>) → type <code>Fence Tool</code> ${K("Enter")}.`,
+   `${K("N")} → <b>Group</b> tab → <b>Usage</b>: make sure <b>Modifier</b> is ticked.`,
+   `In the Outliner (top-right panel) click the <b>Display Mode</b> dropdown at its top → <b>Blender File</b>. Open <b>Node Groups</b> → right-click <b>Fence Tool</b> → <b>Mark as Asset</b>.`,
+   `<b>Edit → Preferences → File Paths → Asset Libraries</b> → <b>+</b> → choose a folder (e.g. <code>Documents\\BlenderAssets</code>). Close Preferences.`,
+   `<b>File → Save As</b> into that folder.`,
+   `Test: <b>File → New → General</b>, add a Bezier curve, Properties → wrench → <b>Add Modifier</b> → find <b>Fence Tool</b> (under its catalog, or <i>Unassigned</i>).`
+ ]},
+
+ {t:"Get it into Unreal", goal:"A plain mesh copy exported as FBX.", do:[
+   `Object Mode, click the fence curve. Press ${K("Shift","D")}, then right-click once (the copy stays in place).`,
+   `Top menu <b>Object → Convert → Mesh</b>. The copy is now an ordinary mesh with everything baked in.`,
+   `<b>File → Export → FBX (.fbx)</b>. On the right tick <b>Limit to: Selected Objects</b>. Click <b>Export FBX</b>.`,
+   `In Unreal: Content Browser → <b>Import</b> → pick the .fbx → Import. Drag it into the level.`
+ ], why:`<b>Keep the live original.</b> The converted copy is a bake. Change the curve later, convert again, export again. Unreal never runs Blender's nodes.`}
+]
+};
+
+const COURSE = {
+  title: "Geometry Nodes Fast Track",
+  blender: "5.3"
+};
+
+const LESSONS = [
+/* ---------------------------------------------------------------- L1 */
+{
+  id:"l1", num:1, short:"Slope-aware scatter",
+  title:"Build a terrain that dresses itself",
+  kick:"Lesson 1 · Fields, points and instances",
+  time:"45–60 min",
+  intro:`From an empty plane you'll grow a 20 m hillside, then make Blender decide by itself where grass grows (flat ground) and where rocks pile up (steep slopes). The rocks are modelled by nodes too, so no outside assets. This is the same idea that drives foliage and debris placement on big open-world maps.`,
+  use:`<b>Used for:</b> open-world foliage and debris scatter, cliff-face rubble, set dressing that updates the moment the terrain changes.`,
+  learn:["Geometry flow","Fields (diamond sockets)","Viewer + Spreadsheet","Normal-based masks","Distribute Points on Faces","Poisson Disk","Instance on Points","Exposing parameters"],
+  concepts:[
+    {h:"Geometry flows left → right", p:"Teal sockets carry whole geometry (a mesh, curves, points or instances). Every node takes geometry in, changes it, and passes it on. The Group Output is what the modifier puts in the viewport."},
+    {h:"Fields are recipes, not values", p:"A diamond socket holds a <i>field</i>: a little formula that gets worked out once per element (vertex, face, point…). <code>Normal</code> has no value on its own. It gets one for each face of whatever geometry the node it feeds is working on."},
+    {h:"Context decides the answer", p:"The same Noise Texture gives hills when it feeds the terrain's Set Position, and bumpy rocks when it feeds the rock's Set Position. The geometry socket of the node that <i>uses</i> the field decides what it is evaluated on."},
+    {h:"Instances are cheap copies", p:"Instance on Points doesn't copy meshes. It stores 'put rock #1 here, rotated like this'. Ten thousand rocks cost almost nothing until you Realize them."}
+  ],
+  graphs:[
+    {title:"Graph A: terrain from a Grid", hint:"Set Position + noise = hills", w:1090, h:330,
+     nodes:[
+      {id:"grid",t:"Grid",c:"geo",x:20,y:16,o:[["Mesh","geo"]],i:[["Size X","float","20 m"],["Size Y","float","20 m"],["Vertices X","int","200"],["Vertices Y","int","200"]]},
+      {id:"noise",t:"Noise Texture",c:"tex",x:20,y:176,p:["3D · fBM"],o:[["Factor","float","","f"],["Color","col","","f"]],i:[["Vector","vec","(Position)","f"],["Scale","float","0.15","f"],["Detail","float","4.0","f"]]},
+      {id:"sub",t:"Math · Subtract",c:"util",x:220,y:196,o:[["Value","float","","f"]],i:[["Value","float","","f"],["Value","float","0.5"]]},
+      {id:"mul",t:"Math · Multiply",c:"util",x:400,y:196,o:[["Value","float","","f"]],i:[["Value","float","","f"],["Value","float","8.0  (Height)"]]},
+      {id:"cxyz",t:"Combine XYZ",c:"util",x:580,y:176,w:130,o:[["Vector","vec","","f"]],i:[["X","float","0"],["Y","float","0"],["Z","float","","f"]]},
+      {id:"setp",t:"Set Position",c:"geo",x:770,y:30,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Selection","bool","✓","f"],["Position","vec","","f"],["Offset","vec","","f"]]},
+      {id:"out",t:"Group Output",c:"group",x:950,y:40,w:120,i:[["Geometry","geo"]]}
+     ],
+     links:[["grid.Mesh","setp.Geometry"],["noise.Factor","sub.Value"],["sub.Value","mul.Value"],["mul.Value","cxyz.Z"],["cxyz.Vector","setp.Offset"],["setp.Geometry","out.Geometry"]],
+     cap:"Noise gives each vertex a value around 0.5. Subtract 0.5 to centre it on zero, multiply by a height, and push the vertex up or down by that much."},
+    {title:"Graph B: slope mask → two point sets", hint:"Normal Z = how flat a face is", w:780, h:470,
+     nodes:[
+      {id:"terr",t:"Set Position (terrain)",c:"geo",x:20,y:20,w:170,o:[["Geometry","geo"]]},
+      {id:"nrm",t:"Normal",c:"input",x:20,y:150,w:120,o:[["Normal","vec","","f"]]},
+      {id:"sep",t:"Separate XYZ",c:"util",x:170,y:150,w:130,o:[["X","float","","f"],["Y","float","","f"],["Z","float","","f"]],i:[["Vector","vec","","f"]]},
+      {id:"cf",t:"Compare",c:"util",x:340,y:100,w:160,p:["Float · Greater Than"],o:[["Result","bool","","f"]],i:[["A","float","","f"],["B","float","0.92"]]},
+      {id:"cs",t:"Compare",c:"util",x:340,y:270,w:160,p:["Float · Less Than"],o:[["Result","bool","","f"]],i:[["A","float","","f"],["B","float","0.85"]]},
+      {id:"df",t:"Distribute Points on Faces",c:"geo",x:560,y:10,w:200,p:["Random"],o:[["Points","geo"],["Normal","vec","","f"],["Rotation","rot","","f"]],i:[["Mesh","geo"],["Selection","bool","","f"],["Density","float","15","f"],["Seed","int","0"]]},
+      {id:"ds",t:"Distribute Points on Faces",c:"geo",x:560,y:232,w:200,p:["Poisson Disk"],o:[["Points","geo"],["Normal","vec","","f"],["Rotation","rot","","f"]],i:[["Mesh","geo"],["Selection","bool","","f"],["Distance Min","float","0.8 m"],["Density Max","float","3"],["Seed","int","0"]]}
+     ],
+     links:[["terr.Geometry","df.Mesh"],["terr.Geometry","ds.Mesh"],["nrm.Normal","sep.Vector"],["sep.Z","cf.A"],["sep.Z","cs.A"],["cf.Result","df.Selection"],["cs.Result","ds.Selection"]],
+     cap:"Top set = grass points on flat ground (Normal Z above 0.92, slopes under about 23°). Bottom set = rock points on steep ground (Normal Z below 0.85, slopes over about 32°). Poisson Disk keeps rocks at least 0.8 m apart."},
+    {title:"Graph C: node-made rock, instancing and the final join", hint:"one rock mesh, hundreds of copies", w:1290, h:500,
+     nodes:[
+      {id:"ico",t:"Ico Sphere",c:"geo",x:20,y:20,o:[["Mesh","geo"],["UV Map","vec","","f"]],i:[["Radius","float","0.5 m"],["Subdivisions","int","3"]]},
+      {id:"rnoise",t:"Noise Texture",c:"tex",x:20,y:170,o:[["Factor","float","","f"]],i:[["Scale","float","2.5","f"],["Detail","float","6.0","f"]]},
+      {id:"rmul",t:"Math · Multiply",c:"util",x:200,y:180,o:[["Value","float","","f"]],i:[["Value","float","","f"],["Value","float","0.35"]]},
+      {id:"rn",t:"Normal",c:"input",x:200,y:310,w:120,o:[["Normal","vec","","f"]]},
+      {id:"vs",t:"Vector Math · Scale",c:"util",x:380,y:220,w:160,o:[["Vector","vec","","f"]],i:[["Vector","vec","","f"],["Scale","float","","f"]]},
+      {id:"rsp",t:"Set Position",c:"geo",x:580,y:20,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Selection","bool","✓","f"],["Position","vec","","f"],["Offset","vec","","f"]]},
+      {id:"rpts",t:"Rock points (Poisson)",c:"geo",x:580,y:200,w:170,o:[["Points","geo"],["Rotation","rot","","f"]]},
+      {id:"rv",t:"Random Value",c:"util",x:580,y:310,p:["Float"],o:[["Value","float","","f"]],i:[["Min","float","0.4"],["Max","float","1.3"]]},
+      {id:"iop",t:"Instance on Points",c:"geo",x:800,y:20,w:170,o:[["Instances","geo"]],i:[["Points","geo"],["Selection","bool","✓","f"],["Instance","geo"],["Rotation","rot","","f"],["Scale","vec","","f"]]},
+      {id:"terr",t:"Terrain",c:"geo",x:800,y:290,w:130,o:[["Geometry","geo"]]},
+      {id:"grass",t:"Grass instances",c:"geo",x:800,y:380,w:150,o:[["Instances","geo"]]},
+      {id:"join",t:"Join Geometry",c:"geo",x:1010,y:170,w:140,o:[["Geometry","geo"]],i:[["Geometry","geo","","m"]]},
+      {id:"out",t:"Group Output",c:"group",x:1170,y:170,w:110,i:[["Geometry","geo"]]}
+     ],
+     links:[["ico.Mesh","rsp.Geometry"],["rnoise.Factor","rmul.Value"],["rmul.Value","vs.Scale"],["rn.Normal","vs.Vector"],["vs.Vector","rsp.Offset"],["rsp.Geometry","iop.Instance"],["rpts.Points","iop.Points"],["rpts.Rotation","iop.Rotation"],["rv.Value","iop.Scale"],["iop.Instances","join.Geometry"],["terr.Geometry","join.Geometry"],["grass.Instances","join.Geometry"],["join.Geometry","out.Geometry"]],
+     cap:"Normal and Noise here feed the rock's Set Position, so they are worked out on the ico sphere and not on the terrain. That is field context in action. Join Geometry takes any number of inputs (the tall socket)."}
+  ],
+  steps:STEPS.l1,
+  check:`<b>You should have:</b> a 20 m hilly terrain, grass only on gentle ground, separated rocks only on steep ground that lean with the slope, and modifier sliders that rebuild it instantly. Spreadsheet → <b>Instances</b> shows thousands of instances while the file stays light.`,
+  cards:[
+    ["What does a diamond-shaped socket mean?","It carries a <b>field</b>: a formula worked out once per element (vertex, face, point…) on the geometry of the node it plugs into."],
+    ["The same Noise node makes hills on the terrain and lumps on the rock. Why?","Field context: a field is evaluated on the geometry of the node that <b>uses</b> it. Terrain Set Position → terrain vertices. Rock Set Position → sphere vertices."],
+    ["How do you preview the output of any node?","<kbd>Ctrl</kbd><kbd>Shift</kbd> + click it (Viewer node), then read the Spreadsheet."],
+    ["Which output of Distribute Points on Faces lines instances up with the surface?","<b>Rotation</b> (it's built from the face normal)."],
+    ["Random vs Poisson Disk distribution?","Random only uses density and can clump. Poisson Disk keeps a <b>minimum distance</b> (Distance Min) between points, with Density Max as a cap. Use it for anything that must not overlap."],
+    ["What does Normal Z ≈ 1 mean? And 0.85?","1 = facing straight up (flat ground). It's the cosine of the slope: 0.85 ≈ 32°, 0.92 ≈ 23°."],
+    ["How do you turn a node's value into a modifier slider?","Drag its input socket onto the <b>empty socket</b> of the Group Input node, then rename it in N → Group."],
+    ["Instances vs Realize Instances?","Instances = many references to one mesh (cheap). <b>Realize Instances</b> turns them into real, separate geometry (needed before editing their vertices; costs memory)."],
+    ["Why subtract 0.5 from the noise before scaling?","Noise Factor sits around 0.5. Centring it on 0 makes Height go both up and down around Z = 0."],
+    ["Fastest way to put a node in the middle of a chain?","Drop it onto the existing link (it highlights) and it splices itself in."]
+  ],
+  boss:{
+    title:"Boss fight: rebuild it from memory",
+    brief:"Turn on Memory mode, start the timer, and rebuild the whole thing in a fresh file without peeking. Tick each part as it works.",
+    goal:20,
+    items:[
+      ["Terrain from Grid + Noise, centred, with a Height slider",""],
+      ["Slope mask from Normal Z, checked with the Viewer",""],
+      ["Grass on flat ground, rocks (Poisson) on steep ground",""],
+      ["Rock modelled with nodes (Ico Sphere + Normal × Noise)",""],
+      ["Rocks lean with the slope, random scale",""],
+      ["Everything joined; five sliders on the modifier",""]
+    ],
+    stretch:[
+      ["Valley-only bushes","Use <b>Boolean Math (AND)</b> to combine 'flat' with <code>Position Z &lt; 0</code>: a third scatter that only grows in valley floors."],
+      ["Snow caps","<b>Store Named Attribute</b> 'snow' = Position Z above 1.5 AND flat. Read it in a material with an <b>Attribute</b> node to paint white tops."],
+      ["Random spin on rocks","Rotate the Distribute rotation by a random Z angle with <b>Rotate Rotation</b>, so the rocks don't all face the same way."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L2 */
+{
+  id:"l2", num:2, short:"Spiral staircase generator",
+  title:"A parametric spiral staircase",
+  kick:"Lesson 2 · Index, math on fields and parameters",
+  time:"40–50 min",
+  intro:`Architects and level designers love this one. Four numbers (steps, rise, turn, width) drive the steps, the central column, a handrail that winds with them, and the balusters. Change one number and everything moves together, with no edit mode at all.`,
+  use:`<b>Used for:</b> modular level kits (stairs, towers, spiral ramps), architecture visualisation, anything built from "the same piece, offset a bit more each time".`,
+  learn:["Index field","Math on fields","Group Input sockets","Mesh Line","Instance rotation","Pivot by offsetting","Spiral curve","Curve to Mesh","Reusing fields"],
+  concepts:[
+    {h:"Index = 'which one am I?'", p:"Every element has a number from 0 to n−1. Multiply it and you get 'each step a bit higher', 'each step a bit more turned'. That's the core trick of procedural repetition."},
+    {h:"Inputs drive many places", p:"One Group Input socket can feed the step count, the column height and the number of rail turns. Design the <i>maths</i>, not the mesh."},
+    {h:"Pivot = where the mesh sits", p:"Instances rotate around their own origin. Slide the step mesh away from the origin before instancing and the rotation swings it around the column."},
+    {h:"Types convert by themselves", p:"Integer → Float, Vector → Rotation (as Euler XYZ). A grey or coloured link is fine. A <span style='color:#ef6b6b'>red</span> link means the conversion isn't allowed."}
+  ],
+  graphs:[
+    {title:"Graph A: placing and turning the steps", hint:"Index × Turn = spiral", w:1290, h:470,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:20,w:130,o:[["Steps","int"],["Rise","float"],["Turn","float"],["Width","float"]]},
+      {id:"c1",t:"Combine XYZ",c:"util",x:190,y:20,w:120,o:[["Vector","vec"]],i:[["X","float","0"],["Y","float","0"],["Z","float"]]},
+      {id:"ml",t:"Mesh Line",c:"geo",x:350,y:20,p:["Offset"],o:[["Mesh","geo"]],i:[["Count","int"],["Start Location","vec","0, 0, 0"],["Offset","vec"]]},
+      {id:"csz",t:"Combine XYZ",c:"util",x:190,y:170,w:120,o:[["Vector","vec"]],i:[["X","float"],["Y","float","0.35"],["Z","float","0.05"]]},
+      {id:"cube",t:"Cube",c:"geo",x:350,y:200,w:130,o:[["Mesh","geo"]],i:[["Size","vec"]]},
+      {id:"ma",t:"Math · Multiply Add",c:"util",x:190,y:320,w:150,o:[["Value","float"]],i:[["Value","float"],["Multiplier","float","0.5"],["Addend","float","0.15"]]},
+      {id:"ct",t:"Combine XYZ",c:"util",x:380,y:320,w:120,o:[["Vector","vec"]],i:[["X","float"],["Y","float","0"],["Z","float","0"]]},
+      {id:"tg",t:"Transform Geometry",c:"geo",x:540,y:190,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec"],["Rotation","rot","0°"],["Scale","vec","1"]]},
+      {id:"idx",t:"Index",c:"input",x:560,y:380,w:100,o:[["Index","int","","f"]]},
+      {id:"im",t:"Math · Multiply",c:"util",x:700,y:350,w:130,o:[["Value","float","","f"]],i:[["Value","float","","f"],["Value","float"]]},
+      {id:"cr",t:"Combine XYZ",c:"util",x:860,y:320,w:120,o:[["Vector","vec","","f"]],i:[["X","float","0"],["Y","float","0"],["Z","float","","f"]]},
+      {id:"iop",t:"Instance on Points",c:"geo",x:1010,y:40,w:170,o:[["Instances","geo"]],i:[["Points","geo"],["Selection","bool","✓","f"],["Instance","geo"],["Rotation","rot","","f"],["Scale","vec","1","f"]]},
+      {id:"n1",note:"→ Join Geometry",x:1200,y:52,w:80}
+     ],
+     links:[["gi.Rise","c1.Z"],["c1.Vector","ml.Offset"],["gi.Steps","ml.Count"],["gi.Width","csz.X"],["csz.Vector","cube.Size"],["gi.Width","ma.Value"],["ma.Value","ct.X"],["ct.Vector","tg.Translation"],["cube.Mesh","tg.Geometry"],["idx.Index","im.Value"],["gi.Turn","im.Value@1"],["im.Value","cr.Z"],["ml.Mesh","iop.Points"],["tg.Geometry","iop.Instance"],["cr.Vector","iop.Rotation"]],
+     cap:"Mesh Line makes a vertical column of points, one per step. The step mesh is pushed out to X = Width/2 + 0.15, so its inner end starts at the column surface. Index × Turn becomes the Z rotation of each instance."},
+    {title:"Graph B: column and handrail from the same numbers", hint:"the rail spiral has to match the steps", w:1230, h:470,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:150,w:130,o:[["Steps","int"],["Rise","float"],["Turn","float"],["Width","float"]]},
+      {id:"tot",t:"Multiply · total height",c:"util",x:200,y:20,w:170,o:[["Value","float"]],i:[["Value","float"],["Value","float"]]},
+      {id:"m2",t:"Multiply · total turn",c:"util",x:200,y:150,w:170,o:[["Value","float"]],i:[["Value","float"],["Value","float"]]},
+      {id:"rr",t:"Add · rail radius",c:"util",x:200,y:280,w:170,o:[["Value","float"]],i:[["Value","float"],["Value","float","0.15"]]},
+      {id:"div",t:"Divide · turns",c:"util",x:400,y:150,w:140,o:[["Value","float"]],i:[["Value","float"],["Value","float","6.2832 (2π)"]]},
+      {id:"cyl",t:"Cylinder",c:"geo",x:560,y:10,w:140,o:[["Mesh","geo"]],i:[["Vertices","int","32"],["Radius","float","0.15 m"],["Depth","float"]]},
+      {id:"tgc",t:"Transform Geometry",c:"geo",x:730,y:10,w:170,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec","Z = height × 0.5"]]},
+      {id:"sp",t:"Spiral",c:"curve",x:570,y:170,w:150,o:[["Curve","geo"]],i:[["Resolution","int","64"],["Rotations","float"],["Start Radius","float"],["End Radius","float"],["Height","float"],["Reverse","bool","✓"]]},
+      {id:"tu",t:"Transform Geometry",c:"geo",x:750,y:180,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec","0, 0, 0.9"]]},
+      {id:"cc",t:"Curve Circle",c:"curve",x:750,y:330,w:140,o:[["Curve","geo"]],i:[["Resolution","int","12"],["Radius","float","0.03 m"]]},
+      {id:"c2m",t:"Curve to Mesh",c:"curve",x:940,y:200,w:150,o:[["Mesh","geo"]],i:[["Curve","geo"],["Profile Curve","geo"],["Fill Caps","bool","✓"]]},
+      {id:"n1",note:"Column and rail → Join Geometry with the steps",x:1110,y:90,w:110}
+     ],
+     links:[["gi.Steps","tot.Value"],["gi.Rise","tot.Value@1"],["gi.Steps","m2.Value"],["gi.Turn","m2.Value@1"],["gi.Width","rr.Value"],["m2.Value","div.Value"],["tot.Value","cyl.Depth"],["cyl.Mesh","tgc.Geometry"],["div.Value","sp.Rotations"],["rr.Value","sp.Start Radius"],["rr.Value","sp.End Radius"],["tot.Value","sp.Height"],["sp.Curve","tu.Geometry"],["tu.Geometry","c2m.Curve"],["cc.Curve","c2m.Profile Curve"]],
+     cap:"Checked in 5.3: the Spiral node winds clockwise (seen from above) by default, while positive Z rotation turns the steps counter-clockwise. Tick Reverse so the rail follows the steps."}
+  ],
+  steps:STEPS.l2,
+  check:`<b>You should have:</b> four modifier inputs that rebuild treads, column, a rail that winds exactly with the steps, and one baluster per step. If the rail goes the wrong way round, check <b>Reverse</b>. If it ends early or late, check the ÷ 2π.`,
+  cards:[
+    ["What does the Index field give you?","Each element's number, 0 to n−1, in its domain. It's the basic way to make each copy a predictable bit different."],
+    ["Why move the tread mesh before instancing it?","Instances rotate around their own origin. Offsetting the mesh makes them orbit the column (pivot trick)."],
+    ["How many turns should the rail spiral make?","Steps × Turn ÷ 2π (with Turn in radians). Spiral's Rotations counts full turns."],
+    ["Why does the column need a Transform after the Cylinder?","Cylinder is built centred on the origin. Raise it by half its depth to stand it on the floor."],
+    ["Which way does the Spiral node wind by default (5.3)?","Clockwise seen from above. Tick <b>Reverse</b> to match positive Z rotation (counter-clockwise)."],
+    ["What does an Angle subtype on a Float input do?","You type degrees in the UI, the nodes receive radians."],
+    ["How do you cut links?","<kbd>Ctrl</kbd> + right-mouse drag across them."],
+    ["Red link vs grey link?","Grey/coloured = valid (maybe auto-converted). Red = the conversion isn't allowed, so the value is ignored."],
+    ["How do you make a tube from a curve?","Curve to Mesh with a Profile Curve (Curve Circle for round, Quadrilateral for square)."]
+  ],
+  boss:{
+    title:"Boss fight: stairs from memory",
+    brief:"Blank file, Memory mode on, timer running. Get a working, fully parametric spiral stair.",
+    goal:20,
+    items:[
+      ["Four inputs with sensible defaults and subtypes",""],
+      ["Steps placed with Mesh Line and turned with Index × Turn",""],
+      ["Column the right height, standing on the floor",""],
+      ["Handrail spiral that matches the steps at any setting",""],
+      ["Balusters reusing the same rotation field",""]
+    ],
+    stretch:[
+      ["Landings","Every 12th step becomes a big landing: <b>Math · Modulo</b>(Index, 12) → Compare = 0 → <b>Scale Instances</b> (Selection) with a wider Y scale."],
+      ["Double helix","Instance a second set rotated by 180° with <b>Rotate Instances</b> for a DNA or castle-tower stair."],
+      ["Straight stair mode","Set Turn to 0 and see what breaks (the rail). Fix it with a <b>Switch</b>: use a Curve Line when Turn = 0."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L3 */
+{
+  id:"l3", num:3, short:"Fence that hugs terrain",
+  title:"Draw a curve, get a fence that snaps to the ground",
+  kick:"Lesson 3 · Curves, curve orientation and Raycast",
+  time:"50–60 min",
+  intro:`Draw any path and get evenly spaced posts that face along it, rails between them, and a weathered random lean. Then the impressive part: the whole fence drops onto any terrain with a Raycast and follows the ground as you move it.`,
+  use:`<b>Used for:</b> fences, guard rails, cables, pipes, power lines, roads and kerbs, train tracks. Any "kit along a spline" tool that level artists use every day.`,
+  learn:["Curve objects as input","Curve to Points","Curve tangent rotation","Rotate Rotation","Resample Curve","Curve to Mesh profiles","Object Info (Relative)","Raycast","One field, two geometries"],
+  concepts:[
+    {h:"A curve already knows its direction", p:"Curves carry a tangent (forward) and a normal (sideways). <code>Curve to Points</code> turns those into a ready-made <b>Rotation</b> output, so instances face along the path for free."},
+    {h:"Evaluated vs control points", p:"A Bezier has a few control points but many evaluated points between them. Resample gives you evenly spaced points, which you need when you want to move them (snapping)."},
+    {h:"Reading other objects", p:"<code>Object Info</code> brings another object's evaluated geometry in. Set it to <b>Relative</b> so it lands in <i>this</i> object's space and the positions line up."},
+    {h:"Raycast = drop a laser", p:"For every point: fire a ray from above, straight down, onto the ground. Where it hits, move the point there. Posts and rails each run the same field on their own points."}
+  ],
+  graphs:[
+    {title:"Graph A: posts along any curve", hint:"Curve to Points gives Rotation for free", w:1230, h:460,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:120,w:140,o:[["Geometry","geo"],["Post Spacing","float"],["Height","float"]]},
+      {id:"c2p",t:"Curve to Points",c:"curve",x:200,y:20,w:160,p:["Length"],o:[["Points","geo"],["Tangent","vec","","f"],["Normal","vec","","f"],["Rotation","rot","","f"]],i:[["Curve","geo"],["Length","float"]]},
+      {id:"pz",t:"Combine XYZ",c:"util",x:200,y:230,w:120,o:[["Vector","vec"]],i:[["X","float","0.12"],["Y","float","0.12"],["Z","float"]]},
+      {id:"cube",t:"Cube",c:"geo",x:370,y:240,w:120,o:[["Mesh","geo"]],i:[["Size","vec"]]},
+      {id:"hh",t:"Multiply",c:"util",x:370,y:340,w:120,o:[["Value","float"]],i:[["Value","float"],["Value","float","0.5"]]},
+      {id:"hz",t:"Combine XYZ",c:"util",x:530,y:330,w:120,o:[["Vector","vec"]],i:[["X","float","0"],["Y","float","0"],["Z","float"]]},
+      {id:"rvv",t:"Random Value",c:"util",x:420,y:20,w:180,p:["Vector"],o:[["Value","vec","","f"]],i:[["Min","vec","−0.06, −0.06, 0"],["Max","vec","0.06, 0.06, 0"]]},
+      {id:"rr",t:"Rotate Rotation",c:"util",x:650,y:40,w:150,o:[["Rotation","rot","","f"]],i:[["Rotation","rot","","f"],["Rotate By","rot","","f"]]},
+      {id:"tg",t:"Transform Geometry",c:"geo",x:700,y:220,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec"]]},
+      {id:"iop",t:"Instance on Points",c:"geo",x:900,y:60,w:170,o:[["Instances","geo"]],i:[["Points","geo"],["Selection","bool","✓","f"],["Instance","geo"],["Rotation","rot","","f"],["Scale","vec","1","f"]]},
+      {id:"n1",note:"→ Join with rails",x:1100,y:72,w:110}
+     ],
+     links:[["gi.Geometry","c2p.Curve"],["gi.Post Spacing","c2p.Length"],["gi.Height","pz.Z"],["pz.Vector","cube.Size"],["gi.Height","hh.Value"],["hh.Value","hz.Z"],["hz.Vector","tg.Translation"],["cube.Mesh","tg.Geometry"],["c2p.Rotation","rr.Rotation"],["rvv.Value","rr.Rotate By"],["c2p.Points","iop.Points"],["tg.Geometry","iop.Instance"],["rr.Rotation","iop.Rotation"]],
+     cap:"The post is lifted by half its height so it stands on its point. Rotate Rotation adds up to ±0.06 rad (about 3.4°) of random lean on top of the curve's own rotation."},
+    {title:"Graph B: rails", hint:"profile swept along the path", w:1000, h:310,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:60,w:120,o:[["Geometry","geo"]]},
+      {id:"rs",t:"Resample Curve",c:"curve",x:180,y:20,w:150,o:[["Curve","geo"]],i:[["Curve","geo"],["Selection","bool","✓","f"],["Mode","menu","Length"],["Length","float","0.25 m"]]},
+      {id:"q",t:"Quadrilateral",c:"curve",x:180,y:190,w:150,p:["Rectangle"],o:[["Curve","geo"]],i:[["Width","float","0.04 m"],["Height","float","0.12 m"]]},
+      {id:"c2m",t:"Curve to Mesh",c:"curve",x:390,y:40,w:150,o:[["Mesh","geo"]],i:[["Curve","geo"],["Profile Curve","geo"],["Fill Caps","bool","✓"]]},
+      {id:"t1",t:"Transform · top rail",c:"geo",x:600,y:10,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec","0, 0, 0.95"]]},
+      {id:"t2",t:"Transform · low rail",c:"geo",x:600,y:150,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec","0, 0, 0.45"]]},
+      {id:"j",t:"Join Geometry",c:"geo",x:820,y:80,w:140,o:[["Geometry","geo"]],i:[["Geometry","geo","","m"]]}
+     ],
+     links:[["gi.Geometry","rs.Curve"],["rs.Curve","c2m.Curve"],["q.Curve","c2m.Profile Curve"],["c2m.Mesh","t1.Geometry"],["c2m.Mesh","t2.Geometry"],["t1.Geometry","j.Geometry"],["t2.Geometry","j.Geometry"]],
+     cap:"One rail mesh, used twice at two heights. If your rail looks like it's lying flat, swap Width and Height on the Quadrilateral (the profile follows the curve's normal)."},
+    {title:"Graph C: snap to the ground with Raycast", hint:"insert after Curve to Points AND after Resample", w:1100, h:420,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:20,w:120,o:[["Ground","obj"]]},
+      {id:"oi",t:"Object Info",c:"input",x:180,y:20,w:150,p:["Relative"],o:[["Location","vec"],["Geometry","geo"]],i:[["Object","obj"],["As Instance","bool"]]},
+      {id:"pos",t:"Position",c:"input",x:20,y:260,w:110,o:[["Position","vec","","f"]]},
+      {id:"add",t:"Vector Math · Add",c:"util",x:170,y:240,w:150,o:[["Vector","vec","","f"]],i:[["Vector","vec","","f"],["Vector","vec","0, 0, 50"]]},
+      {id:"rc",t:"Raycast",c:"geo",x:420,y:20,w:170,o:[["Is Hit","bool","","f"],["Hit Position","vec","","f"],["Hit Normal","vec","","f"],["Hit Distance","float","","f"]],i:[["Target Geometry","geo"],["Source Position","vec","","f"],["Ray Direction","vec","0, 0, −1","f"],["Ray Length","float","200 m","f"]]},
+      {id:"pts",t:"Posts' points / resampled curve",c:"curve",x:420,y:300,w:210,o:[["Geometry","geo"]]},
+      {id:"sp",t:"Set Position",c:"geo",x:690,y:180,w:150,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Selection","bool","","f"],["Position","vec","","f"],["Offset","vec","","f"]]},
+      {id:"n1",note:"→ Instance on Points (posts) or → Curve to Mesh (rails)",x:880,y:190,w:200}
+     ],
+     links:[["gi.Ground","oi.Object"],["oi.Geometry","rc.Target Geometry"],["pos.Position","add.Vector"],["add.Vector","rc.Source Position"],["pts.Geometry","sp.Geometry"],["rc.Is Hit","sp.Selection"],["rc.Hit Position","sp.Position"]],
+     cap:"Checked in 5.3 on a wavy ground mesh: posts and rails follow the ground's ups and downs. Selection = Is Hit keeps points that miss the ground where they were instead of sending them to (0,0,0)."}
+  ],
+  steps:STEPS.l3,
+  check:`<b>You should have:</b> a fence on any curve, posts spaced by a slider and facing along the path with a slight random lean, two rails, and the whole thing draped on the terrain. Move the ground and the fence follows.`,
+  cards:[
+    ["Which node gives instances a rotation that follows a curve?","<b>Curve to Points</b>, through its Rotation output (built from tangent + normal)."],
+    ["Why Resample the curve before snapping the rails?","Bezier evaluated points bunch up. Evenly spaced points let the rail follow the ground between posts."],
+    ["Why set Object Info to Relative?","It puts the other object's geometry into this object's space so the positions match."],
+    ["The four Raycast settings for ground snapping?","Target = ground, Source = Position + (0,0,50), Direction = (0,0,−1), long Ray Length. Then Set Position = Hit Position where Is Hit."],
+    ["Why can one Raycast node feed two Set Positions?","It's a field. Each Set Position works it out on its own geometry (posts' points, rail points)."],
+    ["How do you make a post stand on its point?","Lift the mesh by half its height before instancing, so the pivot is at the bottom."],
+    ["What does Rotate Rotation do?","Applies a second rotation on top of a first. Use it for random tilt on top of an alignment."],
+    ["What do Curve to Points' modes do?","Count = fixed number of points, Length = one every N metres, Evaluated = every evaluated curve point."]
+  ],
+  boss:{
+    title:"Boss fight: guard rail from memory",
+    brief:"A new variation instead of the same fence: build a <b>road guard rail</b> (metal posts every 2 m, one wide W-profile rail) that snaps to terrain, all from memory.",
+    goal:25,
+    items:[
+      ["Works on any curve object it's put on",""],
+      ["Spacing and height as modifier inputs",""],
+      ["Posts face along the path",""],
+      ["Rail swept with a profile of your own","Draw a W-shaped curve object and bring it in with Object Info as the Profile Curve."],
+      ["Everything raycast-snapped to a Ground object picker",""]
+    ],
+    stretch:[
+      ["Gate gap","Delete the posts in the middle: <b>Delete Geometry</b> on the points, Selection = Index between two numbers (two Compares + Boolean Math)."],
+      ["Every 4th post taller","Index Modulo 4 = 0 → <b>Scale Instances</b> with that Selection."],
+      ["Too steep to build","Delete posts where the ground is too steep: <b>Delete Geometry</b> after the snap, Selection = Raycast <b>Hit Normal</b> Z &lt; 0.8 (the Lesson 1 slope trick, reused)."]
+    ]
+  }
+},
+/* ---------------------------------------------------------------- L4 */
+{
+  id:"l4", num:4, short:"Ship it as a real tool",
+  title:"Turn the fence into a tool other people can use",
+  kick:"Lesson 4 · Interface, menus, attributes, assets, export",
+  time:"40–50 min",
+  intro:`A node tree only you understand is a prototype. A tool has clean inputs with limits and tooltips, a style dropdown, per-instance data the shader can read, a drag handle in the viewport, a place in the Add Modifier menu, and a way to get to Unreal. That's what this lesson adds.`,
+  use:`<b>Used for:</b> what tech artists ship to a team, such as asset libraries of procedural tools, kitbash generators, and anything you'll reuse across projects (or sell).`,
+  learn:["Group interface polish","Panels","Menu Switch","Store Named Attribute","Instance domain","Attribute node (Instancer)","Set Material","Linear Gizmo","Mark as Asset","Apply + export"],
+  concepts:[
+    {h:"Attributes are named data", p:"Position, normal, rotation… are attributes. You can add your own with <code>Store Named Attribute</code>, for example 'wear' per post, and read it later in a shader or another node tree."},
+    {h:"Domains", p:"Data lives on a domain: Point, Edge, Face, Face Corner, Spline, <b>Instance</b>. A value per post belongs on the Instance domain."},
+    {h:"Menus are sockets", p:"A <code>Menu Switch</code> picks one of several inputs. Connect its Menu socket to Group Input and you get a dropdown on the modifier."},
+    {h:"Engines don't run Blender nodes", p:"Unreal (and every game engine) receives plain meshes. You <b>apply</b> the modifier (or realize instances) on a copy, then export."}
+  ],
+  graphs:[
+    {title:"Graph A: a style dropdown with Menu Switch", hint:"rename A/B to Square / Round", w:1100, h:330,
+     nodes:[
+      {id:"gi",t:"Group Input",c:"group",x:20,y:120,w:130,o:[["Post Style","menu"],["Height","float"]]},
+      {id:"cube",t:"Cube (square post)",c:"geo",x:200,y:10,w:160,o:[["Mesh","geo"]],i:[["Size","vec","0.12, 0.12, H"]]},
+      {id:"cyl",t:"Cylinder (round post)",c:"geo",x:200,y:150,w:160,o:[["Mesh","geo"]],i:[["Vertices","int","10"],["Radius","float","0.07 m"],["Depth","float"]]},
+      {id:"ms",t:"Menu Switch",c:"util",x:420,y:60,w:150,p:["Geometry"],o:[["Output","geo"]],i:[["Menu","menu"],["Square","geo"],["Round","geo"]]},
+      {id:"tg",t:"Transform Geometry",c:"geo",x:630,y:60,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Translation","vec","Z = H × 0.5"]]},
+      {id:"iop",t:"Instance on Points",c:"geo",x:850,y:60,w:170,o:[["Instances","geo"]],i:[["Points","geo"],["Instance","geo"],["Rotation","rot","","f"]]}
+     ],
+     links:[["gi.Post Style","ms.Menu"],["gi.Height","cyl.Depth"],["cube.Mesh","ms.Square"],["cyl.Mesh","ms.Round"],["ms.Output","tg.Geometry"],["tg.Geometry","iop.Instance"]],
+     cap:"Rename the Menu Switch items in N → Node. The names show up in the modifier's dropdown. Add a third item (Rustic? Metal?) with the + button."},
+    {title:"Graph B: per-post data → material", hint:"Instance domain", w:1060, h:300,
+     nodes:[
+      {id:"iop",t:"Instance on Points",c:"geo",x:20,y:30,w:170,o:[["Instances","geo"]]},
+      {id:"rv",t:"Random Value",c:"util",x:20,y:150,w:150,p:["Float"],o:[["Value","float","","f"]],i:[["Min","float","0"],["Max","float","1"]]},
+      {id:"st",t:"Store Named Attribute",c:"geo",x:240,y:30,w:190,p:["Float · Instance"],o:[["Geometry","geo"]],i:[["Geometry","geo"],["Selection","bool","✓","f"],["Name","str","wear"],["Value","float","","f"]]},
+      {id:"rails",t:"Rails",c:"geo",x:240,y:230,w:120,o:[["Geometry","geo"]]},
+      {id:"j",t:"Join Geometry",c:"geo",x:490,y:80,w:140,o:[["Geometry","geo"]],i:[["Geometry","geo","","m"]]},
+      {id:"sm",t:"Set Material",c:"geo",x:680,y:80,w:160,o:[["Geometry","geo"]],i:[["Geometry","geo"],["Selection","bool","✓","f"],["Material","mat","FenceWood"]]},
+      {id:"out",t:"Group Output",c:"group",x:900,y:80,w:120,i:[["Geometry","geo"]]}
+     ],
+     links:[["iop.Instances","st.Geometry"],["rv.Value","st.Value"],["st.Geometry","j.Geometry"],["rails.Geometry","j.Geometry"],["j.Geometry","sm.Geometry"],["sm.Geometry","out.Geometry"]],
+     cap:"A random 0–1 'wear' value stored once per post, on the Instance domain."},
+    {title:"Graph C: the shader reads it", hint:"Shading workspace, not Geometry Nodes", w:900, h:220,
+     nodes:[
+      {id:"at",t:"Attribute",c:"input",x:20,y:30,w:150,p:["Instancer"],o:[["Color","col"],["Vector","vec"],["Factor","float"]],i:[["Name","str","wear"]]},
+      {id:"ramp",t:"Color Ramp",c:"util",x:230,y:30,w:160,o:[["Color","col"],["Alpha","float"]],i:[["Factor","float"]]},
+      {id:"bsdf",t:"Principled BSDF",c:"shader",x:450,y:30,w:170,o:[["BSDF","shd"]],i:[["Base Color","col"],["Roughness","float","0.8"]]},
+      {id:"mo",t:"Material Output",c:"shader",x:680,y:30,w:150,i:[["Surface","shd"]]}
+     ],
+     links:[["at.Factor","ramp.Factor"],["ramp.Color","bsdf.Base Color"],["bsdf.BSDF","mo.Surface"]],
+     cap:"Attribute type <b>Instancer</b> reads data stored on instances. After you realize instances (or apply the modifier), the same data moves onto the mesh, so switch the type to <b>Geometry</b>."}
+  ],
+  steps:STEPS.l4,
+  check:`<b>You should have:</b> a modifier with tidy, limited inputs in panels, a Post Style dropdown, a viewport arrow for height, per-post colour variation from your own attribute, the tool in the Add Modifier menu of any file, and a static copy imported into Unreal.`,
+  cards:[
+    ["How do you get a dropdown on the modifier?","<b>Menu Switch</b>, with its Menu socket connected to the Group Input."],
+    ["Which domain stores a value per post (per instance)?","<b>Instance</b>."],
+    ["How does a shader read an attribute stored on instances?","<b>Attribute</b> node, type <b>Instancer</b>, same name. After realizing or applying, use type <b>Geometry</b>."],
+    ["Where do you set min / max / default / tooltip for an input?","N panel → <b>Group</b> tab, select the socket (Description = tooltip)."],
+    ["How does a node group show up in Add Modifier in other files?","Usage: Modifier ✓, <b>Mark as Asset</b>, file saved in an Asset Library folder. It appears under its catalog."],
+    ["Can Unreal run Geometry Nodes?","No. Apply the modifier on a copy (or Realize Instances) and export the mesh."],
+    ["Shortcut for a frame? For a reroute?","Frame: <kbd>Ctrl</kbd><kbd>J</kbd>. Reroute: <kbd>Shift</kbd> + right-drag across a link."],
+    ["What does a Linear Gizmo do?","Draws a viewport arrow that drives the input connected to its Value socket."]
+  ],
+  boss:{
+    title:"Final exam: a complete tool from nothing",
+    brief:"Blank file, Memory mode on, no peeking. Ship a fence tool someone else could use.",
+    goal:35,
+    items:[
+      ["Posts along any curve, spacing and height inputs, random lean",""],
+      ["Rails swept along the curve",""],
+      ["Raycast-snapped to a Ground object picker",""],
+      ["Post Style dropdown (at least 2 styles)",""],
+      ["Per-post 'wear' attribute driving the material",""],
+      ["Height gizmo in the viewport",""],
+      ["Marked as asset; works from Add Modifier in a new file",""],
+      ["Applied copy exported and placed in an Unreal level",""]
+    ],
+    stretch:[
+      ["Broken planks","Store a <code>broken</code> boolean (Random Value, Boolean, probability 0.1) and Delete Geometry those posts."],
+      ["Second gizmo","A Linear Gizmo on Post Spacing that points along the curve's first tangent."],
+      ["Node Tool version","Mark a copy as a <b>Tool</b> (Usage: Tool) and run it from the 3D viewport's header menu in Edit Mode."]
+    ]
+  }
+}
+];
+
+const ROADMAP = [
+  {m:"Module 2 · Zones", items:["Repeat Zone: recursive tree and branch growth","Simulation Zone: snow that piles up and melts over time","For Each Element: shatter a wall and push each piece out on its own"]},
+  {m:"Module 3 · Volumes & SDF", items:["Mesh to SDF Grid + SDF Grid Boolean/Fillet: smooth-blended organic rocks and caves","Grid Curl / Advect Grid: smoke trails and stylised magic"]},
+  {m:"Module 4 · Blender 5.x power tools", items:["Lists (Field to List, Filter/Sort List) and Bundles + Closures: building your own node 'functions'","XPBD Solver: ropes, chains and soft bodies inside Geometry Nodes","Mesh Bevel in nodes: procedural hard-surface panels"]},
+  {m:"Module 5 · Game pipeline", items:["Modular building generator with floors, windows and roof kits","Baking for Unreal: instances to separate meshes, LODs, collision"]}
+];
+
+const KEYS = [
+  ["<kbd>Shift</kbd><kbd>A</kbd> then type","Add node and search at once"],
+  ["<kbd>Ctrl</kbd><kbd>Shift</kbd> + click","View a node's output (Viewer + Spreadsheet)"],
+  ["<kbd>Ctrl</kbd> + right-drag","Cut links"],
+  ["<kbd>Shift</kbd> + right-drag","Add a reroute on a link"],
+  ["Drop node on link","Splice it into the chain"],
+  ["<kbd>M</kbd>","Mute a node (pass-through)"],
+  ["<kbd>Ctrl</kbd><kbd>H</kbd>","Hide/show unused sockets"],
+  ["<kbd>Ctrl</kbd><kbd>J</kbd>","Put the selected nodes in a frame"],
+  ["<kbd>Ctrl</kbd><kbd>G</kbd> / <kbd>Tab</kbd>","Make a node group / enter or exit it"],
+  ["<kbd>N</kbd>","Side panel: Node tab (item names), Group tab (inputs)"],
+  ["<kbd>Shift</kbd><kbd>D</kbd> / <kbd>Ctrl</kbd><kbd>D</kbd>","Duplicate / duplicate with links kept"],
+  ["Drag socket to empty Group Input socket","Expose it as a modifier input"]
+];
+
+/* ===================== STATE + SAVE ===================== */
+let S = {done:{}, notes:{}, memory:false, timers:{}};
+const API = "/api/progress";
+let serverOK = false, saveT = null;
+const saveEl = document.getElementById("save");
+function setSave(cls, txt){ saveEl.className = "save " + cls; saveEl.querySelector("span").textContent = txt; }
+async function load(){
+  try{
+    // only a local serve.py has the progress API; on a static host skip the request
+    if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) throw 0;
+    const r = await fetch(API, {cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    S = Object.assign(S, j || {});
+    serverOK = true; setSave("ok","Saved to progress.json");
+  }catch(e){
+    try{ const l = localStorage.getItem("gn-fast-track"); if(l) S = Object.assign(S, JSON.parse(l)); }catch(_){}
+    setSave("ok","Progress saves in this browser");
+  }
+  S.done ||= {}; S.notes ||= {}; S.timers ||= {};
+}
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(async ()=>{
+    try{ localStorage.setItem("gn-fast-track", JSON.stringify(S)); }catch(_){}
+    if(!serverOK){ setSave("ok","Saved in this browser · " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})); return; }
+    try{
+      const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(S)});
+      if(!r.ok) throw 0;
+      setSave("ok","Saved to progress.json · " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+    }catch(e){ setSave("local","Server lost: saved in browser"); }
+  }, 300);
+}
+
+/* ===================== PROGRESS ===================== */
+function keysFor(L){
+  const k = [];
+  L.steps.forEach((_,i)=>k.push(`${L.id}.s${i}`));
+  L.cards.forEach((_,i)=>k.push(`${L.id}.c${i}`));
+  L.boss.items.forEach((_,i)=>k.push(`${L.id}.b${i}`));
+  return k;
+}
+function pct(L){ const k = keysFor(L); return k.filter(x=>S.done[x]).length / k.length; }
+function refreshProgress(){
+  let all = [], got = 0;
+  LESSONS.forEach(L=>{ const k = keysFor(L); all = all.concat(k); });
+  got = all.filter(x=>S.done[x]).length;
+  const p = all.length ? got/all.length : 0;
+  document.getElementById("ringArc").style.strokeDashoffset = 138.2 * (1 - p);
+  document.getElementById("ringTxt").textContent = Math.round(p*100) + "%";
+  document.getElementById("ringCount").textContent = `${got} / ${all.length}`;
+  document.getElementById("mtopPct").textContent = Math.round(p*100) + "% complete";
+  LESSONS.forEach(L=>{
+    const a = document.querySelector(`nav a[data-l="${L.id}"]`); if(!a) return;
+    const q = pct(L);
+    a.querySelector(".bar i").style.width = (q*100) + "%";
+    a.classList.toggle("done", q === 1);
+    a.querySelector(".nb").textContent = q === 1 ? "✓" : L.num;
+  });
+  const sp = document.getElementById("stepPct");
+  if(sp){ const L = LESSONS.find(x=>x.id===sp.dataset.l); sp.textContent = Math.round(pct(L)*100) + "% of this lesson"; }
+}
+
+/* ===================== NAV ===================== */
+function buildNav(){
+  let h = `<div class="grp">Start</div><a class="l" href="#home" data-l="home"><span class="nb">★</span><span>How this works + shortcuts</span></a>`;
+  h += `<div class="grp">Module 1 · Foundations by real projects</div>`;
+  LESSONS.forEach(L=>{
+    h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+  });
+  h += `<div class="grp">Coming next</div>`;
+  ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+2}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  document.getElementById("nav").innerHTML = h;
+}
+
+/* ===================== NODE GRAPH RENDERER ===================== */
+const TYPE = {geo:"--geo",float:"--float",int:"--int",vec:"--vec",bool:"--bool",rot:"--rot",menu:"--menu",obj:"--obj",str:"--str",mat:"--mat",col:"--col",shd:"--shd"};
+const CAT = {input:"--h-input",geo:"--h-geo",util:"--h-util",tex:"--h-tex",group:"--h-group",shader:"--h-shader",curve:"--h-curve"};
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+function nodeHTML(n){
+  if(n.note) return `<div class="node note" style="left:${n.x}px;top:${n.y}px;width:${n.w||140}px">${n.note}</div>`;
+  let h = `<div class="node" data-id="${n.id}" style="left:${n.x}px;top:${n.y}px;width:${n.w||150}px"><div class="nh" style="background:var(${CAT[n.c]||"--h-group"})">${esc(n.t)}</div><div class="nb">`;
+  (n.o||[]).forEach(o=>{ h += `<div class="row out" data-n="${n.id}" data-s="${esc(o[0])}"><span>${esc(o[0])}</span><i class="s ${o[3]||""}" style="--c:var(${TYPE[o[1]]})"></i></div>`; });
+  (n.p||[]).forEach(p=>{ h += `<div class="prop"><span>${esc(p)}</span></div>`; });
+  (n.i||[]).forEach(i=>{
+    const v = i[2] ? `<em class="${i[2]==="✓"?"ok":""}">${esc(i[2])}</em>` : "";
+    h += `<div class="row in" data-n="${n.id}" data-s="${esc(i[0])}"><i class="s ${i[3]||""}" style="--c:var(${TYPE[i[1]]})"></i><span>${esc(i[0])}</span>${v}</div>`;
+  });
+  return h + `</div></div>`;
+}
+function graphHTML(g, gi){
+  return `<div class="graphwrap"><div class="graphhead"><b>${g.title}</b><span class="hint">${g.hint||""}</span></div>
+  <div class="graphscroll mem"><div class="graph" data-g="${gi}" style="width:${g.w}px;height:${g.h}px"><svg class="links"></svg>${g.nodes.map(nodeHTML).join("")}</div></div>
+  <div class="legend"><span><i style="background:var(--geo)"></i>Geometry</span><span><i style="background:var(--float)"></i>Float</span><span><i style="background:var(--int)"></i>Integer</span><span><i style="background:var(--vec)"></i>Vector</span><span><i style="background:var(--bool)"></i>Boolean</span><span><i style="background:var(--rot)"></i>Rotation</span><span><i class="f" style="background:#888"></i>Field (diamond)</span></div></div>
+  <p class="cap">${g.cap||""}</p>`;
+}
+function findSock(graph, ref, dir){
+  let [id, rest] = [ref.slice(0, ref.indexOf(".")), ref.slice(ref.indexOf(".")+1)];
+  let nth = 0; const at = rest.lastIndexOf("@");
+  if(at > -1){ nth = +rest.slice(at+1); rest = rest.slice(0, at); }
+  const rows = [...graph.querySelectorAll(`.row.${dir}[data-n="${id}"]`)].filter(r=>r.dataset.s === rest);
+  return rows[nth] ? rows[nth].querySelector(".s") : null;
+}
+function drawLinks(el, g){
+  const svg = el.querySelector("svg.links");
+  // size the canvas to fit its nodes, whatever the fonts did to their heights
+  let mw = 0, mh = 0;
+  el.querySelectorAll(".node").forEach(n=>{ mw = Math.max(mw, n.offsetLeft + n.offsetWidth); mh = Math.max(mh, n.offsetTop + n.offsetHeight); });
+  const W = Math.max(g.w, mw + 20), H = mh + 24;
+  el.style.width = W + "px"; el.style.height = H + "px";
+  const base = el.getBoundingClientRect();
+  const cs = getComputedStyle(document.documentElement);
+  let paths = "";
+  g.links.forEach(([a,b])=>{
+    const s1 = findSock(el, a, "out"), s2 = findSock(el, b, "in");
+    if(!s1 || !s2){ console.warn("missing socket", a, b); return; }
+    const r1 = s1.getBoundingClientRect(), r2 = s2.getBoundingClientRect();
+    const x1 = r1.left + r1.width/2 - base.left, y1 = r1.top + r1.height/2 - base.top;
+    const x2 = r2.left + r2.width/2 - base.left, y2 = r2.top + r2.height/2 - base.top;
+    const dx = Math.max(40, Math.abs(x2-x1) * .5);
+    const col = s1.style.getPropertyValue("--c");
+    const c = cs.getPropertyValue(col.replace(/var\(|\)/g,"").trim()) || "#aaa";
+    paths += `<path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}" stroke="#111" stroke-width="4.5" fill="none" opacity=".6"/><path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}" stroke="${c.trim()}" stroke-width="2" fill="none"/>`;
+  });
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.innerHTML = paths;
+}
+
+/* ===================== VIEWS ===================== */
+const main = document.getElementById("main");
+function homeView(){
+  const startL = LESSONS.find(L=>pct(L) < 1) || LESSONS[0];
+  return `
+  <section class="hero">
+    <div class="kick">Fast track · Blender ${COURSE.blender} · node names checked in 5.3</div>
+    <h2>Geometry Nodes by building things you'd actually ship</h2>
+    <p>No "add a cube and wiggle it" exercises. Every lesson is a real production tool: terrain dressing, parametric architecture, spline kits, then turning them into polished, reusable tools that go into Unreal. All geometry is made by your own nodes, with no downloaded assets.</p>
+    <div class="chips"><span class="chip g">4 lessons in Module 1</span><span class="chip">~3–4 hours total</span><span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">4 boss fights</span></div>
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn pri" href="#${startL.id}">${pct(startL)>0?"Continue":"Start"}: Lesson ${startL.num} →</a><button class="btn" onclick="openReview()">Run the review deck</button></div>
+  </section>
+
+  <h3 class="sec">How to make it stick <span class="tag">the loop</span></h3>
+  <div class="loop">
+    <div><b><i>1</i>Understand</b>Read the 4 core ideas. Study the node graphs, and hover sockets in Blender to see their types.</div>
+    <div><b><i>2</i>Build</b>Follow the steps in Blender and tick each one only when it <i>works</i> in your viewport.</div>
+    <div><b><i>3</i>Recall</b>Flip the cards. Tick "knew it" only if you answered before flipping. Use the Review deck on later days.</div>
+    <div><b><i>4</i>Rebuild</b>Boss fight: Memory mode on, timer running, blank file. This is where it locks in.</div>
+  </div>
+  <p class="cap" style="margin-top:12px">🧠 <b>Memory mode</b> (sidebar) blurs every graph and step detail. Click a blurred block to peek at just that one. Your ticks, notes and boss times save automatically: in this browser, or to <code>progress.json</code> when you run the page with <code>serve.py</code>.</p>
+
+  <h3 class="sec">Module 1 <span class="tag">foundations by real projects</span></h3>
+  <div class="road">
+    ${LESSONS.map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
+  </div>
+
+  <h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
+  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+
+  <h3 class="sec">The basic moves <span class="tag">read once before Lesson 1</span></h3>
+  ${basicsHTML()}
+
+  <h3 class="sec">Shortcuts you'll use every minute <span class="tag">node editor</span></h3>
+  <div class="concept"><table class="keys">${KEYS.map(k=>`<tr><td>${k[0]}</td><td>${k[1]}</td></tr>`).join("")}</table></div>
+
+  <h3 class="sec">Socket shapes and colours</h3>
+  <div class="concepts">
+    <div class="concept"><h4>● Circle = single value</h4><p>The same value for everything (e.g. a Count, a Seed).</p></div>
+    <div class="concept"><h4>◆ Diamond = field</h4><p>Worked out per element (e.g. Position, Normal, Index, Random Value).</p></div>
+    <div class="concept"><h4>◆ with a dot = could be either</h4><p>Takes a field, but you've plugged in a single value, so it behaves like a constant.</p></div>
+    <div class="concept"><h4>Colours</h4><p><span style="color:var(--geo)">■</span> geometry <span style="color:var(--float)">■</span> float <span style="color:var(--int)">■</span> integer <span style="color:var(--vec)">■</span> vector <span style="color:var(--bool)">■</span> boolean <span style="color:var(--rot)">■</span> rotation <span style="color:var(--obj)">■</span> object <span style="color:var(--menu)">■</span> menu</p></div>
+  </div>`;
+}
+
+function lessonView(L){
+  const idx = LESSONS.indexOf(L);
+  const prev = LESSONS[idx-1], next = LESSONS[idx+1];
+  const ck = (k)=> S.done[k] ? "checked" : "";
+  return `
+  <section class="hero">
+    <div class="kick">${L.kick} · ${L.time}</div>
+    <h2>${L.title}</h2>
+    <p>${L.intro}</p>
+    <div class="chips">${L.learn.map(x=>`<span class="chip g">${x}</span>`).join("")}</div>
+    <div class="use">${L.use}</div>
+    <div class="use" id="stepPct" data-l="${L.id}"></div>
+  </section>
+  <div class="memnote">🧠 Memory mode is on. Graphs and step details are blurred. Try to recall each step from its title, then click to check yourself.</div>
+
+  <h3 class="sec">Core ideas <span class="tag">read first</span></h3>
+  <div class="concepts">${L.concepts.map(c=>`<div class="concept"><h4>${c.h}</h4><p>${c.p}</p></div>`).join("")}</div>
+
+  <h3 class="sec">The node graphs <span class="tag">what you're building</span></h3>
+  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}
+
+  <h3 class="sec">Build it <span class="tag">tick when it works in Blender</span></h3>
+  <details class="basics" ${L.num===1?"open":""}><summary>🖱️ The basic moves: how to add, place, wire and type in the node editor (read once)</summary>${basicsHTML()}</details>
+  <div class="steps">
+  ${L.steps.map((s,i)=>{const k=`${L.id}.s${i}`; return `
+    <div class="step ${S.done[k]?"done":""}" data-k="${k}">
+      <input type="checkbox" class="cb" data-k="${k}" ${ck(k)} aria-label="Step ${i+1} done">
+      <div><div class="st" data-tog="${k}"><small>${String(i+1).padStart(2,"0")}</small>${s.t}</div>
+      <div class="sd mem">
+        ${s.goal?`<div class="goal"><b>Goal:</b> ${s.goal}</div>`:""}
+        ${s.hl?`<button class="btn where" data-hl="${s.hl.g}|${s.hl.n.join(",")}">📍 Show where these nodes go</button>`:""}
+        <ol class="do">${s.do.map(x=>`<li>${x}</li>`).join("")}</ol>
+        ${s.see?`<div class="see"><b>You should see:</b> ${s.see}</div>`:""}
+        ${s.why?`<div class="why">${s.why}</div>`:""}${s.pro?`<div class="pro">${s.pro}</div>`:""}
+      </div></div>
+    </div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">Check yourself</h3>
+  <div class="check">${L.check}</div>
+
+  <h3 class="sec">Recall drill <span class="tag">answer out loud, then flip</span></h3>
+  <div class="cards">
+  ${L.cards.map((c,i)=>{const k=`${L.id}.c${i}`; return `
+    <div class="fc ${S.done[k]?"known":""}" data-k="${k}"><div class="in">
+      <div class="face front"><div class="lab">Card ${i+1}</div><div class="q">${c[0]}</div><div class="foot"><span>click to flip</span>${S.done[k]?'<span style="color:#7fe3c6">✓ known</span>':""}</div></div>
+      <div class="face back"><div class="lab">Answer</div><div>${c[1]}</div><div class="foot"><label class="knew" onclick="event.stopPropagation()"><input type="checkbox" class="cb" data-k="${k}" ${ck(k)}> I knew it</label><span>click to flip back</span></div></div>
+    </div></div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">${L.boss.title}</h3>
+  <div class="boss">
+    <div class="brief">${L.boss.brief}</div>
+    <div class="timer"><span class="clock" id="clock">00:00</span><button class="btn" id="tStart">▶ Start</button><button class="btn" id="tReset">Reset</button><span style="font-size:.82rem;color:#a89e93">Target: under ${L.boss.goal} min · Best: <b id="best" style="color:#ffd2a6">${S.timers[L.id+".best"]?fmt(S.timers[L.id+".best"]):"–"}</b></span></div>
+    ${L.boss.items.map((b,i)=>{const k=`${L.id}.b${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}">${b[0]}${b[1]?`<small>${b[1]}</small>`:""}</label></div>`;}).join("")}
+    <div style="margin:14px 0 4px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#a89e93">Stretch goals (optional, not counted)</div>
+    ${L.boss.stretch.map((b,i)=>{const k=`${L.id}.x${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}"><b>${b[0]}</b><small>${b[1]}</small></label></div>`;}).join("")}
+  </div>
+
+  <h3 class="sec">My notes <span class="tag">saved automatically</span></h3>
+  <textarea class="notes" id="notes" placeholder="What tripped you up? What would you do differently? Write it in your own words. That's what makes it stick.">${esc(S.notes[L.id]||"")}</textarea>
+
+  <div class="navrow">
+    ${prev?`<a class="btn" href="#${prev.id}">← Lesson ${prev.num}: ${prev.short}</a>`:`<a class="btn" href="#home">← Overview</a>`}
+    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:`<a class="btn pri" href="#home">Module 1 done → Overview</a>`}
+  </div>`;
+}
+
+function basicsHTML(){
+  return `<div class="bgrid">${BASICS.map((b,i)=>`<div class="bcard"><b><i>${i+1}</i>${b[0]}</b><div>${b[1]}</div></div>`).join("")}</div>`;
+}
+let hlT = null;
+function showWhere(btn){
+  const [g, ids] = btn.dataset.hl.split("|");
+  const graph = document.querySelector(`.graph[data-g="${g}"]`); if(!graph) return;
+  document.querySelectorAll(".node.hl").forEach(n=>n.classList.remove("hl"));
+  const nodes = ids.split(",").map(id=>graph.querySelector(`.node[data-id="${id}"]`)).filter(Boolean);
+  nodes.forEach(n=>n.classList.add("hl"));
+  const sc = graph.closest(".graphscroll"); sc.classList.add("peek");
+  const wrap = graph.closest(".graphwrap");
+  wrap.scrollIntoView({block:"center", behavior:"smooth"});
+  if(nodes[0]){ const left = Math.min(...nodes.map(n=>n.offsetLeft)); sc.scrollTo({left:Math.max(0,left-40), behavior:"smooth"}); }
+  let back = document.getElementById("backBtn");
+  if(!back){ back = document.createElement("button"); back.id = "backBtn"; back.className = "btn pri backbtn"; document.body.appendChild(back); }
+  back.textContent = "↩ Back to step " + btn.closest(".step").querySelector(".st small").textContent;
+  back.onclick = ()=>{ btn.closest(".step").scrollIntoView({block:"center", behavior:"smooth"}); back.remove(); };
+  clearTimeout(hlT); hlT = setTimeout(()=>nodes.forEach(n=>n.classList.remove("hl")), 6000);
+}
+
+/* ===================== TIMER ===================== */
+let tInt = null, tStart = 0, tLesson = null;
+function fmt(ms){ const s = Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function wireTimer(L){
+  const clock = document.getElementById("clock"), bS = document.getElementById("tStart"), bR = document.getElementById("tReset");
+  const run = S.timers[L.id+".run"];
+  const tick = ()=>{ clock.textContent = fmt(Date.now() - S.timers[L.id+".run"]); };
+  if(run){ bS.textContent = "■ Finish"; tick(); tInt = setInterval(tick, 500); }
+  bS.onclick = ()=>{
+    if(S.timers[L.id+".run"]){
+      const t = Date.now() - S.timers[L.id+".run"];
+      delete S.timers[L.id+".run"]; clearInterval(tInt);
+      const best = S.timers[L.id+".best"];
+      if(!best || t < best){ S.timers[L.id+".best"] = t; document.getElementById("best").textContent = fmt(t); }
+      clock.textContent = fmt(t); bS.textContent = "▶ Start"; save();
+    } else {
+      S.timers[L.id+".run"] = Date.now(); bS.textContent = "■ Finish"; tInt = setInterval(tick, 500); save();
+    }
+  };
+  bR.onclick = ()=>{ delete S.timers[L.id+".run"]; clearInterval(tInt); clock.textContent = "00:00"; bS.textContent = "▶ Start"; save(); };
+}
+
+/* ===================== ROUTER ===================== */
+function route(){
+  clearInterval(tInt);
+  const bb = document.getElementById("backBtn"); if(bb) bb.remove();
+  const id = (location.hash || "#home").slice(1);
+  const L = LESSONS.find(x=>x.id===id);
+  main.innerHTML = L ? lessonView(L) : homeView();
+  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:"home")));
+  document.getElementById("side").classList.remove("open");
+  if(L){
+    document.title = `L${L.num} ${L.short} · Geometry Nodes Fast Track`;
+    setTimeout(redraw, 0);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+    wireTimer(L);
+    document.getElementById("notes").addEventListener("input", e=>{ S.notes[L.id] = e.target.value; save(); });
+  } else document.title = "Geometry Nodes Fast Track";
+  window.scrollTo(0,0);
+  refreshProgress();
+}
+function redraw(){
+  const id = (location.hash || "#home").slice(1); const L = LESSONS.find(x=>x.id===id);
+  if(L) document.querySelectorAll(".graph").forEach(el=>drawLinks(el, L.graphs[+el.dataset.g]));
+}
+
+/* ===================== EVENTS ===================== */
+document.addEventListener("change", e=>{
+  const t = e.target; if(!t.classList.contains("cb") || !t.dataset.k) return;
+  const k = t.dataset.k;
+  if(t.checked) S.done[k] = true; else delete S.done[k];
+  const st = t.closest(".step"); if(st) st.classList.toggle("done", t.checked);
+  const fc = t.closest(".fc"); if(fc) fc.classList.toggle("known", t.checked);
+  document.querySelectorAll(`.cb[data-k="${k}"]`).forEach(c=>{ if(c!==t) c.checked = t.checked; });
+  save(); refreshProgress();
+  if(t.checked && st){ const n = st.nextElementSibling; if(n && !n.classList.contains("done")) n.scrollIntoView({block:"nearest", behavior:"smooth"}); }
+});
+document.addEventListener("click", e=>{
+  const wb = e.target.closest(".where");
+  if(wb && (!document.body.classList.contains("memory") || wb.closest(".mem.peek"))){ showWhere(wb); return; }
+  const mem = e.target.closest(".mem");
+  if(document.body.classList.contains("memory") && mem && !mem.classList.contains("peek")){ mem.classList.add("peek"); e.preventDefault(); return; }
+  const tog = e.target.closest("[data-tog]");
+  if(tog){ const cb = document.querySelector(`.cb[data-k="${tog.dataset.tog}"]`); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change", {bubbles:true})); return; }
+  const fc = e.target.closest(".fc");
+  if(fc && !e.target.closest(".knew")) fc.classList.toggle("flip");
+});
+const memT = document.getElementById("memToggle");
+function applyMem(){ document.body.classList.toggle("memory", !!S.memory); memT.classList.toggle("on", !!S.memory); memT.setAttribute("aria-checked", !!S.memory); document.querySelectorAll(".mem.peek").forEach(m=>m.classList.remove("peek")); }
+memT.onclick = ()=>{ S.memory = !S.memory; applyMem(); save(); };
+memT.onkeydown = e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); memT.click(); } };
+document.getElementById("menuBtn").onclick = ()=>document.getElementById("side").classList.toggle("open");
+document.getElementById("resetBtn").onclick = ()=>{
+  if(confirm("Clear every tick, note and best time? This can't be undone.")){ S = {done:{}, notes:{}, memory:S.memory, timers:{}}; save(); route(); }
+};
+window.addEventListener("hashchange", route);
+let rT; window.addEventListener("resize", ()=>{ clearTimeout(rT); rT = setTimeout(redraw, 120); });
+
+/* ===================== REVIEW DECK ===================== */
+let deck = [], di = 0;
+function openReview(){
+  const started = LESSONS.filter(L=>pct(L) > 0);
+  const pool = (started.length ? started : [LESSONS[0]]);
+  deck = [];
+  pool.forEach(L=>L.cards.forEach((c,i)=>deck.push({L, i, q:c[0], a:c[1], k:`${L.id}.c${i}`})));
+  // weakest first: unknown cards ahead of known ones, shuffled within
+  deck.sort(()=>Math.random()-.5).sort((a,b)=>(S.done[a.k]?1:0)-(S.done[b.k]?1:0));
+  di = 0; showCard(); document.getElementById("modal").classList.add("on");
+}
+window.openReview = openReview;
+function showCard(){
+  const box = document.getElementById("mbox"); box.classList.remove("show");
+  if(di >= deck.length){
+    document.getElementById("mfrom").textContent = "Deck finished";
+    document.getElementById("mq").textContent = `Done: ${deck.filter(c=>S.done[c.k]).length} of ${deck.length} marked as known.`;
+    document.getElementById("ma").innerHTML = ""; ["mshow","magain","mgot"].forEach(id=>document.getElementById(id).style.display="none");
+    document.getElementById("mcnt").textContent = ""; return;
+  }
+  const c = deck[di];
+  document.getElementById("mfrom").textContent = `Lesson ${c.L.num} · ${c.L.short}${S.done[c.k]?" · known before":""}`;
+  document.getElementById("mq").innerHTML = c.q; document.getElementById("ma").innerHTML = c.a;
+  document.getElementById("mcnt").textContent = `${di+1} / ${deck.length}`;
+  document.getElementById("mshow").style.display = ""; document.getElementById("magain").style.display = "none"; document.getElementById("mgot").style.display = "none";
+}
+function reveal(){ document.getElementById("mbox").classList.add("show"); document.getElementById("mshow").style.display="none"; document.getElementById("magain").style.display=""; document.getElementById("mgot").style.display=""; }
+document.getElementById("mshow").onclick = reveal;
+document.getElementById("mgot").onclick = ()=>{ S.done[deck[di].k] = true; save(); refreshProgress(); di++; showCard(); };
+document.getElementById("magain").onclick = ()=>{ delete S.done[deck[di].k]; deck.push(deck[di]); save(); refreshProgress(); di++; showCard(); };
+document.getElementById("mclose").onclick = ()=>{ document.getElementById("modal").classList.remove("on"); route(); };
+document.getElementById("reviewBtn").onclick = openReview;
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("modal").classList.contains("on")) return;
+  if(e.key===" "){ e.preventDefault(); if(!document.getElementById("mbox").classList.contains("show")) reveal(); else document.getElementById("mgot").click(); }
+  if(e.key==="Escape") document.getElementById("mclose").click();
+});
+
+/* ===================== BOOT ===================== */
+(async()=>{ buildNav(); await load(); applyMem(); route(); })();
+</script>
+</body>
+</html>

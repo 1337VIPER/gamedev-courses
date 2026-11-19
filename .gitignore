@@ -1,0 +1,3 @@
+progress.json
+*.tmp
+__pycache__/
