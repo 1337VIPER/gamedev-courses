@@ -299,7 +299,7 @@ const BASICS = [
   ["Dropdowns","A box with a small ▾ (like <i>Add</i> on a Math node) is a dropdown. Click it and pick the option."],
   ["Splice into a wire","Drag a node over an existing wire until the wire lights up, then let go. It plugs itself in between."],
   ["Delete / copy a node","Click its title bar, press "+K("X")+" (delete) or "+K("Ctrl","X")+" (delete and keep the wire joined through). "+K("Shift","D")+" copies it: move the copy and click to drop."],
-  ["See a node's result","Hold "+K("Ctrl","Shift")+" and click the node's title bar. A <b>Viewer</b> node appears and the viewport + Spreadsheet show that node's output. Click the Viewer and press "+K("X")+" when you're done."],
+  ["See a node's result","Hold "+K("Ctrl","Shift")+" and click the node's title bar. A <b>Viewer</b> node appears and the viewport + Spreadsheet show that node's output. <b>For a field node</b> (diamond output, like Noise, Math or Compare): Ctrl+Shift+click a <i>geometry</i> node instead (e.g. Set Position), then drag the field's output onto the Viewer's empty dot. In 5.3 a field only shows on a geometry above it in the Viewer. Click the Viewer and press "+K("X")+" when you're done."],
   ["The Geometry Nodes workspace","Click the <b>Geometry Nodes</b> tab at the very top of Blender (scroll the tab row if it's hidden). Default layout: <b>Spreadsheet</b> (table of numbers) top-left, <b>3D Viewport</b> top-right, <b>node editor</b> along the bottom, <b>Properties</b> editor on the far right (the blue wrench tab holds the modifier and its sliders)."],
   ["Side panel (N)","With the mouse over the node editor press "+K("N")+". Its <b>Group</b> tab lists the tree's inputs and outputs (names, types, defaults). Its <b>Node</b> tab shows the selected node's name, label and extra options."]
 ];
@@ -350,11 +350,13 @@ l1:[
  why:`<b>Offset vs Position:</b> Offset <i>adds</i> to where each vertex already is. Position <i>replaces</i> it. <b>Why subtract 0.5?</b> Noise gives values around 0.5. Centring them on 0 lets the hills go down into valleys as well as up.`},
 
  {t:"Look inside a field with the Viewer", goal:"See the noise numbers that drive the hills.", hl:{g:0,n:["noise"]}, do:[
-   VW("Noise Texture"),
-   `A new <b>Viewer</b> node appears, wired from the noise. In the viewport the noise shows as light and dark patches. In the Spreadsheet a <b>Viewer</b> column shows one number per vertex.`,
-   `If the viewport shows nothing: drag Set Position › Geometry into the Viewer node's empty input dot as well.`,
+   `Hold ${K("Ctrl","Shift")} and left-click the coloured title bar of <b>Set Position</b> (not the noise). A <b>Viewer</b> node appears near it, with a <b>Geometry</b> input wired from Set Position. The viewport shows the hills in plain grey.`,
+   C("Noise Texture","Factor","Viewer","the empty hollow dot at its bottom") + ` A <b>Factor</b> input appears under Geometry.`,
+   `Now the hills show the noise as light and dark patches, and the Spreadsheet (top-left) gets a <b>Viewer</b> column with one number per vertex.`,
    `Done looking? Click the Viewer node's title bar and press ${K("X")}.`
- ], why:`<b>This is your debugger.</b> Whenever something looks wrong, view the node one step <i>before</i> the problem.`},
+ ], see:`Light and dark patches painted over the hills, like the picture.`,
+ why:`<b>Why not Ctrl+Shift+click the noise itself?</b> In Blender 5.3 a Viewer paints a field only onto a geometry listed <i>above</i> it in the Viewer node. A noise or maths node has no geometry of its own, so viewing it directly gives a Viewer with nothing to show (checked in 5.3). So view the geometry first, then add the field. <b>This is your debugger:</b> whenever something looks wrong, view the step before the problem.`,
+ shots:[{src:"shots/m1-l1-s05-noise.jpg", w:1600, h:900, cap:"Viewer = Set Position's Geometry, then the noise Factor. The hills show the noise as light and dark patches.", marks:[]}]},
 
  {t:"Build the slope mask", goal:"A yes/no answer per face: is this ground flat?", hl:{g:1,n:["nrm","sep","cf"]}, do:[
    `Pan down (hold the middle mouse button and drag up) so you have empty space <u>below the noise row</u>.`,
@@ -365,8 +367,12 @@ l1:[
    `Check the Compare node's two dropdowns read <i>Float</i> and <i>Greater Than</i> (they do by default).`,
    C("Separate XYZ","Z","Compare","A"),
    V("Compare","B","0.92","0.000"),
-   VW("Compare") + ` White = flat enough, black = too steep.`
- ], why:`<b>Normal Z</b> is 1 on flat ground and 0 on a vertical wall (it's the cosine of the slope). 0.92 ≈ 23°, 0.85 ≈ 32°.`},
+   `<b>Look at the mask:</b> hold ${K("Ctrl","Shift")} and click the title bar of <b>Set Position</b> (a Viewer appears with a Geometry input), then drag <b>Compare › Result</b> onto the Viewer's empty hollow dot. White = flat enough, black = too steep.`,
+   `If you already Ctrl+Shift+clicked Compare and see nothing: click that Viewer, press ${K("X")}, then do the line above.`
+ ], see:`The hills painted in white (flat) and black (steep) patches; the Spreadsheet's Viewer column shows ticked and unticked boxes.`,
+ why:`<b>Normal Z</b> is 1 on flat ground and 0 on a vertical wall (it's the cosine of the slope). 0.92 ≈ 23°, 0.85 ≈ 32°. <b>Why the Viewer needs Set Position first:</b> Compare is a field with no geometry of its own; in 5.3 the Viewer paints it only onto a geometry listed above it.`,
+ shots:[{src:"shots/m1-l1-s06-mask.jpg", w:1600, h:900, cap:"Right: Viewer with Geometry first, then Result. White = flat, black = steep.", marks:[]},
+        {src:"shots/m1-l1-s06-wrong.jpg", w:1600, h:900, cap:"Wrong: Ctrl+Shift+click on Compare alone. The Viewer has only Result, so the viewport is empty and the Spreadsheet says Rows: 0.", marks:[]}]},
 
  {t:"Scatter grass points on the flat", goal:"Points only where Compare says yes.", hl:{g:1,n:["df","cf","terr"]}, do:[
    A("Distribute Points on Faces","distribute","to the right of Compare and a bit higher"),
@@ -882,7 +888,7 @@ const LESSONS = [
   cards:[
     ["What does a diamond-shaped socket mean?","It carries a <b>field</b>: a formula worked out once per element (vertex, face, point…) on the geometry of the node it plugs into."],
     ["The same Noise node makes hills on the terrain and lumps on the rock. Why?","Field context: a field is evaluated on the geometry of the node that <b>uses</b> it. Terrain Set Position → terrain vertices. Rock Set Position → sphere vertices."],
-    ["How do you preview the output of any node?","<kbd>Ctrl</kbd><kbd>Shift</kbd> + click it (Viewer node), then read the Spreadsheet."],
+    ["How do you preview the output of any node?","<kbd>Ctrl</kbd><kbd>Shift</kbd> + click it (Viewer node), then read the Spreadsheet. For a <b>field</b> node, Ctrl+Shift+click the geometry node first, then drag the field onto the Viewer's empty dot (5.3 shows a field only on a geometry above it)."],
     ["Which output of Distribute Points on Faces lines instances up with the surface?","<b>Rotation</b> (it's built from the face normal)."],
     ["Random vs Poisson Disk distribution?","Random only uses density and can clump. Poisson Disk keeps a <b>minimum distance</b> (Distance Min) between points, with Density Max as a cap. Use it for anything that must not overlap."],
     ["What does Normal Z ≈ 1 mean? And 0.85?","1 = facing straight up (flat ground). It's the cosine of the slope: 0.85 ≈ 32°, 0.92 ≈ 23°."],
