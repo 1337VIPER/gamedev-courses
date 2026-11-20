@@ -6,9 +6,9 @@ Interactive, click-by-click courses for Blender and Unreal Engine, each lesson b
 
 | Course | Status |
 | --- | --- |
-| [Geometry Nodes Fast Track](https://1337viper.github.io/gamedev-courses/geometry-nodes/) (Blender 5.3) | Module 1 (4 lessons) |
-| [Niagara VFX Fast Track](https://1337viper.github.io/gamedev-courses/niagara-vfx/) (Unreal Engine 5.8) | Module 1 (4 lessons) |
-| [Compositing Fast Track](https://1337viper.github.io/gamedev-courses/blender-compositing/) (Blender 5.3) | Module 1 (4 lessons) |
+| [Geometry Nodes Fast Track](https://1337viper.github.io/gamedev-courses/geometry-nodes/) (Blender 5.3) | Modules 1–2 (Module 2 ends in a sellable pack) |
+| [Niagara VFX Fast Track](https://1337viper.github.io/gamedev-courses/niagara-vfx/) (Unreal Engine 5.8) | Modules 1–2 (Module 2 ends in a sellable pack) |
+| [Compositing Fast Track](https://1337viper.github.io/gamedev-courses/blender-compositing/) (Blender 5.3) | Modules 1–2 (Module 2 ends in a sellable pack) |
 
 Progress (ticks, notes, best times) saves in your browser. To keep it in a file instead, run a course locally:
 

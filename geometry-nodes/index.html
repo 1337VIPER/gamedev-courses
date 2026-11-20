@@ -179,6 +179,21 @@ details.basics summary{cursor:pointer;padding:12px 0;font-weight:650;color:#fff}
 .bcard{background:#1d1f23;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:#c6c9d0}
 .bcard b{display:block;color:#fff;margin-bottom:4px}
 .bcard b i{font-style:normal;color:var(--acc);margin-right:6px}
+.tscroll{overflow-x:auto;max-width:100%}
+.step>div{min-width:0}
+@media (max-width:900px){table.keys td:first-child{white-space:normal}}
+.step .sd,.concept p{overflow-wrap:anywhere}
+/* screenshots */
+figure.shot{margin:10px 0 6px}
+.shot .sw{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:zoom-in;background:#111;line-height:0}
+.shot img{display:block;width:100%;height:auto}
+.shot .mk{position:absolute;border:2.5px solid #ffd166;border-radius:5px;box-shadow:0 0 0 2px rgba(0,0,0,.55),0 0 18px rgba(255,209,102,.35);pointer-events:none}
+.shot .mk b{position:absolute;top:-11px;left:-11px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#ffd166;color:#1a1400;font:800 12px/22px system-ui,sans-serif;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.shot figcaption{font-size:.8rem;color:var(--mut);margin-top:5px}
+#lightbox{position:fixed;inset:0;background:rgba(5,6,8,.9);display:none;align-items:center;justify-content:center;z-index:60;padding:16px;cursor:zoom-out}
+#lightbox.on{display:flex}
+#lightbox .lbin{width:min(1600px,100%)}
+#lightbox .sw{cursor:zoom-out}
 /* memory mode */
 body.memory .mem{filter:blur(7px) saturate(.4);opacity:.55;cursor:pointer;transition:filter .25s,opacity .25s;user-select:none}
 body.memory .mem.peek{filter:none;opacity:1;user-select:auto}
@@ -231,6 +246,7 @@ body.memory .memnote{display:block}
 <main id="main"></main>
 </div>
 
+<div id="lightbox" aria-hidden="true"><div class="lbin"></div></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mq">
   <div class="mbox" id="mbox">
     <div class="from" id="mfrom"></div>
@@ -461,7 +477,8 @@ l2:[
    `<b>+ → Input</b> again: name <code>Rise</code>, Type <b>Float</b>, <b>Subtype</b> <b>Distance</b>, Default <code>0.18</code>.`,
    `<b>+ → Input</b>: name <code>Turn</code>, Type <b>Float</b>, Subtype <b>Angle</b>, Default <code>15</code> (it shows 15°).`,
    `<b>+ → Input</b>: name <code>Width</code>, Type <b>Float</b>, Subtype <b>Distance</b>, Default <code>1.2</code>.`,
-   `You can delete the <i>Geometry</i> input from the list (select it, click <b>−</b>), because this tool makes its own geometry.`
+   `You can delete the <i>Geometry</i> input from the list (select it, click <b>−</b>), because this tool makes its own geometry.`,
+   `<b>Important:</b> open Properties (far right) → blue <b>wrench</b> tab. The modifier shows Steps <i>0</i>, Rise <i>0 m</i>, Turn <i>0°</i>, Width <i>0 m</i>. A Default only applies to modifiers added later; this one keeps the value it had when the input was made. Click each field and type the same values: <code>24</code>, <code>0.18</code>, <code>15</code>, <code>1.2</code>.`
  ], why:`<b>Angle subtype</b> lets you type degrees while the nodes receive radians, which is what rotation maths expects.`},
 
  {t:"One point per step", goal:"A vertical line of points, 0.18 m apart.", hl:{g:0,n:["c1","ml"]}, do:[
@@ -609,11 +626,12 @@ l3:[
    D("Curve to Points","Count","Length"),
    `Press and hold on the dot left of Curve to Points' <b>Length</b> input, drag to Group Input's <b>empty hollow dot</b>, let go.`,
    `${K("N")} → Group tab → double-click the new item, rename it <code>Post Spacing</code>, Default <code>1.5</code>, Min <code>0.3</code>.`,
+   `Properties → <b>wrench</b> tab: the modifier's Post Spacing still shows <i>0.1 m</i> (the value it had when you dragged it out; a new Default doesn't change an existing modifier). Click it, type <code>1.5</code>, ${K("Enter")}.`,
    VW("Curve to Points") + ` In the Spreadsheet note the <b>rotation</b> column.`
  ]},
 
  {t:"A post that stands on its point", goal:"A 12 cm square post with its pivot at the bottom.", hl:{g:0,n:["pz","cube","hh","hz","tg"]}, do:[
-   `N → Group tab → <b>+ → Input</b>, name <code>Height</code>, Type <b>Float</b>, Default <code>1.2</code>.`,
+   `N → Group tab → <b>+ → Input</b>, name <code>Height</code>, Type <b>Float</b>, Default <code>1.2</code>. Then Properties → <b>wrench</b> tab → type <code>1.2</code> into the modifier's Height too (it starts at 0; a Default only applies to modifiers added later).`,
    A("Cube","cube","to below Curve to Points"),
    A("Combine XYZ","combine xyz","to the left of the Cube"),
    V("Combine XYZ","X","0.12"), V("Combine XYZ","Y","0.12"),
@@ -728,8 +746,10 @@ l4:[
    `Click <i>Height</i>: Min <code>0.3</code>, Max <code>3</code>.`,
    A("Combine XYZ","combine xyz","to the left of the top rail's Transform Geometry"),
    C("Combine XYZ","Vector","top rail Transform","Translation"),
-   `Drag from the dot left of this Combine XYZ's <b>Z</b> to Group Input's empty dot. Rename it <code>Top Rail Height</code>, Default <code>0.95</code>.`,
-   `Same for the low rail: new Combine XYZ → its Translation, expose Z as <code>Low Rail Height</code>, Default <code>0.45</code>.`,
+   V("this Combine XYZ","Z","0.95") + ` Type it <i>before</i> the next line: the new input copies this value onto the modifier.`,
+   `Drag from the dot left of this Combine XYZ's <b>Z</b> to Group Input's empty dot. Rename it <code>Top Rail Height</code>.`,
+   `Same for the low rail: new Combine XYZ → its Translation, type Z <code>0.45</code> first, then expose Z as <code>Low Rail Height</code>.`,
+   `Check Properties → <b>wrench</b>: the two rail heights read 0.95 and 0.45. If one says 0, type the value there. A Default changed later doesn't update an existing modifier.`,
    `In the Group tab click <b>+ → Panel</b>, rename it <code>Rails</code>. Drag the two rail inputs in the list onto the Rails panel.`
  ], see:`On the modifier the rail sliders sit inside a folding <b>Rails</b> section.`},
 
@@ -1145,12 +1165,685 @@ const LESSONS = [
 }
 ];
 
-const ROADMAP = [
-  {m:"Module 2 · Zones", items:["Repeat Zone: recursive tree and branch growth","Simulation Zone: snow that piles up and melts over time","For Each Element: shatter a wall and push each piece out on its own"]},
-  {m:"Module 3 · Volumes & SDF", items:["Mesh to SDF Grid + SDF Grid Boolean/Fillet: smooth-blended organic rocks and caves","Grid Curl / Advect Grid: smoke trails and stylised magic"]},
-  {m:"Module 4 · Blender 5.x power tools", items:["Lists (Field to List, Filter/Sort List) and Bundles + Closures: building your own node 'functions'","XPBD Solver: ropes, chains and soft bodies inside Geometry Nodes","Mesh Bevel in nodes: procedural hard-surface panels"]},
-  {m:"Module 5 · Game pipeline", items:["Modular building generator with floors, windows and roof kits","Baking for Unreal: instances to separate meshes, LODs, collision"]}
+/* ===== MODULE 2 (generated by _build/assemble.py) ===== */
+const SHOTBOX = {"l5-s02": {"Size XYZ": [280, 297, 412, 404], "Slab": [450, 297, 582, 446], "Half Thick": [280, 504, 412, 635], "Place XYZ": [450, 504, 582, 612], "Place": [639, 334, 790, 580], "Bevel Edges": [846, 334, 1016, 627], "Store ID": [1110, 334, 1262, 490]}, "l5-s03": {"Strip 1": [622, 97, 699, 199], "Strip 2": [622, 225, 699, 326], "Strip 3": [622, 352, 699, 453], "Strip 4": [622, 479, 699, 580], "Strip 5": [622, 606, 699, 707], "Strip 6": [622, 733, 699, 835], "Join Strips": [899, 330, 976, 367]}, "l5-s04": {"Lug Grid": [295, 220, 422, 364], "Lug Grid Place": [486, 220, 631, 513], "Lug": [295, 411, 422, 535], "Lug Index": [295, 584, 422, 627], "Odd Even": [467, 565, 595, 692], "Turn": [640, 565, 767, 712], "Lug Rotation": [813, 565, 940, 669], "Place Lugs": [976, 220, 1103, 460], "Lug ID": [1158, 220, 1303, 370]}, "l5-s05": {"Weld Line": [296, 220, 441, 467], "Weld Points": [514, 220, 659, 338], "Weld Noise": [296, 428, 462, 712], "Weld Radius": [514, 428, 659, 666], "Weld Profile": [721, 428, 866, 546], "Weld Tube": [929, 220, 1074, 382], "Weld ID": [1136, 220, 1302, 391]}, "l5-s06": {"Bolt Line": [362, 166, 521, 460], "Bolt Head": [362, 415, 521, 719], "Bolt Bevel": [601, 415, 805, 766], "Place Bolts": [827, 166, 986, 535], "Bolt ID": [1054, 166, 1236, 353]}, "l5-s07": {"Realize": [505, 348, 747, 584], "Smooth": [886, 348, 1128, 552]}, "l6-s02": {"trim_id": [188, 357, 264, 446], "id / 7": [297, 357, 373, 433], "Strip Colour": [406, 248, 537, 357], "Strip Roughness": [406, 412, 537, 520], "Strip Metal": [406, 575, 537, 684]}, "l6-s02t": {"Set Bake Material": [649, 330, 972, 542]}, "l6-s03": {"Hazard Bands": [533, 143, 592, 252], "Stripe Mask": [607, 143, 695, 216], "Is Hazard Strip": [459, 224, 511, 283], "Black Band": [681, 143, 732, 194], "Add Stripes": [755, 224, 806, 302], "Edge Wear Mask": [533, 594, 621, 667], "Grunge": [533, 686, 592, 787], "Wear x Grunge": [625, 616, 677, 667], "Wear Amount": [695, 616, 747, 667], "Worn Colour": [829, 224, 880, 302], "Worn Metal": [829, 483, 880, 542], "Grungy Roughness": [829, 372, 880, 431], "Grunge Range": [740, 704, 792, 789]}, "l6-s04": {"AO": [475, 712, 562, 842], "Pack ORM": [637, 526, 724, 610], "Bake Switch": [787, 277, 874, 408], "Emission": [911, 277, 998, 334]}, "l6-s05": {"T_Trim_N": [391, 137, 579, 324], "T_Trim_BC": [391, 372, 579, 560], "T_Trim_ORM": [391, 608, 579, 795]}, "l6-s10": {"T_Trim_BC": [396, 364, 582, 568], "T_Trim_ORM": [396, 596, 582, 801], "Split ORM": [706, 596, 815, 702], "T_Trim_N": [396, 131, 582, 336], "Normal Map": [706, 131, 830, 278]}, "l7-s02": {"To Poly": [260, 415, 364, 487], "Bends": [432, 415, 537, 517]}, "l7-s03": {"Along": [463, 357, 555, 417], "Capture Length": [595, 212, 687, 304], "Ring": [463, 488, 555, 621], "Around Param": [463, 660, 555, 720], "Capture Around": [595, 488, 687, 581], "Sweep": [740, 212, 832, 315]}, "l7-s04": {"U": [513, 496, 583, 566], "Pi / Sides": [513, 607, 583, 676], "Sine": [603, 607, 674, 665], "x 2 Sides": [694, 607, 764, 676], "Perimeter": [784, 607, 854, 676], "x Radius": [784, 697, 854, 766], "V Span": [874, 697, 944, 766], "V": [965, 566, 1035, 647], "UV": [1055, 496, 1125, 553], "Store UVMap": [1055, 356, 1135, 439], "Weld Seam": [1165, 356, 1235, 413]}, "l7-s05": {"Pipe Body": [634, 397, 739, 535]}, "l7-s05g": {"Round?": [1126, 348, 1181, 403], "Smooth If Round": [1205, 230, 1260, 276]}, "l7-s06": {"Flange Radius": [344, 185, 447, 288], "Flange Disc": [514, 185, 618, 383], "Bolt Circle Radius": [344, 377, 447, 480], "Bolt Circle": [514, 377, 618, 462], "Flange Bolt": [514, 525, 618, 723], "Place Flange Bolts": [677, 377, 780, 618], "Real Bolts": [825, 377, 929, 478], "Flange Parts": [973, 229, 1077, 265], "Flange Pos": [825, 555, 929, 590], "Planar UV": [973, 555, 1077, 747], "Flange UVMap": [1136, 229, 1254, 351]}, "l7-s07": {"Run Length": [474, 767, 550, 805], "Sections": [593, 767, 669, 842], "Round Up": [702, 767, 777, 830], "+1": [810, 767, 886, 842], "Flange Points": [929, 658, 1005, 756], "Place Flanges": [1048, 469, 1124, 612], "Join Pipe": [1048, 90, 1124, 116]}, "l7-s08": {"Support Points": [346, 182, 478, 352], "Ground Info": [346, 465, 478, 655], "Point Position": [554, 654, 686, 699], "Look Down": [554, 418, 705, 750], "Tangent XYZ": [554, 182, 686, 290], "Steepness": [742, 182, 874, 293], "Level?": [931, 182, 1063, 313], "Level And Hit": [1120, 277, 1252, 384]}, "l7-s09": {"Leg Line": [562, 510, 672, 699], "Leg Scale": [720, 510, 831, 601], "Place Legs": [894, 233, 1005, 442], "Real Legs": [1068, 233, 1179, 341], "Leg Tube": [1242, 233, 1353, 379]}, "l7-s10": {"Realize Pipe": [392, 367, 595, 565], "Kit Material": [712, 367, 915, 501]}, "l8-s02": {"Position": [266, 435, 363, 468], "XYZ": [405, 435, 502, 514], "Y or Z": [543, 435, 640, 529], "U": [681, 332, 778, 428], "V Metres": [681, 470, 778, 566], "Start + Offset": [681, 608, 778, 704], "V": [820, 504, 917, 600], "UV": [958, 401, 1055, 479], "Store UVMap": [1096, 228, 1207, 342]}, "l8-s03": {"Side A": [672, 246, 763, 360], "Side B": [672, 376, 763, 491], "End A": [672, 506, 763, 661], "End B": [672, 637, 763, 711], "Frame Lines": [802, 376, 894, 414], "Frame Tube": [933, 376, 1024, 496], "Floor": [1096, 115, 1187, 147]}, "l8-s04": {"Post Spots": [528, 136, 624, 314], "Post Line": [528, 273, 624, 436], "Place Posts": [665, 136, 761, 359], "Top Rail": [528, 376, 624, 496], "Knee Rail": [665, 376, 775, 596], "Post Tube": [939, 136, 1035, 262], "Rail Tube": [939, 376, 1035, 502], "Kick Plate": [528, 581, 624, 689], "Kick UV": [802, 581, 898, 692], "Railing": [1111, 273, 1207, 308]}, "l8-s05": {"Tread Spots": [396, 131, 510, 343], "Tread": [396, 335, 510, 514], "Tread UV": [559, 335, 673, 467], "Place Treads": [722, 131, 836, 397], "Stringer A": [396, 538, 510, 732], "Stringer B": [559, 538, 689, 801], "Stringer Tube": [885, 538, 999, 688], "Stair": [1088, 294, 1202, 333]}, "l8-s06": {"Column Top": [290, 222, 410, 319], "Column Line": [461, 222, 581, 372], "Column Tube": [632, 222, 752, 379], "Base Plate": [461, 435, 581, 623], "Base UV": [803, 435, 923, 574], "Column": [1188, 307, 1308, 348]}, "l8-s07": {"Piece Switch": [728, 112, 759, 158], "Kit Material": [795, 112, 826, 133]}, "l9-s01": {"Realize": [270, 263, 366, 356], "Weld": [407, 263, 503, 341], "Edge Angle": [270, 469, 366, 517], "Sharp?": [407, 469, 503, 564], "Unwrap": [545, 469, 641, 577], "Pack": [682, 469, 778, 650], "Store Lightmap UV": [820, 263, 930, 376], "Sharp Edges": [957, 263, 1053, 344], "Not Sharp": [820, 606, 916, 669], "Hull": [957, 537, 1053, 586], "Visual Or Collision": [1163, 263, 1260, 374]}};
+/* ===================== MODULE 2: SHIP A SELLABLE KIT =====================
+   Screenshots: SH(file, tag, {node name: label}, caption). Boxes come from SHOTBOX (measured in Blender). */
+function SH(file, tag, labels, cap){
+  const b = (SHOTBOX[tag] || {});
+  const marks = Object.entries(labels || {}).filter(([n]) => b[n]).map(([n, lab]) => [...b[n], lab]);
+  return {src: `shots/${file}.jpg`, w: 1600, h: 900, cap, marks};
+}
+const TABLE = (head, rows) => `<div class="tscroll"><table class="keys" style="margin:6px 0 2px"><tr>${head.map(h=>`<td><b>${h}</b></td>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+
+const M2 = [
+/* ---------------------------------------------------------------- L5 */
+{
+  id:"l5", num:5, mod:2, short:"Kit rules + trim sheet",
+  title:"Plan a sellable kit and model its trim sheet with nodes",
+  kick:"Lesson 5 · Module 2 · Kit rules, texel density, high-poly trim",
+  time:"75–90 min",
+  intro:`Module 2 builds one real product: an <b>Industrial Catwalk &amp; Pipe Kit</b> you can sell on Fab and Superhive. It has floors, railings, stairs, columns, pipes, and the node tools that make them, all textured by one trim sheet that you model and bake yourself. This lesson sets the studio rules and models the high-poly detail of that trim sheet entirely with Geometry Nodes.`,
+  use:`<b>Used for:</b> trim sheets are how environment teams texture hundreds of modular pieces with one material (Insomniac's "The Ultimate Trim", GDC 2015). Modelling the detail procedurally means you can redesign a strip and re-bake in minutes.`,
+  learn:["Kit rules: grid, scale, pivots, names","Texel density","Trim sheet layout","Node groups (Ctrl+G)","Mesh Bevel (5.x)","Checkerboard from index parity","Curve to Mesh Scale","Realize Instances"],
+  concepts:[
+    {h:"The kit's rules", p:"Everything snaps to a <b>1 m grid</b> (Unreal's 100 cm, Epic's recommended starting step). Z is up, real-world scale, pivots at a corner or bottom-centre. Names follow Epic's convention: <code>SM_</code> meshes, <code>M_</code> materials, <code>T_</code> textures."},
+    {h:"Texel density", p:"The sheet is 2048 px and covers 4 m, so <b>512 px per metre</b> (5.12 px/cm, a common third-person target). Every piece maps into it at that same density, so no piece looks blurrier than its neighbour."},
+    {h:"A trim sheet", p:"Horizontal strips that tile left to right. A beam's long side runs along a strip; its cross-section must fit inside the strip's height. One material and one texture set cover the whole kit, which makes it cheap to draw."},
+    {h:"High-poly → bake", p:"You model the detail (bolts, weld beads, tread lugs, bevels) as real geometry once, then bake it into textures. The game meshes stay low-poly but look detailed."}
+  ],
+  layout:`${TABLE(["Strip","ID","Y range on the sheet","Used by"],[
+    ["Tread plate","1","3.0 – 4.0 m","floors, stair treads"],["Pipe paint + weld seam","2","2.0 – 3.0 m","pipes, handrails"],
+    ["Beam edge (thick bevel)","3","1.5 – 2.0 m","frames, posts, stringers, columns, legs"],["Bolted plate","4","1.0 – 1.5 m","flanges, base plates"],
+    ["Hazard stripes","5","0.5 – 1.0 m","kick plates"],["Bare metal","6","0.0 – 0.5 m","spare strip for your own pieces"]])}`,
+  graphs:[],
+  steps:[
+    {t:"Set up the kit file and the trim object", goal:"A saved kit file with metric units, and a plane that will hold the trim-sheet nodes.", do:[
+      `<b>File → New → General</b>. In the viewport click the cube, press ${K("Delete")}.`,
+      `Properties (right) → <b>Scene</b> tab (the cone-and-spheres icon) → <b>Units</b>: check Unit System says <i>Metric</i>, Unit Scale <i>1.000</i>, Length <i>Meters</i>. These are the defaults; leave them.`,
+      `<b>File → Save As</b>. Make a new folder called <code>IndustrialKit</code>, name the file <code>IndustrialKit_Source.blend</code>, click <b>Save As</b>.`,
+      `Mouse over the viewport: ${K("Shift","A")} → <b>Mesh → Plane</b>. Press ${K("F2")}, type <code>TrimSheet_High</code>, ${K("Enter")}.`,
+      `Click the <b>Geometry Nodes</b> tab at the top, then <b>New</b> in the node editor. Double-click the tree name in the node editor's top bar (it says <i>Geometry Nodes</i>), type <code>Trim Sheet High</code>, ${K("Enter")}.`
+    ], see:`Group Input → Group Output in the node editor, the plane in the viewport, and the modifier named in the Properties wrench tab.`,
+    shots:[SH("l5-s01-view","",{}, "Geometry Nodes workspace with the new Trim Sheet High tree.")]},
+
+    {t:"Build the Trim Strip node group", goal:"One reusable group that makes a 4 m bevelled slab with its top at Z = 0, tagged with its strip number (<code>trim_id</code>).", do:[
+      `Cut the wire between Group Input and Group Output: hold ${K("Ctrl")} and right-drag across it. Drag Group Output's title bar far to the right.`,
+      A("Combine XYZ","combine xyz","to the left third of the editor") + ` ` + V("Combine XYZ","X","4"),
+      A("Cube","cube","to the right of Combine XYZ") + ` ` + C("Combine XYZ","Vector","Cube","Size"),
+      A("Math","math","to below Combine XYZ") + ` ` + D("Math","Add","Multiply") + ` ` + V("Multiply","bottom Value","-0.5","0.500"),
+      A("Combine XYZ","combine xyz","to the right of Multiply") + ` ` + V("this Combine XYZ","X","2") + ` ` + C("Multiply","Value","this Combine XYZ","Z"),
+      A("Transform Geometry","transform geometry","to the right of Cube") + ` ` + C("Cube","Mesh","Transform Geometry","Geometry") + ` ` + C("the lower Combine XYZ","Vector","Transform Geometry","Translation"),
+      A("Mesh Bevel","mesh bevel","to the right of Transform Geometry") + ` ` + C("Transform Geometry","Geometry","Mesh Bevel","Mesh") + ` ` + V("Mesh Bevel","Segments","3","1"),
+      A("Store Named Attribute","store named attribute","to the right of Mesh Bevel") + ` ` + D("Store Named Attribute","Float","Integer") + ` ` + D("Store Named Attribute","Point","Face") + ` Click its empty name box, type <code>trim_id</code>, ${K("Enter")}. ` + C("Mesh Bevel","Mesh","Store Named Attribute","Geometry") + ` ` + C("Store Named Attribute","Geometry","Group Output","Geometry"),
+      `Left-drag a box over empty space around these seven nodes (not Group Input/Output) to select them. Press ${K("Ctrl","G")}. Blender wraps them in a node group and opens it.`,
+      `Inside the group, give it inputs by dragging from each socket's dot to <b>Group Input's empty hollow dot</b>, then renaming the new input in ${K("N")} → <b>Group</b>: the first Combine XYZ's <b>Y</b> → <code>Height</code>, its <b>Z</b> → <code>Thickness</code>, the lower Combine XYZ's <b>Y</b> → <code>Center Y</code>, Mesh Bevel's <b>Start Left Offset</b> → <code>Bevel</code>, Store Named Attribute's <b>Value</b> → <code>ID</code>.`,
+      `Wire <b>Group Input › Thickness</b> also into the Multiply's top Value, and <b>Group Input › Bevel</b> into Mesh Bevel's <b>Start Right Offset</b>, <b>End Left Offset</b> and <b>End Right Offset</b>.`,
+      `Press ${K("Tab")} to leave the group. On the group node, double-click its name box (it says <i>NodeGroup</i>), type <code>Trim Strip</code>, ${K("Enter")}. Then type its inputs: Height <code>1</code>, Center Y <code>3.5</code>, Thickness <code>0.012</code>, Bevel <code>0.004</code>, ID <code>1</code>.`
+    ], see:`One grey 4 m × 1 m slab in the viewport, top edge rounded. Inside the group (${K("Tab")} on the node) it looks like the first picture.`,
+    why:`<b>Mesh Bevel (new in Blender 5):</b> when it bevels edges, the width comes from the four Start/End Left/Right Offset sockets; the single <i>Offset</i> socket is for vertex bevels (checked in 5.3). <b>Node groups</b> are your tools: fix one and every copy updates.`,
+    shots:[SH("l5-s02-nodes","l5-s02",{"Size XYZ":"2","Slab":"3","Half Thick":"4","Place XYZ":"5","Place":"6","Bevel Edges":"7","Store ID":"8"},"Inside the Trim Strip group. Numbers match the actions."),
+           SH("l5-s02b-nodes","l5-s02b",{"Strip 1":"12"},"Outside: the group node with strip 1's values.")]},
+
+    {t:"Six strips from one group", goal:"The whole 4 m × 4 m sheet: six slabs, each with its own ID.", do:[
+      `Click the Trim Strip node's title bar. Press ${K("Shift","D")}, move the copy straight down, left-click. Repeat until you have <b>six</b> Trim Strip nodes in a column.`,
+      A("Join Geometry","join","to the right of the column") + ` Wire every Trim Strip's <b>Geometry</b> into Join Geometry's tall socket, then ` + C("Join Geometry","Geometry","Group Output","Geometry"),
+      `Type each node's values from this table (top node = strip 1), and label each node: click it, ${K("N")} → <b>Node</b> tab → <b>Label</b> → its name.` + TABLE(["ID","Label","Height","Center Y","Thickness","Bevel"],[["1","Tread plate","1","3.5","0.012","0.004"],["2","Pipe paint + weld","1","2.5","0.010","0.003"],["3","Beam edge","0.5","1.75","0.030","0.012"],["4","Bolted plate","0.5","1.25","0.012","0.004"],["5","Hazard stripes","0.5","0.75","0.010","0.003"],["6","Bare metal","0.5","0.25","0.010","0.003"]]),
+      `Mouse over the viewport, press numpad ${K("7")} (top view) and ${K("Home")}.`
+    ], see:`A 4 m square made of six stacked strips (top view), exactly as in the strip table above.`,
+    shots:[SH("l5-s03-view","",{},"Top view: six strips, 4 m × 4 m."), SH("l5-s03-nodes","l5-s03",{"Strip 1":"1","Strip 2":"1","Strip 3":"1","Strip 4":"1","Strip 5":"1","Strip 6":"1","Join Strips":"2"},"Six copies of one group, joined.")]},
+
+    {t:"Tread-plate lugs: a checkerboard from odd and even", goal:"Diamond-plate lugs over strip 1, alternating ±45° like real tread plate.", do:[
+      A("Grid","grid","to above the column of strips") + ` Type Size X <code>4</code>, Size Y <code>0.96</code>, Vertices X <code>101</code>, Vertices Y <code>25</code>.`,
+      A("Transform Geometry","transform geometry","to the right of Grid") + ` ` + C("Grid","Mesh","Transform Geometry","Geometry") + ` Type Translation X <code>2</code>, Y <code>3.5</code>.`,
+      A("UV Sphere","uv sphere","to below Grid") + ` Type Segments <code>12</code>, Rings <code>6</code>, Radius <code>1</code>.`,
+      A("Index","index","to below the UV Sphere"),
+      A("Math","math","to the right of Index") + ` ` + D("Math","Add","Truncated Modulo") + ` ` + C("Index","Index","Truncated Modulo","Value (top)") + ` ` + V("Truncated Modulo","bottom Value","2","0.500"),
+      A("Math","math","to the right of it") + ` ` + D("this Math","Add","Multiply Add") + ` ` + C("Truncated Modulo","Value","Multiply Add","Value") + ` Type Multiplier <code>1.5708</code>, Addend <code>-0.7854</code>.`,
+      A("Combine XYZ","combine xyz","to the right of Multiply Add") + ` ` + C("Multiply Add","Value","Combine XYZ","Z"),
+      A("Instance on Points","instance on points","to the right of the Transform Geometry, leaving a gap") + ` ` + C("Transform Geometry","Geometry","Instance on Points","Points") + ` ` + C("UV Sphere","Mesh","Instance on Points","Instance") + ` ` + C("Combine XYZ","Vector","Instance on Points","Rotation") + ` Type Scale X <code>0.016</code>, Y <code>0.0045</code>, Z <code>0.0025</code>.`,
+      A("Store Named Attribute","store named attribute","to the right of Instance on Points") + ` ` + D("it","Float","Integer") + ` ` + D("it","Point","Instance") + ` Name <code>trim_id</code>, Value <code>1</code>. ` + C("Instance on Points","Instances","Store Named Attribute","Geometry") + ` ` + C("Store Named Attribute","Geometry","Join Geometry","Geometry")
+    ], see:`Zoom into strip 1 from the top: rows of small lugs, each one turned the other way from its neighbours in both directions.`,
+    why:`<b>Why 25 and not 26?</b> The Grid numbers its points one column at a time. With an odd number per column, "index is odd" alternates both along a column and across columns, which is a checkerboard. With 26 you get stripes (we tested both). 1.5708 = 90° and 0.7854 = 45° in radians, so the lugs turn to −45° or +45°.`,
+    shots:[SH("l5-s04-view","",{},"Top view, zoomed into strip 1: the checkerboard of lugs."), SH("l5-s04-nodes","l5-s04",{"Lug Grid":"1","Lug Grid Place":"2","Lug":"3","Lug Index":"4","Odd Even":"5","Turn":"6","Lug Rotation":"7","Place Lugs":"8","Lug ID":"9"},"The lug nodes.")]},
+
+    {t:"A weld seam with a wobbly bead", goal:"A real-looking weld line across the pipe strip.", do:[
+      A("Curve Line","curve line","to above the lug nodes") + ` Type Start <code>0</code>, <code>2.5</code>, <code>0</code> and End <code>4</code>, <code>2.5</code>, <code>0</code>.`,
+      A("Resample Curve","resample","to the right of it") + ` ` + C("Curve Line","Curve","Resample Curve","Curve") + ` ` + V("Resample Curve","Count","600","10"),
+      A("Noise Texture","noise","to below Curve Line") + ` Scale <code>60</code>, Detail <code>2</code>. ` + A("Map Range","map range","to the right of Noise Texture") + ` ` + C("Noise Texture","Factor","Map Range","Value") + ` Type To Min <code>0.004</code>, To Max <code>0.009</code>.`,
+      A("Curve Circle","curve circle","to the right of Map Range") + ` Resolution <code>8</code>, Radius <code>1</code>.`,
+      A("Curve to Mesh","curve to mesh","to the right of Resample Curve") + ` ` + C("Resample Curve","Curve","Curve to Mesh","Curve") + ` ` + C("Curve Circle","Curve","Curve to Mesh","Profile Curve") + ` ` + C("Map Range","Result","Curve to Mesh","Scale") + ` Tick <b>Fill Caps</b>.`,
+      A("Store Named Attribute","store named attribute","to the right") + ` Integer, <b>Face</b>, name <code>trim_id</code>, Value <code>2</code>. Wire Curve to Mesh into it, and it into Join Geometry.`
+    ], see:`A thin bead across the middle of strip 2, its thickness changing every few centimetres.`,
+    why:`<b>Curve to Mesh › Scale</b> scales the profile at every curve point. Feeding it noise gives the bead its hand-welded wobble, with no radius attribute needed.`,
+    shots:[SH("l5-s05-view","",{},"Close-up of the weld bead."), SH("l5-s05-nodes","l5-s05",{"Weld Line":"1","Weld Points":"2","Weld Noise":"3","Weld Radius":"3","Weld Profile":"4","Weld Tube":"5","Weld ID":"6"},"The weld nodes.")]},
+
+    {t:"Hex bolts along the bolted strip", goal:"40 bevelled hex bolts, 10 cm apart, on strip 4.", do:[
+      A("Mesh Line","mesh line","to below the strip column") + ` Count <code>40</code>, Start Location <code>0.05</code>, <code>1.25</code>, <code>0</code>, Offset <code>0.1</code>, <code>0</code>, <code>0</code>.`,
+      A("Cylinder","cylinder","to below Mesh Line") + ` Vertices <code>6</code>, Radius <code>0.014</code>, Depth <code>0.008</code>. (6 sides = a hex head.)`,
+      A("Mesh Bevel","mesh bevel","to the right of Cylinder") + ` ` + C("Cylinder","Mesh","Mesh Bevel","Mesh") + ` Segments <code>2</code>, and type <code>0.0015</code> into all four Start/End Left/Right Offset fields.`,
+      A("Instance on Points","instance on points","to the right of Mesh Line") + ` ` + C("Mesh Line","Mesh","Instance on Points","Points") + ` ` + C("Mesh Bevel","Mesh","Instance on Points","Instance"),
+      A("Store Named Attribute","store named attribute","to the right") + ` Integer, <b>Instance</b>, <code>trim_id</code>, Value <code>4</code>. Wire it between Instance on Points and Join Geometry.`
+    ], see:`A row of small hex bolts across strip 4.`,
+    shots:[SH("l5-s06-view","",{},"Close-up of the bolts."), SH("l5-s06-nodes","l5-s06",{"Bolt Line":"1","Bolt Head":"2","Bolt Bevel":"3","Place Bolts":"4","Bolt ID":"5"},"The bolt nodes.")]},
+
+    {t:"Make it real geometry for the baker", goal:"One realized, smooth-shaded high-poly mesh.", do:[
+      `${K("Shift","A")} → <code>realize</code> → <b>Realize Instances</b>, and drop it <u>onto the wire</u> between Join Geometry and Group Output.`,
+      `${K("Shift","A")} → <code>shade smooth</code> → <b>Set Shade Smooth</b>, and drop it onto the wire after Realize Instances.`,
+      `Press ${K("Ctrl","S")} to save.`
+    ], see:`Spreadsheet (top-left): about <b>171,000 vertices</b>. That's normal for a high-poly source; it never goes in the game.`,
+    why:`<b>Why realize?</b> Bakers read real mesh data. Instances are only references, so they'd be skipped.`,
+    shots:[SH("l5-s07-view","",{},"The finished high-poly trim source."), SH("l5-s07-nodes","l5-s07",{"Realize":"1","Smooth":"2"},"Realize Instances and Set Shade Smooth at the end.")]}
+  ],
+  check:`<b>You should have:</b> a 4 m × 4 m high-poly sheet with six strips, diamond-plate lugs, a weld bead and hex bolts. Every part carries a <code>trim_id</code> number (Spreadsheet → choose the Face or Point domain to see it).`,
+  cards:[
+    ["What texel density does this kit use, and how is it worked out?","2048 px ÷ 4 m = <b>512 px per metre</b> (5.12 px/cm)."],
+    ["Which Mesh Bevel sockets set the width of an edge bevel in 5.3?","The four <b>Start/End Left/Right Offset</b> sockets. <i>Offset</i> is for vertex bevels."],
+    ["How do you turn a set of nodes into a reusable group?",`Select them, ${K("Ctrl","G")}. Expose inputs by dragging sockets to the Group Input's empty dot.`],
+    ["Why does a Grid with an odd number of points per column give a checkerboard from index parity?","Grid numbers points column by column; with an odd count, odd/even flips both down a column and across columns."],
+    ["How do you vary a swept tube's thickness along its length?","Feed a field into <b>Curve to Mesh › Scale</b>."],
+    ["Why Realize Instances before baking?","Bakers read real mesh data; instances are references and get skipped."],
+    ["What's a trim sheet?","A texture of horizontal strips that tile left to right; long parts map along a strip, so one material covers a whole kit."],
+    ["Name prefixes for meshes, materials and textures (Epic's convention)?","<code>SM_</code>, <code>M_</code> (and <code>MI_</code> for instances), <code>T_</code>."]
+  ],
+  boss:{title:"Boss fight: a second trim sheet from memory", brief:"New file, Memory mode on. Build a 4 m sheet with four strips of your own design (for example: ribbed panel, rivet row, grating bars, vent slats), using your Trim Strip group.", goal:40,
+    items:[["Trim Strip group rebuilt with all five inputs",""],["Four strips placed by Center Y without gaps",""],["One strip with instanced detail and a checkerboard or stagger pattern",""],["Each part tagged with trim_id",""],["Realized and smooth for baking",""]],
+    stretch:[["Ribbed panel","Instance thin bevelled bars along a Mesh Line for a corrugated strip."],["Rivets with variation","Random Value on Scale so no two rivets are identical."],["Seamless check","Put a lug at X = 0 and X = 4 and confirm the two halves meet when the texture tiles."]]}
+},
+/* ---------------------------------------------------------------- L6 */
+{
+  id:"l6", num:6, mod:2, short:"Bake the trim sheet",
+  title:"Bake the high-poly into a 2K PBR trim sheet",
+  kick:"Lesson 6 · Module 2 · Cycles baking, ORM packing",
+  time:"60–75 min",
+  intro:`You'll turn the high-poly sheet into three game textures: a <b>normal map</b>, a <b>base colour</b> map and a packed <b>ORM</b> map (ambient occlusion, roughness and metallic in the red, green and blue channels, which is the layout Unreal expects). The paint, hazard stripes and worn edges come from a procedural material you write, so every pixel is your own work.`,
+  use:`<b>Used for:</b> every PBR game asset. Selected-to-active baking and ORM packing are standard in Unreal pipelines.`,
+  layout:"",
+  learn:["Selected to Active baking","Cage extrusion / ray distance","Constant colour ramps","Pointiness edge wear","Emit-bake trick","ORM packing","Non-Color vs sRGB","OpenGL vs DirectX normals"],
+  concepts:[
+    {h:"Selected to Active", p:"Rays shoot from the low-poly (active) surface into the high-poly (selected). Whatever they hit is written into the low-poly's image. <b>Extrusion</b> moves the ray start outwards; <b>Max Ray Distance</b> limits how far rays travel."},
+    {h:"One shader, two Emit bakes", p:"An Emission shader is baked exactly as it is, with no lighting. A switch in the material sends either the colour or the packed ORM into Emission, so two bakes give two maps."},
+    {h:"Colour spaces", p:"Base Colour is <b>sRGB</b>. Normal and ORM hold data, not colour: <b>Non-Color</b>. A data map set to sRGB looks subtly wrong in every engine."},
+    {h:"Normal map handedness", p:"Blender bakes <b>OpenGL</b> normals (green = up). Unreal uses <b>DirectX</b> (green = down). Tick <i>Flip Green Channel</i> on import in Unreal, or bake with G set to −Y."}
+  ],
+  graphs:[],
+  steps:[
+    {t:"The low-poly bake target", goal:"A flat 4 m plane covering the sheet exactly; its UVs (0 to 1) become the texture.", do:[
+      `Mouse over the viewport: ${K("Shift","A")} → <b>Mesh → Plane</b>.`,
+      `A small <b>Add Plane</b> panel appears at the bottom-left of the viewport; click it to open it. Type Size <code>4</code>, Location X <code>2</code>, Y <code>2</code>, Z <code>0</code>.`,
+      `${K("F2")} → <code>TrimSheet_Low</code> → ${K("Enter")}.`
+    ], see:`From the top (numpad ${K("7")}), the plane exactly covers the high-poly sheet.`,
+    shots:[SH("l6-s01-view","",{},"Top view: the low plane over the high-poly sheet.")]},
+
+    {t:"Bake material: colour, roughness and metal per strip", goal:"A material on the high-poly that turns <code>trim_id</code> into paint colour, roughness and metalness.", do:[
+      `Click <b>TrimSheet_High</b> in the Outliner. Click the <b>Shading</b> workspace tab.`,
+      `In the shader editor (bottom) click <b>New</b>. Double-click the material name, type <code>M_Trim_Bake</code>. Click the Principled BSDF node and press ${K("X")}; you'll build your own.`,
+      `${K("Shift","A")} → <code>attribute</code> → <b>Attribute</b>, drop it on the left. Type Name <code>trim_id</code>.`,
+      A("Math","math","to the right of Attribute") + ` ` + D("Math","Add","Divide") + ` ` + C("Attribute","Factor","Divide","Value (top)") + ` ` + V("Divide","bottom Value","7","0.500"),
+      `${K("Shift","A")} → <code>color ramp</code> → <b>Color Ramp</b>, three times, stacked to the right of Divide. Wire Divide's <b>Value</b> into each ramp's <b>Factor</b>. Label them (${K("N")} → Node → Label) <code>Strip Colour</code>, <code>Strip Roughness</code>, <code>Strip Metal</code>.`,
+      `On each ramp: set the interpolation dropdown (<i>Linear</i>) to <b>Constant</b>. Click <b>+</b> until it has <b>6 stops</b>. Click each stop and type its <b>Pos</b>: <code>0.10</code>, <code>0.25</code>, <code>0.40</code>, <code>0.55</code>, <code>0.70</code>, <code>0.83</code>.`,
+      `Set the stop colours (click the colour box below the ramp → <b>Hex</b> → type):` + TABLE(["Stop","Strip","Colour (hex)","Roughness (grey value)","Metal"],[["1","Tread plate","#959597","0.45","1 (white)"],["2","Pipe paint","#3F6F59","0.55","0 (black)"],["3","Beam edge","#454548","0.50","0"],["4","Bolted plate","#7C7C7E","0.55","0"],["5","Hazard","#E7C427","0.50","0"],["6","Bare metal","#ADAAA6","0.35","1"]]) + `For roughness, type the number into the colour picker's <b>V</b> (value) field.`,
+      `Go back to the <b>Geometry Nodes</b> workspace. ${K("Shift","A")} → <code>set material</code> → drop it onto the wire before Group Output. Click its Material box → <b>M_Trim_Bake</b>.`
+    ], see:`In Material Preview, each strip has its own colour.`,
+    why:`<b>The Set Material step is required.</b> Geometry made by nodes carries no material. Without it the bake came out black in our test. Dividing by 7 puts IDs 1 to 6 at 0.14, 0.29, … 0.86, each landing just past one of your stops.`,
+    shots:[SH("l6-s02-nodes","l6-s02",{"trim_id":"3","id / 7":"4","Strip Colour":"5","Strip Roughness":"5","Strip Metal":"5"},"The per-strip ramps in M_Trim_Bake."), SH("l6-s02t-nodes","l6-s02t",{"Set Bake Material":"8"},"Set Material at the end of the node tree.")]},
+
+    {t:"Hazard stripes and worn edges", goal:"Black diagonal stripes on strip 5, and bare steel showing through the paint on sharp edges.", do:[
+      `${K("Shift","A")} → <code>texture coordinate</code> → <b>Texture Coordinate</b>. ${K("Shift","A")} → <code>wave</code> → <b>Wave Texture</b>, to its right. Wire <b>Object</b> → Wave's <b>Vector</b>. On Wave: Type <i>Bands</i>, Direction <b>Diagonal</b>, Scale <code>4</code>, Distortion <code>0</code>.`,
+      `Add a <b>Color Ramp</b> after the Wave (Factor → Factor), interpolation <b>Constant</b>, right stop Pos <code>0.5</code>. Label it <code>Stripe Mask</code>.`,
+      A("Math","math","to below Wave") + ` ` + D("Math","Add","Compare") + ` ` + C("Attribute","Factor","Compare","Value (top)") + ` Type Value <code>5</code> and Epsilon <code>0.5</code>. It outputs 1 only on strip 5.`,
+      A("Math","math","to the right of Stripe Mask") + ` ` + D("it","Add","Multiply") + `: Stripe Mask's <b>Color</b> into the top Value, Compare's Value into the bottom.`,
+      `${K("Shift","A")} → <code>mix</code> → <b>Mix</b>; set its type to <b>Color</b>. Factor ← that Multiply. A ← Strip Colour's Color. Click B's colour → Hex <code>#1D1D1D</code>.`,
+      `Worn edges: ${K("Shift","A")} → <code>geometry</code> → <b>Geometry</b> (input). Add a Color Ramp after its <b>Pointiness</b>; set the stops to Pos <code>0.52</code> and <code>0.6</code>. Add a <b>Noise Texture</b> (Scale <code>18</code>, Detail <code>8</code>). Multiply the ramp by the noise (Math Multiply, tick <b>Clamp</b>), then Multiply again by <code>2</code> (Clamp on). Label the last one <code>Wear Amount</code>.`,
+      `Add a <b>Mix</b> (Color): Factor ← Wear Amount, A ← the stripes Mix's Result, B ← Hex <code>#B3B1AD</code> (bare steel). Label <code>Worn Colour</code>.`,
+      `Add a <b>Mix</b> (Float): Factor ← Wear Amount, A ← Strip Metal's Color, B <code>1</code>. Label <code>Worn Metal</code>.`,
+      `Roughness: add a <b>Map Range</b> on the noise's Factor (To Min <code>-0.08</code>, To Max <code>0.15</code>) and a Math <b>Multiply Add</b> (Value ← Strip Roughness Color, Multiplier <code>1</code>, Addend ← Map Range Result). Label <code>Grungy Roughness</code>.`
+    ], why:`<b>Pointiness</b> (Cycles) is high on convex edges, exactly where paint chips first in real life. Multiplying by noise breaks the wear up so it isn't a perfect outline.`,
+    shots:[SH("l6-s03-nodes","l6-s03",{"Hazard Bands":"1","Stripe Mask":"2","Is Hazard Strip":"3","Black Band":"4","Add Stripes":"5","Edge Wear Mask":"6","Grunge":"6","Wear x Grunge":"6","Wear Amount":"6","Worn Colour":"7","Worn Metal":"8","Grunge Range":"9","Grungy Roughness":"9"},"Stripes, wear and grunge.")]},
+
+    {t:"Pack ORM and add the bake switch", goal:"One Emission output that shows either the base colour or the packed ORM.", do:[
+      `${K("Shift","A")} → <code>ambient occlusion</code> → <b>Ambient Occlusion</b>. On the node type Samples <code>32</code> (it shows 16) and Distance <code>0.05</code> (it shows 1 m).`,
+      `${K("Shift","A")} → <code>combine color</code> → <b>Combine Color</b> (mode RGB). Wire AO's <b>AO</b> → <b>Red</b>, Grungy Roughness → <b>Green</b>, Worn Metal → <b>Blue</b>. Label <code>Pack ORM</code>.`,
+      `Add a <b>Mix</b> (Color), label <code>Bake Switch</code>. A ← Worn Colour's Result, B ← Pack ORM's Color. Leave Factor at <code>0</code>.`,
+      `${K("Shift","A")} → <code>emission</code> → <b>Emission</b>. Bake Switch Result → Emission Color. Emission's output → Material Output's <b>Surface</b>.`
+    ], see:`In Material Preview the sheet shows flat, unlit colours. That's correct for baking.`,
+    why:`<b>ORM</b> = Occlusion (R), Roughness (G), Metallic (B). Unreal's standard packing saves two texture samples per pixel.`,
+    shots:[SH("l6-s04-nodes","l6-s04",{"AO":"1","Pack ORM":"2","Bake Switch":"3","Emission":"4"},"AO, ORM pack, the switch and Emission.")]},
+
+    {t:"Three empty images to bake into", goal:"<code>T_Trim_N</code>, <code>T_Trim_BC</code>, <code>T_Trim_ORM</code> at 2048 × 2048.", do:[
+      `Click <b>TrimSheet_Low</b> in the Outliner. In the shader editor click <b>New</b> and name the material <code>M_Trim</code>.`,
+      `${K("Shift","A")} → <code>image texture</code> → <b>Image Texture</b>, on the left. Click its <b>New</b>: Name <code>T_Trim_N</code>, Width <code>2048</code>, Height <code>2048</code>, untick <b>Alpha</b>, <b>OK</b>. Set its Color Space dropdown to <b>Non-Color</b>.`,
+      `Two more the same way: <code>T_Trim_BC</code> (Color Space <b>sRGB</b>) and <code>T_Trim_ORM</code> (<b>Non-Color</b>). Don't wire them yet.`
+    ], why:`The baker writes into the <b>selected (active) Image Texture node</b> of the low-poly's material. That's how you choose the target for each bake.`,
+    shots:[SH("l6-s05-nodes","l6-s05",{"T_Trim_N":"2","T_Trim_BC":"3","T_Trim_ORM":"3"},"Three bake targets in M_Trim.")]},
+
+    {t:"Bake settings", goal:"Cycles set up for a selected-to-active bake.", do:[
+      `Properties → <b>Render</b> tab: Render Engine <b>Cycles</b>. Device <b>GPU Compute</b> if you have a supported graphics card (otherwise CPU works, just slower).`,
+      `Scroll to the <b>Bake</b> panel (or type <code>bake</code> in the Properties search box). Bake Type: <b>Normal</b>.`,
+      `Tick <b>Selected to Active</b>; open it: Extrusion <code>0.03 m</code>, Max Ray Distance <code>0.08 m</code>.`,
+      `Open <b>Output</b>: Margin <code>8 px</code>.`,
+      `In the Outliner click <b>TrimSheet_High</b>, then ${K("Ctrl")}+click <b>TrimSheet_Low</b>. The low plane must be active (clicked last).`
+    ], why:`The detail sits between Z = −0.03 and +0.012. Rays start 3 cm above the plane and travel up to 8 cm, so they reach every bevel and lug without grabbing anything else.`,
+    shots:[SH("l6-s06-props","",{},"Render tab filtered to the Bake settings.")]},
+
+    {t:"Bake the normal map", goal:"<code>T_Trim_N</code> filled and saved.", do:[
+      `In M_Trim, click the <b>T_Trim_N</b> node once so it's selected (white outline).`,
+      `Properties → Bake → click <b>Bake</b>. Wait for the progress bar (bottom) to finish.`,
+      `In the Image Editor (left side of the Shading workspace) pick <b>T_Trim_N</b> from the image dropdown. Then <b>Image → Save As</b>, make a <code>Textures</code> folder inside IndustrialKit, save <code>T_Trim_N.png</code>.`
+    ], see:`A mostly lilac-blue image with the lugs, weld and bevels showing as coloured edges.`,
+    shots:[SH("l6-s07-image","",{},"The baked normal map (OpenGL).")]},
+
+    {t:"Bake the base colour", goal:"<code>T_Trim_BC</code>.", do:[
+      `Click <b>TrimSheet_High</b> in the Outliner. In its material (M_Trim_Bake) check <b>Bake Switch</b> Factor is <code>0</code>.`,
+      `Click <b>TrimSheet_High</b> again, then ${K("Ctrl")}+click <b>TrimSheet_Low</b> so the low plane is active once more.`,
+      `In M_Trim click the <b>T_Trim_BC</b> node. Properties → Bake → Bake Type <b>Emit</b> → <b>Bake</b>. Save it as <code>T_Trim_BC.png</code> in Textures.`
+    ], see:`Grey tread plate, green pipe paint, dark beam strip, hazard stripes, light bare metal, with worn edges along strip borders.`,
+    shots:[SH("l6-s08-image","",{},"Base colour.")]},
+
+    {t:"Bake the ORM", goal:"<code>T_Trim_ORM</code>.", do:[
+      `Click <b>TrimSheet_High</b> in the Outliner; in M_Trim_Bake set <b>Bake Switch</b> Factor to <code>1</code>.`,
+      `Click TrimSheet_High, ${K("Ctrl")}+click TrimSheet_Low. In M_Trim click the <b>T_Trim_ORM</b> node, then <b>Bake</b> (Emit still selected; slower, because the AO node traces rays). Save as <code>T_Trim_ORM.png</code>.`
+    ], see:`Magenta on metal strips (AO + metal), orange on painted strips (AO + roughness).`,
+    shots:[SH("l6-s09-image","",{},"Packed ORM: red = AO, green = roughness, blue = metal.")]},
+
+    {t:"Wire the final material and check it", goal:"M_Trim on the low plane looks like the high-poly.", do:[
+      `In M_Trim: T_Trim_BC <b>Color</b> → Principled BSDF <b>Base Color</b>.`,
+      `${K("Shift","A")} → <b>Separate Color</b>. T_Trim_ORM Color → its input; <b>Green</b> → Roughness, <b>Blue</b> → Metallic.`,
+      `${K("Shift","A")} → <b>Normal Map</b>. T_Trim_N Color → its Color; its Normal → Principled <b>Normal</b>.`,
+      `Click the eye icon next to TrimSheet_High in the Outliner to hide it. Look at the low plane in Material Preview.`
+    ], see:`The flat plane shows lugs, weld, bolts and bevels catching the light. They're all baked into a single quad.`,
+    shots:[SH("l6-s10-view","",{},"A single flat plane, lit like the high-poly."), SH("l6-s10-nodes","l6-s10",{"T_Trim_BC":"1","Split ORM":"2","T_Trim_ORM":"2","Normal Map":"3","T_Trim_N":"3"},"The final M_Trim.")]}
+  ],
+  check:`<b>You should have:</b> three 2K PNGs in <code>IndustrialKit/Textures</code> and a material that makes a single plane look like the high-poly. Hide and unhide the high-poly; the difference should be hard to see from a normal viewing distance.`,
+  cards:[
+    ["What do the R, G and B of an ORM map hold?","Red = ambient <b>O</b>cclusion, Green = <b>R</b>oughness, Blue = <b>M</b>etallic."],
+    ["Which colour space for Normal and ORM? For Base Colour?","Normal/ORM: <b>Non-Color</b>. Base colour: <b>sRGB</b>."],
+    ["Which image does the baker write into?","The <b>selected (active) Image Texture node</b> in the active object's material."],
+    ["Selected to Active: which object must be active?","The <b>low-poly</b> target (clicked last)."],
+    ["Why did a bake from node-made geometry come out black?","No material on it. Geometry made by nodes needs a <b>Set Material</b> node."],
+    ["Extrusion vs Max Ray Distance?","Extrusion moves the ray start outward from the low-poly; Max Ray Distance limits how far rays travel."],
+    ["Blender normals vs Unreal normals?","Blender: OpenGL (Y+). Unreal: DirectX (Y−). Flip the green channel on import, or bake with G = −Y."],
+    ["How does one material produce two different Emit bakes?","A Mix switch sends either base colour or packed ORM into Emission; change its Factor between bakes."]
+  ],
+  boss:{title:"Boss fight: bake your own sheet", brief:"Bake the trim sheet you made in Lesson 5's boss fight, from memory, at 2K.", goal:45,
+    items:[["Low plane with correct size and position",""],["Bake material with per-strip values from trim_id",""],["Normal, BC and ORM baked and saved, correct colour spaces",""],["Final material looks right on a flat plane",""]],
+    stretch:[["DirectX copy","Re-bake the normal with Output → Swizzle G set to −Y and save T_Trim_N_DX.png for Unreal."],["Curvature map","Bake Pointiness alone into a greyscale map you can reuse for edge masks in other tools."],["Colour variants","Duplicate M_Trim and hue-shift the base colour in the material (Hue/Saturation node) for a blue-paint variant."]]}
+},
+/* ---------------------------------------------------------------- L7 */
+{
+  id:"l7", num:7, mod:2, short:"Pipe generator",
+  title:"A pipe-run generator with trim UVs, flanges and supports",
+  kick:"Lesson 7 · Module 2 · Curves, captured UVs, raycast supports",
+  time:"75–90 min",
+  intro:`Draw any path, get an industrial pipe: real long-radius elbows, flanged joints every 4 m with bolts, square support legs that drop to the ground, and UVs that land exactly on the trim sheet's pipe strip at 512 px/m. You'll also build <b>Trim Tube</b>, a node group that wraps any curve in a trim-mapped tube. It makes the catwalk rails and posts in the next lesson.`,
+  use:`<b>Used for:</b> refinery, factory, sci-fi and sewer levels. A pipe tool like this saves days of manual modelling and UV work on a level.`,
+  layout:"", graphs:[],
+  learn:["Set Spline Type (Poly)","Fillet Curve","Capture Attribute","Spline Parameter","Arc profile (seam trick)","UVs from nodes","Polygon perimeter maths","Curve Length","Raycast supports"],
+  concepts:[
+    {h:"UVs straight from the curve", p:"U = how far along the pipe (metres ÷ 4). V = how far around the ring, scaled by the ring's real perimeter and placed in the pipe strip. That gives the same texel density as every other piece."},
+    {h:"Capture before you lose it", p:"Spline Parameter only exists on curves. <b>Capture Attribute</b> stores it on the curve and on the ring, and Curve to Mesh carries those values onto the mesh."},
+    {h:"The seam trick", p:"A closed circle's last face would stretch UVs from 1 back to 0. An <b>Arc</b> swept a full 360° ends where it starts, so the UVs split cleanly. <b>Merge by Distance</b> then welds the vertices, keeping one smooth surface with a UV seam."},
+    {h:"Engineering details sell it", p:"Elbow radius = 1.5 × diameter (a standard long-radius elbow). Flanges every 4 m like real pipe spools. Supports only under level runs."}
+  ],
+  steps:[
+    {t:"Draw the path and start the Pipe Run tree", goal:"A five-point path and a tree with Radius and Bend Radius inputs.", do:[
+      `Mouse over the viewport: ${K("Shift","A")} → <b>Curve → Bézier</b>. ${K("F2")} → <code>Pipe_Path</code>.`,
+      `${K("Tab")} (Edit Mode). Select the right-hand end point (click its middle dot) and press ${K("E")} three times, clicking each time, to have 5 points.`,
+      `Set each point exactly: click it, ${K("N")} → <b>Item</b> → Control Point X, Y, Z. Points 1–5: (0, 0, 1.5), (4, 0, 1.5), (4, 3, 1.5), (4, 3, 3.5), (8, 3, 3.5). ${K("Tab")} back to Object Mode.`,
+      `Geometry Nodes tab → <b>New</b>; rename the tree <code>Pipe Run</code>.`,
+      `${K("N")} → <b>Group</b> → <b>+ → Input</b>: <code>Radius</code> (Float, Distance, Default 0.1, Min 0.01) and <code>Bend Radius</code> (Float, Distance, Default 0.3).`,
+      `Properties → <b>wrench</b>: type <code>0.1</code> and <code>0.3</code> into the modifier's Radius and Bend Radius. The modifier keeps 0 for new inputs; a Default only applies to modifiers added later.`
+    ], shots:[SH("l7-s01-view","",{},"The path: two levels joined by a riser.")]},
+
+    {t:"Straight runs with real elbows", goal:"Straight segments between your points, with rounded bends.", do:[
+      A("Set Spline Type","spline type","onto the wire between Group Input and Group Output") + ` Its dropdown already says <b>Poly</b>: straight lines between your control points, handles ignored.`,
+      A("Fillet Curve","fillet","onto the wire after it") + ` ` + D("Fillet Curve","Bézier","Poly") + ` Count <code>8</code> (it shows 1). ` + C("Group Input","Bend Radius","Fillet Curve","Radius")
+    ], see:`The path now has rounded corners of 0.3 m radius.`,
+    why:`<b>1.5 × diameter</b>: a 0.2 m pipe gets a 0.3 m elbow, the standard "long radius" fitting.`,
+    shots:[SH("l7-s02-view","",{},"Rounded bends."), SH("l7-s02-nodes","l7-s02",{"To Poly":"1","Bends":"2"},"Set Spline Type → Fillet Curve.")]},
+
+    {t:"Sweep the tube and capture where every point is", goal:"A 16-sided tube that remembers how far along and how far around each vertex is.", do:[
+      A("Spline Parameter","spline parameter","to below Fillet Curve"),
+      A("Capture Attribute","capture attribute","to the right of Fillet Curve") + ` ` + C("Fillet Curve","Curve","Capture Attribute","Geometry") + ` Drag <b>Spline Parameter › Length</b> into Capture Attribute's empty input dot. An item named <i>Length</i> appears.`,
+      A("Arc","arc","to below the Spline Parameter") + ` Resolution stays <code>16</code>; Sweep Angle <code>360</code> (it shows 315°). ` + C("Group Input","Radius","Arc","Radius"),
+      `Add another <b>Spline Parameter</b> and another <b>Capture Attribute</b> next to the Arc: wire Arc → Geometry, and drag that Spline Parameter's <b>Factor</b> into the empty dot. Double-click the new item and rename it <code>Around</code>.`,
+      A("Curve to Mesh","curve to mesh","to the right of both Capture nodes") + ` Curve ← the Length capture's Geometry; Profile Curve ← the Around capture's Geometry; tick <b>Fill Caps</b>. Wire it to Group Output.`
+    ], see:`A green-less grey tube following the path.`,
+    shots:[SH("l7-s03-view","",{},"The swept tube."), SH("l7-s03-nodes","l7-s03",{"Along":"1","Capture Length":"2","Ring":"3","Around Param":"4","Capture Around":"4","Sweep":"5"},"Two captures feeding Curve to Mesh.")]},
+
+    {t:"Write UVs that land on the pipe strip", goal:"<code>UVMap</code> stored on the mesh: U along the pipe, V around it inside the pipe strip.", do:[
+      `U: ${K("Shift","A")} → Math <b>Divide</b>: Length capture's <b>Length</b> ÷ <code>4</code>. Label <code>U</code>.`,
+      `Ring perimeter (works for any number of sides): Math <b>Divide</b> <code>3.14159</code> ÷ 16 (label <code>Pi / Sides</code>) → <b>Sine</b> → <b>Multiply</b> × 16 → <b>Multiply</b> × 2 → <b>Multiply</b> × Radius (wire Group Input › Radius) → <b>Divide</b> ÷ 4 (label <code>V Span</code>).`,
+      `V: Math <b>Multiply Add</b>: Value ← Around, Multiplier ← V Span, Addend <code>0.5</code> (the pipe strip starts at 2 m ÷ 4 = 0.5). Label <code>V</code>.`,
+      A("Combine XYZ","combine xyz","to the right") + ` U → X, V → Y.`,
+      A("Store Named Attribute","store named attribute","onto the wire after Curve to Mesh") + ` Data type <b>2D Vector</b>, domain <b>Face Corner</b>, name <code>UVMap</code>, Value ← Combine XYZ.`,
+      A("Merge by Distance","merge by distance","onto the wire after it") + ` Distance <code>0.0001</code>.`
+    ], see:`Material Preview with M_Trim on the object (Properties → Material → pick <b>M_Trim</b>): green painted pipe with a weld seam running along it.`,
+    why:`<b>A regular polygon's perimeter</b> is 2 × sides × r × sin(π ÷ sides). For 16 sides that's 6.24 r, close to 2πr. For a 4-sided square tube it's 5.66 r, so using 2πr would stretch square tubes by 57%. One formula keeps every tube at 512 px/m.`,
+    shots:[SH("l7-s04-nodes","l7-s04",{"U":"1","Pi / Sides":"2","Sine":"2","x 2 Sides":"2","Perimeter":"2","x Radius":"2","V Span":"2","V":"3","UV":"4","Store UVMap":"5","Weld Seam":"6"},"The UV maths.")]},
+
+    {t:"Group it: the Trim Tube tool", goal:"One group (Curve, Radius, Sides, Start Angle, Strip Start) you'll reuse for every tube in the kit.", do:[
+      `Box-select everything from the first Spline Parameter to Merge by Distance (not Fillet or the Group nodes). ${K("Ctrl","G")}.`,
+      `Inside, expose inputs (drag to Group Input's empty dot, then rename in N → Group): Arc's <b>Resolution</b> → <code>Sides</code> (also wire it into Pi / Sides' bottom Value and the "× 16" Multiply), Arc's <b>Start Angle</b> → <code>Start Angle</code>, V's <b>Addend</b> → <code>Strip Start</code>. Radius is already an input.`,
+      `Smooth only round tubes: ${K("Shift","A")} → <b>Compare</b> (Integer, Greater Than): A ← Sides, B <code>6</code>. Add <b>Set Shade Smooth</b> after Merge by Distance with Shade Smooth ← Compare.`,
+      `${K("Tab")} out. Rename the group <code>Trim Tube</code> on its node; label the node <code>Trim Tube (pipe)</code>. Type Sides <code>16</code>, Strip Start <code>0.5</code>.`
+    ], shots:[SH("l7-s05-nodes","l7-s05",{"Pipe Body":"4"},"The main tree is now short."), SH("l7-s05g-nodes","l7-s05g",{"Round?":"3","Smooth If Round":"3"},"Inside Trim Tube.")]},
+
+    {t:"A bolted flange, mapped into the bolt strip", goal:"A flange disc with 8 bolts, planar-mapped from the front, built at the origin.", do:[
+      `Math <b>Multiply</b>: Radius × <code>1.6</code> → <b>Cylinder</b> Radius. Cylinder: Vertices <code>24</code>, Depth <code>0.03</code>.`,
+      `Math <b>Multiply</b>: Radius × <code>1.35</code> → <b>Mesh Circle</b> Radius; Mesh Circle Vertices <code>8</code>.`,
+      `<b>Cylinder</b> for a bolt: Vertices <code>6</code>, Radius <code>0.012</code>, Depth <code>0.05</code>. <b>Instance on Points</b>: Points ← Mesh Circle, Instance ← bolt. Then <b>Realize Instances</b>.`,
+      `<b>Join Geometry</b>: flange Cylinder + realized bolts.`,
+      `Planar UV: <b>Position</b> → <b>Vector Math › Multiply Add</b> with Multiplier <code>0.25, 0.25, 0</code> and Addend <code>0.1, 0.3125, 0</code> → <b>Store Named Attribute</b> (2D Vector, Face Corner, <code>UVMap</code>) on the joined flange.`
+    ], why:`<b>Planar mapping</b> looks straight down the flange axis: X and Y in metres ÷ 4, shifted into the middle of the bolted-plate strip (v 0.25–0.375). Do it at the origin, before the flange is moved, so every flange gets the same UVs.`,
+    shots:[SH("l7-s06-nodes","l7-s06",{"Flange Radius":"1","Flange Disc":"1","Bolt Circle Radius":"2","Bolt Circle":"2","Flange Bolt":"3","Place Flange Bolts":"3","Real Bolts":"3","Flange Parts":"4","Flange Pos":"5","Planar UV":"5","Flange UVMap":"5"},"Flange, bolts and planar UVs.")]},
+
+    {t:"Flanges at both ends and every 4 m", goal:"Flanges placed by maths: count = round-up(length ÷ spacing) + 1.", do:[
+      `Add an input <code>Flange Spacing</code> (Float, Distance, 4). Type 4 on the modifier too.`,
+      `<b>Curve Length</b> (Curve ← Fillet Curve) → Math <b>Divide</b> by Flange Spacing → Math <b>Ceil</b> → Math <b>Add</b> <code>1</code>.`,
+      `<b>Curve to Points</b> (mode <b>Count</b>): Curve ← Fillet Curve, Count ← the +1.`,
+      `<b>Instance on Points</b>: Points ← Curve to Points, Instance ← the flange's Store Named Attribute, Rotation ← Curve to Points <b>Rotation</b>.`,
+      `<b>Join Geometry</b> (label <code>Join Pipe</code>): Trim Tube's Mesh + the flanges → Group Output.`
+    ], see:`A flange at each end and spaced evenly along the run, each facing along the pipe.`,
+    why:`<b>Count mode</b> always puts points on both ends; length ÷ spacing rounded up keeps the gaps at most 4 m. Curve to Points' Rotation points each instance's <b>local Z</b> along the curve (checked in 5.3), and a Cylinder is built along Z, so flanges sit square on the pipe.`,
+    shots:[SH("l7-s07-view","",{},"Flanges on the pipe."), SH("l7-s07-nodes","l7-s07",{"Run Length":"2","Sections":"2","Round Up":"2","+1":"2","Flange Points":"3","Place Flanges":"4","Join Pipe":"5"},"Count = ceil(length ÷ spacing) + 1.")]},
+
+    {t:"Find where supports can stand", goal:"Support points every 2 m, kept only where the pipe is level and there's ground below.", do:[
+      `Make ground: ${K("Shift","A")} → Mesh → Plane, Size 20 in its Add panel, ${K("F2")} → <code>Ground</code>. Click Pipe_Path again.`,
+      `Inputs: <code>Support Spacing</code> (Float, Distance, 2; type it on the modifier) and an <b>Object</b> input <code>Ground</code>. On the modifier pick <b>Ground</b>.`,
+      `<b>Curve to Points</b> (mode <b>Length</b>): Curve ← Fillet Curve, Length ← Support Spacing.`,
+      `<b>Object Info</b> (<b>Relative</b>), Object ← Group Input › Ground. <b>Raycast</b>: Target Geometry ← Object Info Geometry, Source Position ← <b>Position</b>. Ray Direction is already 0, 0, −1.`,
+      `Level test: Curve to Points <b>Tangent</b> → <b>Separate XYZ</b> → Z → Math <b>Absolute</b> → <b>Compare</b> Less Than <code>0.3</code>. <b>Boolean Math</b> (And): that ✓ and Raycast <b>Is Hit</b>.`
+    ], why:`A vertical riser has a tangent Z near 1, so it gets no legs. Level runs have Z near 0.`,
+    shots:[SH("l7-s08-nodes","l7-s08",{"Support Points":"3","Ground Info":"4","Point Position":"4","Look Down":"4","Tangent XYZ":"5","Steepness":"5","Level?":"5","Level And Hit":"5"},"Support points, raycast and the level test.")]},
+
+    {t:"Legs: one curve per support, swept as square tube", goal:"Square legs from the pipe down to the ground, trim-mapped on the beam strip.", do:[
+      `<b>Curve Line</b>: End <code>0, 0, -1</code> (a 1 m line pointing down).`,
+      `<b>Combine XYZ</b>: X <code>1</code>, Y <code>1</code>, Z ← Raycast <b>Hit Distance</b>.`,
+      `<b>Instance on Points</b>: Points ← support Curve to Points, Selection ← the And, Instance ← Curve Line, Scale ← Combine XYZ. Then <b>Realize Instances</b>.`,
+      `Add a <b>Trim Tube</b> group node (${K("Shift","A")} → <code>trim tube</code>): Curve ← realized legs, Radius <code>0.057</code>, Sides <code>4</code>, Start Angle <code>45</code>, Strip Start <code>0.375</code>. Wire its Mesh into Join Pipe.`
+    ], see:`Square legs under the level runs, none under the riser, each reaching the ground exactly.`,
+    why:`<b>Stretching a curve is free; stretching a mesh isn't.</b> Scaling the line before sweeping keeps the UVs at real length, so the texture isn't stretched on tall legs.`,
+    shots:[SH("l7-s09-view","",{},"Legs only under level runs."), SH("l7-s09-nodes","l7-s09",{"Leg Line":"1","Leg Scale":"2","Place Legs":"3","Real Legs":"3","Leg Tube":"4"},"Legs from scaled curve instances.")]},
+
+    {t:"One game mesh, and your pipe kit pieces", goal:"Realized, one material, and three sellable pipe pieces.", do:[
+      `<b>Realize Instances</b> after Join Pipe, then <b>Set Material</b> (<b>M_Trim</b>) → Group Output.`,
+      `Make the pieces: select Pipe_Path, ${K("Shift","D")}, right-click (stays in place), ${K("F2")} → <code>SM_Pipe_Straight_200</code>. ${K("Tab")}, delete points until two remain, set them to (0, 0, 0) and (2, 0, 0). On its modifier clear <b>Ground</b> (click the ×).`,
+      `Same for <code>SM_Pipe_Straight_400</code> (0,0,0)→(4,0,0) and <code>SM_Pipe_Elbow_90</code> (0,0,0)→(1,0,0)→(1,1,0).`
+    ], see:`Each piece's origin sits at the start of the pipe, on the grid. The elbow ends exactly 1 m along X and 1 m along Y, so it snaps to straights.`,
+    shots:[SH("l7-s10-view","",{},"Finished pipe run with M_Trim."), SH("l7-s10-nodes","l7-s10",{"Realize Pipe":"1","Kit Material":"1"},"Realize + Set Material.")]}
+  ],
+  check:`<b>You should have:</b> a pipe generator that follows any path, with elbows, flanges, supports and trim UVs; a reusable Trim Tube group; and three pipe pieces on the grid. Everything uses one material.`,
+  cards:[
+    ["Why Capture Attribute before Curve to Mesh?","Spline Parameter only exists on curves; capturing stores it so the mesh inherits the values."],
+    ["Why sweep an Arc of 360° instead of a Curve Circle?","The Arc's last point duplicates its first, so the UVs split cleanly instead of one face stretching from 1 back to 0."],
+    ["Perimeter of a regular polygon with n sides and radius r?","2 · n · r · sin(π ÷ n)."],
+    ["How many flanges for a run of length L with spacing S (both ends included)?","ceil(L ÷ S) + 1, using Curve to Points in Count mode."],
+    ["Which local axis does Curve to Points' Rotation align with the curve?","Local <b>Z</b> (checked in 5.3)."],
+    ["Standard long-radius elbow radius?","1.5 × the pipe diameter."],
+    ["Why scale curve lines before sweeping the legs?","Sweeping afterwards keeps UVs at true length, with no stretched texture."],
+    ["A modifier input shows 0 after you set a Default. Why?","A Default only applies to modifiers added later; type the value on the existing modifier."]
+  ],
+  boss:{title:"Boss fight: cable trays", brief:"From memory: a cable-tray generator. A U-shaped tray swept along any path (use Trim Tube with a custom profile, or Curve to Mesh with a Quadrilateral), supports every 1.5 m, trim-mapped to the beam strip.", goal:45,
+    items:[["Profile swept along a poly path with fillets",""],["UVs at 512 px/m on the right strip",""],["Supports that only appear under level runs",""],["Realized with M_Trim",""]],
+    stretch:[["Valves","Instance a valve wheel at a chosen Spline Parameter factor."],["Insulated pipe","Second, thicker Trim Tube on the bare-metal strip with banding rings every 1 m."],["Wall brackets","Raycast sideways (−Y) for pipes that run along walls."]]}
+},
+/* ---------------------------------------------------------------- L8 */
+{
+  id:"l8", num:8, mod:2, short:"Catwalk pieces",
+  title:"Floors, railings, stairs and columns from one generator",
+  kick:"Lesson 8 · Module 2 · Modular pieces, planar trim mapping, Menu Switch",
+  time:"90–110 min",
+  intro:`The heart of the kit: one node tree that makes every catwalk piece on the 1 m grid. It gives you tread-plate floors with square-tube frames, railings with 48 mm handrails and hazard kick plates, a 2 m-rise stair, and columns. Everything is mapped onto your trim sheet, and a <b>Piece</b> dropdown picks which one an object shows.`,
+  use:`<b>Used for:</b> modular environment kits. Level designers assemble whole facilities from a dozen pieces like these.`,
+  layout:"", graphs:[],
+  learn:["Trim Planar group","Top vs front projection","Square-tube frames with Trim Tube","Posts from Mesh Line","Stair maths","Menu Switch with 4 items","One tree, many objects","Pivots on the grid"],
+  concepts:[
+    {h:"Two mapping tools", p:"<b>Trim Tube</b> for anything long and thin (frames, rails, posts, stringers, columns). <b>Trim Planar</b> for flat plates: project from the top (floors, treads) or the front (kick plates) into a strip."},
+    {h:"Pivots and the grid", p:"Floors start at the origin and run +X (length) and +Y (1 m), walking surface at Z = 0. Railings sit on a floor edge. The stair rises 2 m over 3 m. Every piece snaps to the 1 m grid with no gaps."},
+    {h:"Real dimensions", p:"48 mm handrail tube, 1.1 m rail height, 0.55 m knee rail, 10 cm kick plate, 20 cm risers with 30 cm treads (about 34°). Believable sizes are a big part of a kit feeling professional."},
+    {h:"One tree, many objects", p:"Each kit piece is its own object with its own modifier values (Piece, Length, Height), but they all share one node tree. Fix the tree once, and every piece updates."}
+  ],
+  steps:[
+    {t:"Host object and shared inputs", goal:"An object named for the first piece and a Catwalk Piece tree with a Length input.", do:[
+      `${K("Shift","A")} → Mesh → Plane. ${K("F2")} → <code>SM_Catwalk_Floor_200</code>.`,
+      `Geometry Nodes → <b>New</b>, rename the tree <code>Catwalk Piece</code>. Cut the Group Input → Group Output wire; the tree makes its own geometry.`,
+      `Add input <code>Length</code> (Float, Distance, Default 2, Min 1, Max 4) and type <code>2</code> on the modifier.`
+    ], shots:[SH("l8-s01-view","",{},"Empty host, ready.")]},
+
+    {t:"Build the Trim Planar group", goal:"A group that maps flat parts into a strip: U = x ÷ 4, V = strip start + offset + (y or z) ÷ 4.", do:[
+      `${K("Shift","A")} → <b>Position</b> → <b>Separate XYZ</b>.`,
+      `<b>Switch</b> (type <b>Float</b>): False ← Y, True ← Z. (Side = project from the front.)`,
+      `Math <b>Divide</b> X ÷ 4 (label <code>U</code>). Math <b>Divide</b> Switch Output ÷ 4 (label <code>V Metres</code>).`,
+      `Math <b>Add</b> (label <code>Start + Offset</code>), and Math <b>Add</b> V Metres + it (label <code>V</code>).`,
+      `<b>Combine XYZ</b> (U → X, V → Y) → <b>Store Named Attribute</b> (2D Vector, Face Corner, <code>UVMap</code>).`,
+      `Select these nodes, ${K("Ctrl","G")}. Inside, expose: Store's Geometry input → <code>Geometry</code>, Switch's Switch → <code>Side</code>, Start + Offset's two Values → <code>Strip Start</code> and <code>Offset</code>. ${K("Tab")} out; rename the group <code>Trim Planar</code>.`
+    ], shots:[SH("l8-s02-nodes","l8-s02",{"Position":"1","XYZ":"1","Y or Z":"2","U":"3","V Metres":"3","Start + Offset":"4","V":"4","UV":"5","Store UVMap":"5"},"Inside Trim Planar.")]},
+
+    {t:"The floor plate", goal:"A 1 cm tread plate, top at Z = 0, mapped onto the tread-plate strip.", do:[
+      `<b>Combine XYZ</b>: X ← Length, Y <code>1</code>, Z <code>0.01</code> → <b>Cube</b> Size.`,
+      `Math <b>Multiply</b> Length × <code>0.5</code> → <b>Combine XYZ</b> X; type Y <code>0.5</code>, Z <code>-0.005</code> → <b>Transform Geometry</b> Translation (Geometry ← Cube).`,
+      `<b>Trim Planar</b> (label <code>Trim Planar (top)</code>): Geometry ← Transform, Side off, Strip Start <code>0.75</code>. Wire it to Group Output.`
+    ], see:`A 2 m × 1 m plate, plain grey for now: the trim material goes on in step 8. Its 1 m width exactly fills the tread strip (0.25 in V).`,
+    shots:[SH("l8-s02-view","",{},"Tread plate floor."), SH("l8-s02m-nodes","l8-s02m",{"Plate Size":"1","Plate":"1","Half Length":"2","Plate Centre":"2","Plate Place":"2","Plate UV":"3"},"Plate nodes.")]},
+
+    {t:"The square-tube frame", goal:"Four 5 cm square tubes around the floor's edge, under the plate.", do:[
+      `<b>Combine XYZ</b> (label <code>Near End</code>): X ← Length, Y <code>0.025</code>, Z <code>-0.035</code>. <b>Curve Line</b> (label <code>Side A</code>): Start <code>0, 0.025, -0.035</code>, End ← Near End.`,
+      `<b>Combine XYZ</b> (label <code>Far Corner</code>): X ← Length, Y <code>0.975</code>, Z <code>-0.035</code>. <b>Curve Line</b> (label <code>Side B</code>): Start <code>0, 0.975, -0.035</code>, End ← Far Corner.`,
+      `<b>Curve Line</b> (label <code>End A</code>): Start <code>0.025, 0.05, -0.035</code>, End <code>0.025, 0.95, -0.035</code>.`,
+      `<b>Combine XYZ</b> (label <code>L only</code>): X ← Length. Two <b>Vector Math › Add</b> nodes: L only + <code>-0.025, 0.05, -0.035</code> and L only + <code>-0.025, 0.95, -0.035</code>. <b>Curve Line</b> (label <code>End B</code>): Start ← the first, End ← the second.`,
+      `<b>Join Geometry</b> (label <code>Frame Lines</code>): all four lines → <b>Trim Tube</b>: Radius <code>0.035</code>, Sides <code>4</code>, Start Angle <code>45</code>, Strip Start <code>0.375</code>.`,
+      `<b>Join Geometry</b> (label <code>Floor</code>): plate + frame → Group Output.`
+    ], see:`A framed floor: square tubes under the plate (still untextured until step 8).`,
+    shots:[SH("l8-s03-view","",{},"Framed floor."), SH("l8-s03-nodes","l8-s03",{"Side A":"1","Side B":"2","End A":"3","End B":"4","Frame Lines":"5","Frame Tube":"5","Floor":"6"},"Frame lines into Trim Tube.")]},
+
+    {t:"The railing", goal:"Posts every metre, top and knee rails, and a hazard-striped kick plate.", do:[
+      `Posts: Math <b>Add</b> Length + 1 → <b>Mesh Line</b> Count; Start Location <code>0.03, 0.03, 0</code>, Offset <code>1, 0, 0</code>. <b>Curve Line</b> End <code>0, 0, 1.1</code>. <b>Instance on Points</b> (Points ← Mesh Line, Instance ← line) → <b>Realize</b> → <b>Trim Tube</b> (Radius 0.028, Sides 4, Start Angle 45, Strip Start 0.375).`,
+      `Rails: <b>Vector Math › Add</b> L only + <code>0, 0.03, 1.1</code> → <b>Curve Line</b> End (Start <code>0, 0.03, 1.1</code>); <b>Transform Geometry</b> Z <code>-0.55</code> for the knee rail; <b>Join</b> both → <b>Trim Tube</b> (Radius 0.024, Sides 12, Strip Start 0.5).`,
+      `Kick plate: <b>Cube</b> Size (Length, 0.008, 0.1), moved to (Length ÷ 2, 0.004, 0.05) → <b>Trim Planar</b> (label <code>Trim Planar (front)</code>): <b>Side</b> on, Strip Start <code>0.125</code>, Offset <code>0.05</code>.`,
+      `<b>Join Geometry</b> (label <code>Railing</code>): posts, rails, kick plate. To look at it, wire Railing to Group Output for now.`
+    ], see:`A 1.1 m railing: posts, two rails and a low kick plate. In step 8 the rails turn green and the kick plate yellow and black.`,
+    shots:[SH("l8-s04-view","",{},"The railing."), SH("l8-s04-nodes","l8-s04",{"Post Spots":"1","Post Line":"1","Place Posts":"1","Post Tube":"1","Top Rail":"2","Knee Rail":"2","Rail Tube":"2","Kick Plate":"3","Kick UV":"3","Railing":"4"},"Posts, rails, kick plate.")]},
+
+    {t:"The stair", goal:"Nine tread plates and two stringers: 2 m rise over 3 m run.", do:[
+      `<b>Mesh Line</b>: Count <code>9</code>, Start Location <code>0.15, 0.5, 0.19</code>, Offset <code>0.3, 0, 0.2</code> (treads every 30 cm forward, 20 cm up).`,
+      `<b>Cube</b> Size <code>0.28, 0.9, 0.02</code> → <b>Trim Planar</b> (top, Strip Start 0.75, Offset 0.125) → <b>Instance on Points</b> on the Mesh Line → <b>Realize</b>.`,
+      `Stringers: <b>Curve Line</b> (0, 0.03, 0) → (3, 0.03, 2); <b>Transform</b> Y <code>0.94</code> for the second; <b>Join</b> → <b>Trim Tube</b> (Radius 0.06, Sides 4, Start Angle 45, Strip Start 0.375).`,
+      `<b>Join Geometry</b> (label <code>Stair</code>): treads + stringers. Wire to Group Output to look.`
+    ], see:`A stair rising 2 m over 3 m. Its top meets a floor placed at Z = 2.`,
+    why:`<b>Why map the tread before instancing?</b> The UVs are computed once at the origin, so every tread gets identical, centred tread-plate UVs.`,
+    shots:[SH("l8-s05-view","",{},"The stair."), SH("l8-s05-nodes","l8-s05",{"Tread Spots":"1","Tread":"2","Tread UV":"2","Place Treads":"2","Stringer A":"3","Stringer B":"3","Stringer Tube":"3","Stair":"4"},"Treads and stringers.")]},
+
+    {t:"The column", goal:"A 12 cm square column with a base plate, height from an input.", do:[
+      `Add input <code>Height</code> (Float, Distance, 2). Type 2 on the modifier.`,
+      `<b>Combine XYZ</b> Z ← Height → <b>Curve Line</b> End. <b>Trim Tube</b>: Radius <code>0.085</code>, Sides 4, Start Angle 45, Strip Start 0.375.`,
+      `Base plate: <b>Cube</b> <code>0.3, 0.3, 0.02</code>, moved up <code>0.01</code> → <b>Trim Planar</b> (top, Strip Start <code>0.25</code>, Offset <code>0.0625</code>).`,
+      `<b>Join Geometry</b> (label <code>Column</code>). Wire to Group Output to look.`
+    ], why:`<b>The perimeter must fit the strip.</b> The beam strip is 0.5 m tall. A 15 cm tube has a 60 cm perimeter and spilled onto the green pipe strip in our first render. 12 cm (48 cm perimeter) fits.`,
+    shots:[SH("l8-s06-view","",{},"Column with base plate."), SH("l8-s06-nodes","l8-s06",{"Column Top":"2","Column Line":"2","Column Tube":"2","Base Plate":"3","Base UV":"3","Column":"4"},"Column nodes.")]},
+
+    {t:"One dropdown picks the piece", goal:"A Piece menu (Floor / Railing / Stair / Column) on the modifier.", do:[
+      `${K("Shift","A")} → <b>Menu Switch</b> (type Geometry). In ${K("N")} → Node, click <b>+</b> twice for 4 items and rename them <code>Floor</code>, <code>Railing</code>, <code>Stair</code>, <code>Column</code>.`,
+      `Wire Floor, Railing, Stair and Column (the four Join nodes) into the matching inputs.`,
+      `Drag Menu Switch's <b>Menu</b> to Group Input's empty dot; rename it <code>Piece</code>.`,
+      `<b>Set Material</b> (M_Trim) after the Menu Switch → Group Output.`
+    ], see:`Properties → wrench: a <b>Piece</b> dropdown. Switch it and the object changes.`,
+    shots:[SH("l8-s07-nodes","l8-s07",{"Piece Switch":"1","Kit Material":"4"},"Menu Switch into Set Material."), SH("l8-s07-props","",{},"The modifier: Piece, Length, Height.")]},
+
+    {t:"One object per kit piece", goal:"Six objects sharing one tree, each set to a different piece.", do:[
+      `Select SM_Catwalk_Floor_200. ${K("Shift","D")}, right-click. ${K("F2")} → next name. Set its modifier values. Repeat for each row:` + TABLE(["Object","Piece","Length","Height"],[["SM_Catwalk_Floor_200","Floor","2","–"],["SM_Catwalk_Floor_100","Floor","1","–"],["SM_Catwalk_Railing_200","Railing","2","–"],["SM_Catwalk_Railing_100","Railing","1","–"],["SM_Catwalk_Stair_200","Stair","–","–"],["SM_Catwalk_Column_200","Column","–","2"]]),
+      `Move them apart to look (${K("G")} with ${K("Ctrl")} held snaps in 1 m steps).`
+    ], see:`Six pieces, one tree. Change a value inside the tree, and every piece updates.`,
+    shots:[SH("l8-s08-view","",{},"The kit pieces.")]}
+  ],
+  check:`<b>You should have:</b> six catwalk pieces generated by one tree, all trim-mapped, all on the 1 m grid with sensible pivots, plus the three pipe pieces from Lesson 7.`,
+  cards:[
+    ["When do you use Trim Tube vs Trim Planar?","Tube: long thin parts swept along curves. Planar: flat plates, projected from the top or the front."],
+    ["Standard handrail tube diameter used here? Rail height?","48 mm tube; top rail 1.1 m, knee rail 0.55 m."],
+    ["Stair rise/run for this kit and the angle?","20 cm risers, 30 cm treads: 2 m over 3 m, about 34°."],
+    ["Why must a tube's perimeter fit its strip?","Otherwise V runs past the strip into the next one (the 15 cm column turned green)."],
+    ["How does one tree make six different pieces?","Each object has its own modifier values (Piece menu, Length, Height) on the same tree."],
+    ["Where is the floor's pivot?","At its corner: (0, 0) with the walking surface at Z = 0, extending +X and +Y."],
+    ["How do you add items to a Menu Switch?","N → Node tab → + under its item list; double-click to rename."]
+  ],
+  boss:{title:"Boss fight: ladder and cage", brief:"From memory, add a fifth piece to the Menu Switch: a 3 m ladder with rungs every 30 cm (Mesh Line + Trim Tube) and a safety cage of hoops from 2.2 m up.", goal:40,
+    items:[["Ladder piece in the menu",""],["Rungs and stiles trim-mapped",""],["Cage hoops (Arc) every 0.7 m",""],["Pivot at bottom centre on the grid",""]],
+    stretch:[["Corner floor","An L-shaped railing corner piece."],["Gate","A railing piece with a gap and a hinged gate."],["Grating floor variant","Second floor style via a second menu, using a masked grating strip."]]}
+},
+/* ---------------------------------------------------------------- L9 */
+{
+  id:"l9", num:9, mod:2, short:"Game-ready + export",
+  title:"Make every piece game-ready and export it",
+  kick:"Lesson 9 · Module 2 · Lightmap UVs, collision, FBX for engines",
+  time:"60 min",
+  intro:`A marketplace buyer drops your pieces into Unreal and expects them to work at once: correct scale, sensible pivots, a second UV channel for lightmaps, simple collision, sharp edges where they belong, and clean names. One more node group handles most of it, and Blender's <b>Collection Exporters</b> write one FBX per piece every time you click.`,
+  use:`<b>Used for:</b> every asset you'll ever sell or hand to a team. Fab's technical requirements cover pivots, grid snapping, collision and non-overlapping lightmap UVs.`,
+  layout:"", graphs:[],
+  learn:["UV Unwrap + Pack UV Islands nodes","Lightmap UV channel","Sharp edges by angle","Convex Hull collision","UCX_ naming","Collections per piece","Collection Exporters","Checking counts"],
+  concepts:[
+    {h:"Second UV channel", p:"Trim UVs overlap on purpose (many parts share the same strip). Lightmaps can't overlap, so a second channel, <code>UVMap_Lightmap</code>, gets a unique, packed unwrap. Fab requires a lightmap coordinate index that isn't 0 for Unreal content."},
+    {h:"Simple collision", p:"Players collide with a simple convex shape, not the render mesh. The stair's convex hull is a ramp: smooth to walk up, and cheap. Unreal reads collision from objects named <code>UCX_&lt;MeshName&gt;_00</code> in the same FBX."},
+    {h:"LODs: honest numbers", p:"The catwalk pieces are 18 to 120 triangles and the pipe pieces a few hundred. LODs would save nothing, so state <i>LODs: none</i> with the triangle counts in the listing. Fab asks you to state the LOD count even when it's zero."},
+    {h:"Export without applying", p:"Collection Exporters export the evaluated result (modifiers applied in the file only), so your generators stay live and editable."}
+  ],
+  steps:[
+    {t:"The Game Ready group", goal:"Realize + weld, a packed lightmap UV, sharp edges over 30°, and a Visual/Collision switch.", do:[
+      `In the Catwalk Piece tree: <b>Realize Instances</b> → <b>Merge by Distance</b> (0.0001).`,
+      `<b>Edge Angle</b> (Unsigned Angle) → <b>Compare</b> Greater Than, B <code>0.5236</code>. Label <code>Sharp?</code>. (Angles are in radians: 0.5236 = 30°.)`,
+      `<b>UV Unwrap</b>: Seam ← Sharp?, Margin <code>0.01</code>. <b>Pack UV Islands</b>: UV ← Unwrap's UV, Margin <code>0.02</code>.`,
+      `<b>Store Named Attribute</b> (2D Vector, Face Corner, <code>UVMap_Lightmap</code>), Value ← Pack's UV.`,
+      `<b>Set Shade Smooth</b>, domain <b>Edge</b>: Shade Smooth ← <b>Boolean Math (Not)</b> of Sharp?.`,
+      `<b>Convex Hull</b> on the welded mesh. <b>Menu Switch</b> with items <code>Visual</code> (← Set Shade Smooth) and <code>Collision</code> (← Convex Hull).`,
+      `Select all of these, ${K("Ctrl","G")}, rename the group <code>Game Ready</code>; expose the Menu Switch's Menu as <code>Output</code>. Put it between Set Material and Group Output, and drag its Output socket out to Group Input. Do the same in <b>Pipe Run</b> (add the group node, wire it last).`
+    ], see:`Nothing looks different (Output = Visual), but the Spreadsheet's Face Corner domain now lists two UV maps.`,
+    shots:[SH("l9-s01-nodes","l9-s01",{"Realize":"1","Weld":"1","Edge Angle":"2","Sharp?":"2","Unwrap":"3","Pack":"3","Store Lightmap UV":"4","Sharp Edges":"5","Not Sharp":"5","Hull":"6","Visual Or Collision":"6"},"Inside Game Ready."), SH("l9-s01m-nodes","l9-s01m",{"Game Ready":"7"},"Game Ready at the end of the tree.")]},
+
+    {t:"One collection per piece, at the origin", goal:"A KIT collection with a child collection per piece; each piece at 0, 0, 0.", do:[
+      `In the Outliner, right-click <b>Scene Collection</b> → <b>New Collection</b>; double-click it → <code>KIT</code>.`,
+      `For each piece: right-click KIT → New Collection, name it exactly like the piece (<code>SM_Catwalk_Floor_200</code>, …). Drag the object into it.`,
+      `Select each piece, ${K("Alt","G")} to clear its location (back to 0, 0, 0).`
+    ], why:`Each FBX should contain one piece at the origin, so its pivot is right in the engine. For layouts you'll place <b>collection instances</b> (Lesson 10), never the originals.`,
+    shots:[SH("l9-s02-outliner","",{},"KIT with one collection per piece.")]},
+
+    {t:"Collision meshes", goal:"<code>UCX_SM_…_00</code> next to every piece.", do:[
+      `Select a piece, ${K("Shift","D")}, right-click. ${K("F2")} → <code>UCX_</code> + the piece's name + <code>_00</code> (e.g. <code>UCX_SM_Catwalk_Stair_200_00</code>).`,
+      `On its modifier set <b>Output</b> → <b>Collision</b>.`,
+      `Properties → <b>Object</b> tab → Viewport Display → Display As <b>Wire</b>, so you can see through it.`,
+      `Repeat for each piece (keep it in the same piece collection).`
+    ], see:`The stair's collision is a wedge (ramp) around the steps; floors and columns get boxes.`,
+    shots:[SH("l9-s03-view","",{},"Stair render mesh with its convex collision (wire)."), SH("l9-s03-props","",{},"UCX copy: Output = Collision.")]},
+
+    {t:"Check counts and edges", goal:"Know your triangle counts before you list them.", do:[
+      `Viewport header → <b>Overlays</b> dropdown → tick <b>Statistics</b> and <b>Wireframe</b>.`,
+      `Click each piece and note its Triangles from the top-left of the viewport. Write them in your notes: you'll put them in the listing.`
+    ], see:`Floors 36 triangles, railings 68–74, the stair 120, the column 18. The long showcase pipe run is about 2,100 (as built here).`,
+    shots:[SH("l9-s05-view","",{},"Statistics + wireframe overlay.")]},
+
+    {t:"Collection Exporters: one FBX per piece", goal:"Each piece collection exports itself to <code>Export/&lt;piece&gt;.fbx</code>.", do:[
+      `Save the file first (${K("Ctrl","S")}); the paths are relative to it.`,
+      `Click a piece collection in the Outliner. Properties → <b>Collection</b> tab → <b>Exporters</b> → <b>Add</b> → <b>FBX</b>.`,
+      `Set: File Path <code>//Export/SM_Catwalk_Stair_200.fbx</code> (its own name), Object Types: only <b>Mesh</b>, Apply Modifiers ✓, Smoothing <b>Face</b>, Apply Scalings <b>FBX Units Scale</b>, Add Leaf Bones off.`,
+      `Repeat for every piece collection. Then <b>File → Export → Export All Collections</b>.`
+    ], see:`An Export folder with one FBX per piece. Re-importing one in a new file shows the mesh with UVMap + UVMap_Lightmap, one material (M_Trim), and its UCX_ collision. We checked exactly this in 5.3.`,
+    why:`<b>Smoothing: Face</b> writes smoothing groups, so Unreal doesn't warn about missing ones. <b>FBX Units Scale</b> brings 1 Blender metre in as 100 Unreal units with a scale of 1.`,
+    shots:[SH("l9-s04-props","",{},"Collection tab → Exporters for SM_Catwalk_Stair_200.")]}
+  ],
+  check:`<b>You should have:</b> an Export folder with nine FBX files (six catwalk, three pipe), each with two UV channels, one material, and UCX_ collision, at the origin with real scale.`,
+  cards:[
+    ["Why a second UV channel?","Trim UVs overlap on purpose; lightmaps need a unique, non-overlapping layout."],
+    ["Which nodes make the lightmap UV?","UV Unwrap (seams on sharp edges) → Pack UV Islands → Store Named Attribute (2D Vector, Face Corner)."],
+    ["Collision naming in an FBX for Unreal?","UCX_ + the exact mesh name + _00 (01, 02… for more pieces)."],
+    ["Why is a convex hull good stair collision?","It's a smooth ramp: easy to walk up and cheap to test."],
+    ["Export settings that matter for Unreal?","Mesh only, Apply Modifiers, Smoothing Face, Apply Scalings FBX Units Scale."],
+    ["Should these pieces ship LODs?","No; they're tiny. State 'LODs: none' (Fab wants the count stated even if zero)."],
+    ["Why keep pieces at the origin in their own collections?","One FBX per piece with the pivot at the origin; layouts use collection instances."]
+  ],
+  boss:{title:"Boss fight: ship a new piece end to end", brief:"Take your ladder (Lesson 8 boss) or a new piece and get it to an exported FBX with collision, lightmap UV and correct name, without notes.", goal:25,
+    items:[["Game Ready group on its tree",""],["Own collection at the origin",""],["UCX_ collision copy",""],["Collection exporter writes the FBX",""]],
+    stretch:[["Unreal check","Import into Unreal: tick Flip Green Channel on T_Trim_N, check collision with the 'Collision' view mode."],["GLB too","Add a second exporter (glTF) per collection for web and other engines."],["Batch rename","Use Ctrl+F2 (Batch Rename) to prefix UCX_ copies in one go."]]}
+},
+/* ---------------------------------------------------------------- L10 */
+{
+  id:"l10", num:10, mod:2, short:"Listing images + pack",
+  title:"Showcase scene, listing images and the final pack",
+  kick:"Lesson 10 · Module 2 · Presentation and packaging",
+  time:"60–75 min",
+  intro:`Buyers judge a kit by its images in two seconds. You'll assemble a showcase from collection instances snapped to the grid, light it with Blender's procedural sky, and render the gallery each store needs (Fab and Superhive want different sizes). Then you package everything into a folder a buyer understands at a glance.`,
+  use:`<b>Used for:</b> every product page you'll ever make. The same instancing workflow is how level designers block out with a kit.`,
+  layout:"", graphs:[],
+  learn:["Collection instances","Excluding the source collection","Procedural Sky","EEVEE settings for stills","Fab vs Superhive image sizes","Wireframe breakdown shots","Pack folder structure","README + licence"],
+  concepts:[
+    {h:"Instances, not copies", p:"<b>Add → Collection Instance</b> places a live reference to a piece's collection. Exclude KIT from the view layer: the instances still draw and render, and editing the generator updates every instance."},
+    {h:"Two image sets", p:"Fab gallery: at least <b>1920 × 1080</b>, under 3 MB each. Superhive: at least <b>5 images</b>, at least 1200 px wide, in a <b>2:1</b> ratio (1920 × 1080 is rejected there). Render 1920 × 1080 and 2400 × 1200."},
+    {h:"Show the work", p:"A hero shot, a close-up, a wireframe breakdown, the trim sheet and a 'what's included' grid answer a buyer's real questions about quality, polycount and texturing."}
+  ],
+  steps:[
+    {t:"Assemble a showcase from collection instances", goal:"A platform layout built only from instances on the 1 m grid.", do:[
+      `In the Outliner, untick the checkbox next to <b>KIT</b> (Exclude from View Layer).`,
+      `Right-click Scene Collection → New Collection → <code>LAYOUT</code>; click it so new objects go there.`,
+      `${K("Shift","A")} → <b>Collection Instance</b> → <b>SM_Catwalk_Floor_200</b>. Hold ${K("Ctrl")} while moving (${K("G")}) to snap in 1 m steps. Put it at (0, 0, 2).`,
+      `Add the rest the same way:` + TABLE(["Instance","Location","Rotation Z"],[["Floor_100","2, 0, 2","0"],["Railing_200","0, 0, 2","0"],["Railing_100","2, 0, 2","0"],["Railing_200","2, 1, 2","180"],["Railing_100","3, 1, 2","180"],["Stair_200","−3, 0, 0","0"],["Column_200","0.1, 0.1, 0","0"],["Column_200","0.1, 0.9, 0","0"],["Column_200","2.9, 0.1, 0","0"],["Column_200","2.9, 0.9, 0","0"]]),
+      `Move Pipe_Path into LAYOUT and place it behind the platform.`
+    ], see:`A small industrial platform: stair up, floor with railings and hazard plates, pipe run behind.`,
+    shots:[SH("l10-s01-view","",{},"The showcase built from instances.")]},
+
+    {t:"A procedural concrete floor", goal:"A 24 m floor with your own concrete material.", do:[
+      `${K("Shift","A")} → Mesh → Plane, Size <code>24</code>. Name it <code>Showcase_Floor</code>.`,
+      `Shading workspace → New material <code>M_Concrete</code>: <b>Noise Texture</b> (Scale 3, Detail 10) → <b>Color Ramp</b> (dark grey to mid grey) → Base Color. Roughness <code>0.85</code>.`,
+      `On Pipe_Path's modifier set <b>Ground</b> to Showcase_Floor so the supports reach it.`
+    ], shots:[SH("l10-s02-nodes","",{},"M_Concrete.")]},
+
+    {t:"Sky, sun and camera", goal:"Natural outdoor light and a hero camera.", do:[
+      `Properties → <b>World</b> tab → Surface: click the dot next to Color → <b>Sky Texture</b>. Strength <code>0.25</code>.`,
+      `${K("Shift","A")} → Light → <b>Sun</b>: Strength <code>3.2</code>, Angle <code>2°</code>; rotate it for long, raking shadows (about 52° tilt).`,
+      `${K("Shift","A")} → <b>Camera</b>. Look through it (numpad ${K("0")}), then lock it to the view (N → View → <b>Camera to View</b>) and frame the platform. Focal length <code>30 mm</code>.`,
+      `Render tab: Render Engine <b>EEVEE</b>, enable <b>Raytracing</b>. Color Management: View Transform <b>AgX</b>.`
+    ], see:`In Rendered view the platform casts crisp shadows on the concrete under a soft blue sky.`,
+    shots:[SH("l10-s03-view","",{},"Rendered viewport through the hero camera.")]},
+
+    {t:"Render both image sets", goal:"Gallery images for Fab (16:9) and Superhive (2:1).", do:[
+      `Properties → <b>Output</b> tab: Resolution X <code>1920</code>, Y <code>1080</code>, 100%. ${K("F12")} to render; in the render window <b>Image → Save As</b> → <code>IndustrialKit/Media/Fab_01_Hero.png</code>.`,
+      `Set <code>2400</code> × <code>1200</code>, adjust the camera if the edges crop badly, ${K("F12")}, save <code>Superhive_01_Hero.png</code>.`,
+      `Repeat for a close-up of the stair and railing, and a shot of the pipe flanges (two more cameras: ${K("Ctrl","0")} makes the selected camera active).`
+    ], shots:[SH("l10-s04-props","",{},"Output resolution."), SH("l10-hero","",{},"The finished hero render, 1920 × 1080 (the Fab size).")]},
+
+    {t:"Wireframe breakdown", goal:"An honest shot of the topology.", do:[
+      `Viewport Shading <b>Solid</b>. Overlays → <b>Wireframe</b> on, Wireframe Threshold <code>1</code>.`,
+      `Through the camera: <b>View → Viewport Render Image</b>. Save it as <code>Fab_04_Wireframe.png</code>.`
+    ], see:`Every edge is visible, which proves the pieces are clean, light, game-ready meshes.`,
+    shots:[SH("l10-s05-view","",{},"Wireframe overlay through the camera.")]},
+
+    {t:"Package the kit", goal:"One folder a buyer understands, zipped per store.", do:[
+      `Make this structure inside <code>IndustrialKit</code>:<pre style="overflow-x:auto;margin:6px 0;background:#0f1012;border:1px solid #33363d;border-radius:6px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;color:#d9f3ec">IndustrialKit/
+  FBX/          9 pieces (SM_*.fbx, each with UCX_ collision)
+  Textures/     T_Trim_BC.png  T_Trim_N.png (OpenGL)  T_Trim_ORM.png
+  Blender/      IndustrialKit_Source.blend (generators + kit, textures packed)
+  Media/        listing images
+  README.txt    what's included, scale, pivots, texel density, tri counts,
+                material setup, normal map note for Unreal, licence</pre>`,
+      `In the .blend: <b>File → External Data → Pack Resources</b> (textures inside the file, as Superhive requires), then <b>File → Clean Up → Purge Unused Data</b>, then save.`,
+      `Check names: no <i>Cube.001</i> or <i>Material.002</i> anywhere (Superhive rejects unclear names).`,
+      `Right-click the IndustrialKit folder in Windows → <b>Compress to ZIP file</b> (or Send to → Compressed folder).`
+    ], see:`A zip you could upload today. The Pack checklist page walks through each store's form.`,
+    shots:[]}
+  ],
+  check:`<b>You should have:</b> gallery images for both stores, a wireframe breakdown, and a zipped kit: FBX pieces with collision, 2K textures, the generator .blend with packed textures, and a README.`,
+  cards:[
+    ["Fab gallery image minimum size?","1920 × 1080, under 3 MB each (25 MB total)."],
+    ["Superhive image rules?","At least 5 images, at least 1200 px wide, 2:1 ratio (1920 × 1080 is rejected)."],
+    ["How do instances keep rendering when KIT is excluded?","Collection instances reference the collection's data; excluding the source only hides the originals."],
+    ["Why pack resources before uploading the .blend?","Superhive requires textures packed so the file works on any machine."],
+    ["What goes in the README?","Contents, scale and pivots, texel density, triangle counts, material/texture setup, normal-map convention, licence."]
+  ],
+  boss:{title:"Final exam: your own kit, start to finish", brief:"Plan and ship a NEW small kit (for example scaffolding, shelving or sci-fi wall panels) using everything from Module 2: your own trim sheet, generators, game-ready exports and listing images.", goal:480,
+    items:[["Kit rules written down (grid, texel density, names)",""],["Trim sheet modelled and baked (N, BC, ORM)",""],["At least two generators, using Trim Tube / Trim Planar",""],["6+ pieces on the grid with sensible pivots",""],["Game Ready group: lightmap UV + UCX collision",""],["FBX per piece via Collection Exporters",""],["Showcase from collection instances; both image sets",""],["Zipped pack with README, ready for the checklist",""]],
+    stretch:[["Turntable video","Animate a camera on a circle (Follow Path) and render a 10 s turntable for the listing."],["Unreal sample map","Build a small demo level in Unreal and use it for extra screenshots."],["Price research","Compare 5 similar kits on each store and write down their price, piece count and image style."]]}
+}
 ];
+LESSONS.push(...M2);
+
+const PACK = {
+  mod:2, short:"Pack checklist",
+  title:"Industrial Catwalk & Pipe Kit: ship it",
+  intro:`Tick these off before you upload. The rules come from Fab's technical requirements and Superhive's product guidelines as of November 2026; both change, so open the sources below and re-check before you submit.`,
+  sections:[
+    {h:"Contents", tag:"what the buyer gets", items:[
+      ["9 meshes: 6 catwalk pieces + 3 pipe pieces, named SM_…","Floor 200/100, Railing 200/100, Stair 200, Column 200, Pipe Straight 200/400, Elbow 90."],
+      ["Every mesh has UCX_ collision in its FBX","Convex hulls from the Game Ready group."],
+      ["2 UV channels per mesh (trim + lightmap, non-overlapping)","Fab: no overlapping lightmap UVs; the lightmap coordinate index must not be 0 for Unreal content."],
+      ["One material, 3 textures at 2048 px (power of two)","T_Trim_BC (sRGB), T_Trim_N (OpenGL, Non-Color), T_Trim_ORM (Non-Color)."],
+      ["Source .blend with the generators (Trim Tube, Trim Planar, Pipe Run, Catwalk Piece, Game Ready), textures packed","The generators are a selling point: buyers can make new lengths and pipe runs."]
+    ]},
+    {h:"Technical checks", tag:"Fab 3D model rules", items:[
+      ["Real-world scale; Z up; everything faces the same way","Fab asks for assets scaled relative to a 192 cm humanoid."],
+      ["Pieces snap together cleanly on the 1 m grid; pivots at corner / bottom","Fab: pivots placed for smooth assembly in modular kits."],
+      ["Triangle counts written down and LODs stated (none)","Fab wants the LOD count stated 'even if zero'."],
+      ["Nanite: not enabled (these are simple meshes)","Fab rejects simplistic meshes submitted as Nanite assets."],
+      ["No AI-generated content (or tag CreatedWithAI if a material portion is)","Fab §18k. Superhive bans fully AI-generated products."],
+      ["No third-party content; nothing GPL/AGPL/LGPL/CC BY-SA inside","Everything here is made by you."]
+    ]},
+    {h:"Fab listing (3D model)", tag:"fab.com", items:[
+      ["Formats: FBX + Blender source","Both are accepted formats for 3D model listings."],
+      ["Gallery: 5+ images at 1920 × 1080, each under 3 MB","Hero, close-up, wireframe, trim sheet, what's-included grid."],
+      ["Description: piece list, tri counts, texel density (512 px/m), LODs: none, collision: yes, normal map: OpenGL (flip green in Unreal)",""],
+      ["Licence: Standard (Personal + Professional tiers) for a paid listing","Fab pays 88% of the price after taxes, fees and refunds."]
+    ]},
+    {h:"Superhive listing (Blender product)", tag:"superhivemarket.com", items:[
+      ["A working .blend for the current Blender release, textures packed, orphans purged",""],
+      ["Logical English names everywhere (no Cube.001)",""],
+      ["5+ images, at least 1200 px wide, 2:1 ratio (e.g. 2400 × 1200); no Blender logo",""],
+      ["Written documentation on the product page itself",""],
+      ["Licence: Royalty-Free for the assets","Commission is 70% / 80% / 90% on the Free / Pro / Ultimate plans, after merchant and transaction fees."]
+    ]},
+    {h:"Before you click submit", items:[
+      ["Open the FBX files in a fresh Blender file and check them","UVs, collision, scale, names."],
+      ["Test in Unreal: import, flip green on T_Trim_N, check collision view","Optional for a 3D-model listing, but it catches problems buyers would find."],
+      ["Re-read both stores' current rules (links below)",""]
+    ]}
+  ],
+  sources:[
+    ["Fab technical requirements (updated Sep 2026)","https://www.fab.com/technical-requirements"],
+    ["Fab file formats","https://dev.epicgames.com/documentation/en-us/fab/asset-file-format-and-structure-requirements-in-fab"],
+    ["Fab licences and pricing","https://dev.epicgames.com/documentation/en-us/fab/licenses-and-pricing-in-fab"],
+    ["Fab distribution agreement (revenue share, AI tagging)","https://www.fab.com/distribution-agreement"],
+    ["Superhive product guidelines","https://support.superhivemarket.com/article/253-general-product-guidelines-for-uploading-products"],
+    ["Superhive licence types","https://support.superhivemarket.com/article/226-understanding-product-license-types"],
+    ["Superhive commission","https://support.superhivemarket.com/article/32-how-commission-earnings-are-calculated"],
+    ["Epic: recommended asset naming","https://dev.epicgames.com/documentation/en-us/unreal-engine/recommended-asset-naming-conventions-in-unreal-engine-projects"],
+    ["Epic: FBX static mesh pipeline (UCX_ collision)","https://dev.epicgames.com/documentation/en-us/unreal-engine/fbx-static-mesh-pipeline-in-unreal-engine"]
+  ]
+};
+
+/* ===== END MODULE 2 ===== */
+
+const ROADMAP = [
+  {m:"Module 3 · Zones", items:["Repeat Zone: recursive tree and branch growth","Simulation Zone: snow that piles up and melts over time","For Each Element: shatter a wall and push each piece out on its own"]},
+  {m:"Module 4 · Volumes & SDF", items:["Mesh to SDF Grid + SDF Grid Boolean/Fillet: smooth-blended organic rocks and caves","Grid Curl / Advect Grid: smoke trails and stylised magic"]},
+  {m:"Module 5 · Blender 5.x power tools", items:["Lists (Field to List, Filter/Sort List) and Bundles + Closures: building your own node 'functions'","XPBD Solver: ropes, chains and soft bodies inside Geometry Nodes","A modular building generator with floors, windows and roof kits"]}
+];
+
+const MODULES = {1:"Foundations by real projects", 2:"Ship a sellable kit"};
+const MODULE_INTRO = {2:"One real product, start to finish: an Industrial Catwalk &amp; Pipe Kit. You model and bake your own trim sheet, build generators for pipes and catwalk pieces, make every piece game-ready, and finish with listing images and a zipped pack ready for Fab and Superhive. Every step has a real Blender 5.3 screenshot."};
 
 const KEYS = [
   ["<kbd>Shift</kbd><kbd>A</kbd> then type","Add node and search at once"],
@@ -1210,9 +1903,13 @@ function keysFor(L){
   return k;
 }
 function pct(L){ const k = keysFor(L); return k.filter(x=>S.done[x]).length / k.length; }
+const packKeys = ()=> hasPack() ? PACK.sections.flatMap((sec,si)=>sec.items.map((_,i)=>`pack.${si}.${i}`)) : [];
 function refreshProgress(){
   let all = [], got = 0;
   LESSONS.forEach(L=>{ const k = keysFor(L); all = all.concat(k); });
+  all = all.concat(packKeys());
+  const pa = document.querySelector(`nav a[data-l="pack"]`);
+  if(pa){ const pk = packKeys(), pq = pk.filter(x=>S.done[x]).length / pk.length; pa.querySelector(".bar i").style.width = (pq*100)+"%"; pa.classList.toggle("done", pq===1); }
   got = all.filter(x=>S.done[x]).length;
   const p = all.length ? got/all.length : 0;
   document.getElementById("ringArc").style.strokeDashoffset = 138.2 * (1 - p);
@@ -1231,14 +1928,22 @@ function refreshProgress(){
 }
 
 /* ===================== NAV ===================== */
+const modsUsed = ()=>[...new Set(LESSONS.map(L=>L.mod||1))].sort((a,b)=>a-b);
+const hasPack = ()=> typeof PACK !== "undefined" && PACK;
 function buildNav(){
   let h = `<div class="grp">Start</div><a class="l" href="#home" data-l="home"><span class="nb">★</span><span>How this works + shortcuts</span></a>`;
-  h += `<div class="grp">Module 1 · Foundations by real projects</div>`;
-  LESSONS.forEach(L=>{
-    h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+  modsUsed().forEach(m=>{
+    h += `<div class="grp">Module ${m} · ${MODULES[m]||""}</div>`;
+    LESSONS.filter(L=>(L.mod||1)===m).forEach(L=>{
+      h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+    });
+    if(hasPack() && PACK.mod === m) h += `<a class="l" href="#pack" data-l="pack"><span class="nb">📦</span><span style="flex:1">${PACK.short}<div class="bar"><i></i></div></span></a>`;
   });
-  h += `<div class="grp">Coming next</div>`;
-  ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+2}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  if(ROADMAP.length){
+    h += `<div class="grp">Coming next</div>`;
+    const next = Math.max(...modsUsed()) + 1;
+    ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+next}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  }
   document.getElementById("nav").innerHTML = h;
 }
 
@@ -1304,7 +2009,7 @@ function homeView(){
     <div class="kick">Fast track · Blender ${COURSE.blender} · node names checked in 5.3</div>
     <h2>Geometry Nodes by building things you'd actually ship</h2>
     <p>No "add a cube and wiggle it" exercises. Every lesson is a real production tool: terrain dressing, parametric architecture, spline kits, then turning them into polished, reusable tools that go into Unreal. All geometry is made by your own nodes, with no downloaded assets.</p>
-    <div class="chips"><span class="chip g">4 lessons in Module 1</span><span class="chip">~3–4 hours total</span><span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">4 boss fights</span></div>
+    <div class="chips">${modsUsed().map(m=>`<span class="chip g">Module ${m}: ${LESSONS.filter(L=>(L.mod||1)===m).length} lessons</span>`).join("")}<span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">${LESSONS.length} boss fights</span>${hasPack()?`<span class="chip g">📦 ends in a sellable pack</span>`:""}</div>
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn pri" href="#${startL.id}">${pct(startL)>0?"Continue":"Start"}: Lesson ${startL.num} →</a><button class="btn" onclick="openReview()">Run the review deck</button></div>
   </section>
 
@@ -1317,13 +2022,16 @@ function homeView(){
   </div>
   <p class="cap" style="margin-top:12px">🧠 <b>Memory mode</b> (sidebar) blurs every graph and step detail. Click a blurred block to peek at just that one. Your ticks, notes and boss times save automatically: in this browser, or to <code>progress.json</code> when you run the page with <code>serve.py</code>.</p>
 
-  <h3 class="sec">Module 1 <span class="tag">foundations by real projects</span></h3>
+  ${modsUsed().map(m=>`
+  <h3 class="sec">Module ${m} <span class="tag">${MODULES[m]||""}</span></h3>
+  ${MODULE_INTRO[m]?`<p class="cap">${MODULE_INTRO[m]}</p>`:""}
   <div class="road">
-    ${LESSONS.map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
-  </div>
+    ${LESSONS.filter(L=>(L.mod||1)===m).map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
+    ${hasPack() && PACK.mod===m ? `<a class="mod" href="#pack" style="color:inherit;border-color:rgba(255,209,102,.45)"><div class="mk" style="color:#ffd166">📦 Final deliverable</div><h4>${PACK.title}</h4><ul>${PACK.sections.map(s=>`<li>${s.h}</li>`).join("")}</ul></a>`:""}
+  </div>`).join("")}
 
-  <h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
-  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+  ${ROADMAP.length?`<h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
+  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>`:""}
 
   <h3 class="sec">The basic moves <span class="tag">read once before Lesson 1</span></h3>
   ${basicsHTML()}
@@ -1358,8 +2066,10 @@ function lessonView(L){
   <h3 class="sec">Core ideas <span class="tag">read first</span></h3>
   <div class="concepts">${L.concepts.map(c=>`<div class="concept"><h4>${c.h}</h4><p>${c.p}</p></div>`).join("")}</div>
 
-  <h3 class="sec">The node graphs <span class="tag">what you're building</span></h3>
-  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}
+  ${L.layout?`<h3 class="sec">The trim sheet layout <span class="tag">your kit's map</span></h3><div class="concept">${L.layout}</div>`:""}
+  ${L.graphs&&L.graphs.length?`<h3 class="sec">The node graphs <span class="tag">what you're building</span></h3>
+  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}`:""}
+  ${(L.mod||1)>1?`<p class="cap" style="margin-top:14px">📸 Every step below has a real Blender 5.3 screenshot. Yellow boxes are numbered by the action that adds that part. Click a picture to enlarge it.</p>`:""}
 
   <h3 class="sec">Build it <span class="tag">tick when it works in Blender</span></h3>
   <details class="basics" ${L.num===1?"open":""}><summary>🖱️ The basic moves: how to add, place, wire and type in the node editor (read once)</summary>${basicsHTML()}</details>
@@ -1372,6 +2082,7 @@ function lessonView(L){
         ${s.goal?`<div class="goal"><b>Goal:</b> ${s.goal}</div>`:""}
         ${s.hl?`<button class="btn where" data-hl="${s.hl.g}|${s.hl.n.join(",")}">📍 Show where these nodes go</button>`:""}
         <ol class="do">${s.do.map(x=>`<li>${x}</li>`).join("")}</ol>
+        ${(s.shots||[]).map(shotHTML).join("")}
         ${s.see?`<div class="see"><b>You should see:</b> ${s.see}</div>`:""}
         ${s.why?`<div class="why">${s.why}</div>`:""}${s.pro?`<div class="pro">${s.pro}</div>`:""}
       </div></div>
@@ -1404,8 +2115,25 @@ function lessonView(L){
 
   <div class="navrow">
     ${prev?`<a class="btn" href="#${prev.id}">← Lesson ${prev.num}: ${prev.short}</a>`:`<a class="btn" href="#home">← Overview</a>`}
-    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:`<a class="btn pri" href="#home">Module 1 done → Overview</a>`}
+    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:hasPack()?`<a class="btn pri" href="#pack">📦 ${PACK.short} →</a>`:`<a class="btn pri" href="#home">Course done → Overview</a>`}
   </div>`;
+}
+
+/* ===================== SCREENSHOTS =====================
+   step.shots = [{src:"shots/l5-s03.jpg", w:1600, h:900, cap:"…", marks:[[x0,y0,x1,y1,"3"], …]}]
+   marks are pixel boxes in the original image (top-left origin); the label usually names the action number. */
+function shotHTML(s){
+  const W = s.w || 1600, H = s.h || 900;
+  const marks = (s.marks||[]).map(m=>{
+    const [x0,y0,x1,y1,lab] = m;
+    return `<span class="mk" style="left:${(x0/W*100).toFixed(2)}%;top:${(y0/H*100).toFixed(2)}%;width:${((x1-x0)/W*100).toFixed(2)}%;height:${((y1-y0)/H*100).toFixed(2)}%">${lab?`<b>${esc(lab)}</b>`:""}</span>`;
+  }).join("");
+  return `<figure class="shot"><div class="sw" data-full="${esc(s.src)}"><img src="${esc(s.src)}" width="${W}" height="${H}" loading="lazy" alt="${esc(s.cap||"Screenshot")}">${marks}</div>${s.cap?`<figcaption>${s.cap}</figcaption>`:""}</figure>`;
+}
+function openShot(sw){
+  const lb = document.getElementById("lightbox");
+  lb.querySelector(".lbin").innerHTML = sw.outerHTML;
+  lb.classList.add("on");
 }
 
 function basicsHTML(){
@@ -1427,6 +2155,23 @@ function showWhere(btn){
   back.textContent = "↩ Back to step " + btn.closest(".step").querySelector(".st small").textContent;
   back.onclick = ()=>{ btn.closest(".step").scrollIntoView({block:"center", behavior:"smooth"}); back.remove(); };
   clearTimeout(hlT); hlT = setTimeout(()=>nodes.forEach(n=>n.classList.remove("hl")), 6000);
+}
+
+/* ===================== PACK CHECKLIST =====================
+   PACK = {mod:2, short:"Pack checklist", title:"…", intro:"html", sections:[{h:"…", items:[["label","detail html", shot?]]}], sources:[["label","url"]]} */
+function packView(){
+  const ck = k => S.done[k] ? "checked" : "";
+  return `
+  <section class="hero" style="background:radial-gradient(1200px 300px at 0% 0%,rgba(255,209,102,.13),transparent 60%),var(--panel)">
+    <div class="kick" style="color:#ffd166">📦 Final deliverable · Module ${PACK.mod}</div>
+    <h2>${PACK.title}</h2>
+    <p>${PACK.intro}</p>
+  </section>
+  ${PACK.sections.map((sec,si)=>`
+    <h3 class="sec">${sec.h}${sec.tag?` <span class="tag">${sec.tag}</span>`:""}</h3>
+    <div class="boss" style="padding-bottom:12px">${sec.items.map((it,i)=>{const k=`pack.${si}.${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}">${it[0]}${it[1]?`<small>${it[1]}</small>`:""}</label></div>${it[2]?shotHTML(it[2]):""}`;}).join("")}</div>`).join("")}
+  ${PACK.sources&&PACK.sources.length?`<h3 class="sec">Sources <span class="tag">rules change: check before you submit</span></h3><div class="concept"><ul style="margin:0;padding-left:18px">${PACK.sources.map(s=>`<li><a href="${esc(s[1])}" target="_blank" rel="noopener">${s[0]}</a></li>`).join("")}</ul></div>`:""}
+  <div class="navrow"><a class="btn" href="#home">← Overview</a></div>`;
 }
 
 /* ===================== TIMER ===================== */
@@ -1457,8 +2202,9 @@ function route(){
   const bb = document.getElementById("backBtn"); if(bb) bb.remove();
   const id = (location.hash || "#home").slice(1);
   const L = LESSONS.find(x=>x.id===id);
-  main.innerHTML = L ? lessonView(L) : homeView();
-  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:"home")));
+  const isPack = id === "pack" && hasPack();
+  main.innerHTML = L ? lessonView(L) : isPack ? packView() : homeView();
+  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:isPack?"pack":"home")));
   document.getElementById("side").classList.remove("open");
   if(L){
     document.title = `L${L.num} ${L.short} · Geometry Nodes Fast Track`;
@@ -1487,6 +2233,9 @@ document.addEventListener("change", e=>{
   if(t.checked && st){ const n = st.nextElementSibling; if(n && !n.classList.contains("done")) n.scrollIntoView({block:"nearest", behavior:"smooth"}); }
 });
 document.addEventListener("click", e=>{
+  if(e.target.closest("#lightbox")){ document.getElementById("lightbox").classList.remove("on"); return; }
+  const sw = e.target.closest(".shot .sw");
+  if(sw && (!document.body.classList.contains("memory") || sw.closest(".mem.peek"))){ openShot(sw); return; }
   const wb = e.target.closest(".where");
   if(wb && (!document.body.classList.contains("memory") || wb.closest(".mem.peek"))){ showWhere(wb); return; }
   const mem = e.target.closest(".mem");

@@ -181,6 +181,21 @@ details.basics summary{cursor:pointer;padding:12px 0;font-weight:650;color:#fff}
 .bcard{background:#1d1f23;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:#c6c9d0}
 .bcard b{display:block;color:#fff;margin-bottom:4px}
 .bcard b i{font-style:normal;color:var(--acc);margin-right:6px}
+.tscroll{overflow-x:auto;max-width:100%}
+.step>div{min-width:0}
+@media (max-width:900px){table.keys td:first-child{white-space:normal}}
+.step .sd,.concept p{overflow-wrap:anywhere}
+/* screenshots */
+figure.shot{margin:10px 0 6px}
+.shot .sw{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:zoom-in;background:#111;line-height:0}
+.shot img{display:block;width:100%;height:auto}
+.shot .mk{position:absolute;border:2.5px solid #ffd166;border-radius:5px;box-shadow:0 0 0 2px rgba(0,0,0,.55),0 0 18px rgba(255,209,102,.35);pointer-events:none}
+.shot .mk b{position:absolute;top:-11px;left:-11px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#ffd166;color:#1a1400;font:800 12px/22px system-ui,sans-serif;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.shot figcaption{font-size:.8rem;color:var(--mut);margin-top:5px}
+#lightbox{position:fixed;inset:0;background:rgba(5,6,8,.9);display:none;align-items:center;justify-content:center;z-index:60;padding:16px;cursor:zoom-out}
+#lightbox.on{display:flex}
+#lightbox .lbin{width:min(1600px,100%)}
+#lightbox .sw{cursor:zoom-out}
 /* stack diagrams (Niagara) */
 .stackg{display:flex;gap:14px;padding:16px;align-items:flex-start;width:max-content;min-width:100%}
 .sem{width:260px;flex:none;background:#2a2c31;border:1px solid #121315;border-radius:8px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.35)}
@@ -247,6 +262,7 @@ body.memory .memnote{display:block}
 <main id="main"></main>
 </div>
 
+<div id="lightbox" aria-hidden="true"><div class="lbin"></div></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mq">
   <div class="mbox" id="mbox">
     <div class="from" id="mfrom"></div>
@@ -1145,8 +1161,7 @@ const LESSONS = [
 ];
 
 const ROADMAP = [
-  {m:"Module 2 · Simulation stages", items:["Grid 2D gas: real-time smoke and fire that swirls around obstacles","Neighbour grids: flocking embers and fish schools","Particle-to-particle collisions (PBD) for piles of sand and coins"]},
-  {m:"Module 3 · Hero materials", items:["Flipbooks you render yourself in Blender or Houdini","Erosion, warping and the three-noise trick","Lit translucent smoke that sits in the scene's lighting"]},
+  {m:"Module 3 · Simulation stages", items:["Grid 2D gas: real-time smoke and fire that swirls around obstacles","Neighbour grids: flocking embers and fish schools","Particle-to-particle collisions (PBD) for piles of sand and coins"]},
   {m:"Module 4 · Gameplay integration", items:["Niagara Data Channels: thousands of bullet impacts from one system","Animation Notifies and pooling","Scalability per platform: phone vs PC from one effect"]},
   {m:"Module 5 · Set pieces", items:["A boss arrival: a 10-second sequence of a dozen systems","Sequencer timing, camera shakes, post-process impact frames"]}
 ];
@@ -1167,6 +1182,642 @@ const KEYS = [
   [K("Alt","P"),"Play in the editor; "+K("Esc")+" stops"],
   [K("`")+" in Play","Console: <code>stat Niagara</code>"]
 ];
+
+const SHOTBOX = {"l5-s03": {"Inputs": [450, 205, 630, 768], "Subtract": [730, 345, 843, 432], "Divide": [875, 405, 972, 492], "Saturate": [1001, 405, 1115, 462], "Output Opacity": [1207, 343, 1362, 540], "Abs": [875, 585, 958, 640], "Edge Divide": [1001, 585, 1100, 672], "1-x": [1226, 585, 1307, 640], "Output Edge": [1353, 585, 1487, 746]}, "l5-s02": {"Density input": [400, 352, 592, 515], "RadialGradientExponential": [701, 352, 1020, 528], "Output Mask": [1048, 350, 1192, 548]}, "l5-s04a": {"SoftDotDensity": [513, 415, 630, 465], "MF_Ember_SoftDot": [688, 415, 793, 452], "Flipbook": [688, 200, 825, 350], "UseFlipbook": [864, 415, 977, 505], "Dynamic Parameter": [864, 523, 1018, 642], "ErodeSoftness": [864, 643, 987, 693], "MF_Ember_Erode": [1040, 415, 1157, 492], "UseErosion": [1215, 415, 1328, 505], "Particle Color": [1215, 187, 1310, 310]}, "l5-s04b": {"Tint": [688, 337, 818, 482], "EmissiveBoost": [864, 337, 981, 387], "Depth Fade": [864, 446, 1010, 553], "DepthFadeDistance": [688, 565, 811, 618], "UseDepthFade": [1040, 337, 1151, 427], "Output node": [1390, 227, 1502, 643]}, "l5-s05": {"UseFlipbook": [1160, 226, 1565, 248], "Flipbook": [1160, 334, 1565, 386], "DepthFadeDistance": [1160, 416, 1450, 438], "EmissiveBoost": [1160, 470, 1450, 492], "Tint": [1160, 497, 1450, 520], "Parent": [1140, 580, 1565, 628]}, "l6-s03": {"Baker button": [960, 64, 1035, 93], "Baker tab": [655, 104, 805, 125], "Live Sim": [535, 172, 841, 478], "Baked Sim": [884, 172, 1274, 478]}, "l6-s04": {"Source Binding": [810, 540, 935, 562], "Scene Capture Source": [815, 628, 960, 645], "Inv Opacity in A": [838, 778, 1085, 796]}, "l6-s05": {"Front view": [600, 138, 675, 160], "View options (eye)": [688, 138, 730, 160], "Camera Location Z": [978, 176, 1015, 197], "Ortho Width": [920, 224, 1015, 245]}, "l6-s06": {"Source Binding": [810, 540, 1205, 562], "Frame Size": [810, 567, 1060, 588], "Atlas Texture Size": [810, 594, 1060, 615], "Time Range": [552, 614, 687, 642], "Frames Per Dimension": [822, 614, 957, 642]}, "l6-s07": {"Bake": [500, 136, 535, 163], "Baked Sim": [926, 172, 1232, 478]}, "l6-s08": {"Atlas": [226, 107, 979, 860], "Format": [1400, 160, 1580, 180], "sRGB": [1205, 746, 1385, 770]}, "l6-s01": {"Emitter stack": [940, 186, 1068, 592], "Add Velocity": [940, 393, 1066, 408], "Velocity expression": [1380, 277, 1525, 298], "Preview": [7, 160, 486, 478]}, "l6-s02": {"Sprite Renderer": [940, 571, 1066, 586], "Material": [1290, 275, 1580, 322]}, "l7-s01": {"Flames": [668, 218, 802, 563], "Glow": [893, 218, 1027, 537], "Embers": [1118, 218, 1252, 580], "Preview": [7, 160, 486, 478]}, "l7-s02": {"Sub UVAnimation": [670, 493, 800, 507], "Manual SubImage Size": [1290, 388, 1530, 410], "SubUV Blending": [1290, 415, 1400, 438], "Animation Mode": [1290, 443, 1505, 466]}, "l7-s03": {"Sprite Renderer": [670, 543, 800, 557], "Material": [1290, 215, 1560, 260], "Sub UV": [1285, 692, 1580, 760]}, "l8-s01": {"Properties": [868, 277, 960, 291], "Local Space": [1290, 268, 1400, 288], "Sim Target": [1290, 342, 1550, 366], "Fixed bounds": [1290, 396, 1550, 444]}, "l8-s02": {"System Properties": [643, 237, 773, 251], "Effect Type": [1290, 245, 1570, 295], "Warmup": [1290, 368, 1510, 438]}, "l7-s04": {"User Parameters": [168, 486, 316, 507], "Tint": [30, 580, 462, 603], "Scale": [30, 607, 340, 630]}, "l8-s03": {"Update Frequency": [28, 222, 772, 243], "Cull Reaction": [28, 249, 772, 270], "Quality mask": [78, 383, 580, 405], "Max Distance": [78, 413, 772, 434], "Instance caps": [78, 440, 772, 488]}, "l8-s04": {"Overlap": [406, 358, 550, 420], "Retrigger call": [595, 358, 748, 434], "Retrigger event": [436, 616, 533, 672], "Reset System": [784, 488, 992, 560], "Compile": [115, 66, 200, 94]}, "l8-s05": {"BeginPlay": [427, 247, 512, 277], "Timer": [707, 248, 850, 370], "Fire event": [427, 497, 492, 537], "Spawn projectile": [847, 498, 1024, 622]}, "l8-s06": {"stat Niagara": [105, 218, 1125, 600], "Inclusive avg": [783, 233, 868, 250]}, "l9-s04": {"Asset Report": [940, 390, 1540, 890], "Only Emberfall": [960, 476, 1220, 510], "Engine (not copied)": [945, 458, 1040, 475]}, "l9-s01": {"Rift": [480, 280, 590, 330], "Smoke column": [780, 250, 860, 320], "Fire loop": [1070, 270, 1130, 320]}, "l9-s05": {"Sequence": [1145, 640, 1270, 662], "Camera track": [355, 702, 1310, 778], "Camera cut": [355, 808, 1310, 838]}, "l9-s06": {"Job": [740, 452, 1240, 472], "Render (Local)": [928, 392, 1050, 418], "Output": [1025, 452, 1235, 472]}, "l9-s02": {"Thumbnail": [370, 64, 465, 93], "Preview": [7, 160, 486, 478]}, "l6-s07a": {"Bake": [500, 136, 535, 163], "Baked Sim": [884, 172, 1274, 478]}, "l7-s08": {"Dynamic Material Parameters": [935, 555, 1060, 567], "Erode curve": [1290, 355, 1580, 560]}, "l8-s07": {"Search: pool": [1290, 160, 1555, 182], "Max Pool Size": [1290, 544, 1590, 566], "Pool Prime Size": [1290, 567, 1590, 589]}, "l9-s03": {"Validate Assets in Folder": [95, 798, 300, 816]}, "l8-s08": {"Scalability mode": [117, 64, 216, 93], "Quality preview": [408, 207, 663, 230], "Index [0]: Low only": [1268, 370, 1470, 436], "Spawn Count Scale 0.4": [1268, 440, 1486, 460]}, "l8-s08b": {"Embers selected": [849, 342, 940, 355], "Low off (grey)": [1220, 215, 1320, 237]}};
+/* ===================== MODULE 2: SHIP A VFX PACK ===================== */
+function SH(file, cap, w, h){
+  const b = (SHOTBOX[file] || {});
+  return {src:`shots/${file}.jpg`, w:w||1600, h:h||900, cap, marks:Object.entries(b).map(([n,r])=>[...r, n])};
+}
+const TABLE = (head, rows) => `<div class="tscroll"><table class="keys" style="margin:6px 0 2px"><tr>${head.map(h=>`<td><b>${h}</b></td>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+const NEWSYS = (folder, name, em)=>`In <b>${folder}</b> right-click → <b>FX</b> → <b>Niagara System</b>. In the <b>Create Niagara System</b> window type <code>minimal</code> in its search box, pick <b>Minimal</b> and click the create/finish button. Name it <code>${name}</code>, ${K("Enter")}, double-click to open. In <b>System Overview</b> double-click the emitter's name and type <code>${em}</code>, ${K("Enter")}.`;
+const CURVE = (mod, inp, keys)=>`<b>Curve:</b> in <b>${mod}</b>, click the <b>▾</b> at the right end of <b>${inp}</b> → type <code>float from curve</code> → <b>Float from Curve</b>. In the small curve under it, right-click the line to <b>Add key</b>, then drag (or type in <b>Key Data</b>) so the keys are ${keys}.`;
+const EXPR = (mod, inp, text)=>`<b>Expression:</b> in <b>${mod}</b>, click the <b>▾</b> at the right end of the <b>${inp}</b> row → type <code>expression</code> in the menu's search → click <b>New Expression</b>. A text box replaces the value: click it, type <code>${text}</code> and press ${K("Enter")}.`;
+const LINK = (mod, inp, user)=>`<b>Link:</b> in <b>${mod}</b>, click the <b>▾</b> at the right of <b>${inp}</b> → <b>Link Inputs</b> → <b>User</b> → <b>${user}</b>. The box now shows <i>User.${user}</i>.`;
+const UP = (name, type, val)=>`<b>User parameter:</b> in the <b>User Parameters</b> tab (bottom-left of the Niagara editor) click <b>+</b> → choose <b>${type}</b> → type the name <code>${name}</code> → ${K("Enter")}. Click its value box and set <code>${val}</code>.`;
+
+const M2 = [
+/* ---------------------------------------------------------------- L5 */
+{
+  id:"l5", num:5, mod:2, short:"Pack plan & master material",
+  title:"Plan the pack: folders, names and one master material",
+  kick:"Lesson 5 · Pack structure, naming, material functions, master + instances",
+  time:"60–75 min",
+  intro:`From here on you are building a real product: <b>Emberfall VFX</b>, eleven fire and ember effects you could put on Fab. A pack lives or dies by its structure. Buyers open your folder before they open your effects, so this lesson sets up the folders and names first, then builds the one master material that almost every sprite in the pack will use. One master with switches, many cheap instances: that's how studios keep dozens of effects consistent and fast to change.`,
+  use:`<b>Used for:</b> every pack or project with more than a handful of effects. Change the master once and every effect updates.`,
+  learn:["One pack folder","Naming prefixes","Material functions","Master material","Static switches","SubUV flipbook sampler","Dynamic Parameter","Material instances"],
+  concepts:[
+    {h:"One folder, one name", p:"Everything the buyer gets lives under <code>/Content/Emberfall/</code>: <code>Blueprints</code>, <code>FX</code>, <code>Maps</code>, <code>Materials</code>, <code>Meshes</code>, <code>Textures</code>. Fab asks for a single top folder and no empty or unused folders. Work files that buyers don't need (bake sources, tests) live in a <b>separate</b> folder that you never ship."},
+    {h:"Prefixes tell the type", p:"Common prefixes: <code>NS_</code> Niagara system (Epic's own naming page lists <code>FXS_</code> for systems and <code>FXE_</code> for emitters; <code>NS_</code>/<code>NE_</code> is the widely used community convention, so pick one and use it everywhere), <code>M_</code> material, <code>MI_</code> material instance, <code>MF_</code> material function, <code>T_</code> texture, <code>SM_</code> static mesh, <code>BP_</code> Blueprint, <code>L_</code> level (map). Add the pack name after the prefix (<code>NS_Ember_FireLoop</code>) so your assets never clash with the buyer's."},
+    {h:"Functions → master → instances", p:"A <b>material function</b> is a reusable piece of graph (a soft dot, an erosion step). The <b>master material</b> combines them behind <b>static switches</b>. Each <b>instance</b> flips switches and sets numbers. Instances don't recompile shaders when you tweak numbers, so iteration is instant."},
+    {h:"Particles talk to materials", p:"<b>Particle Color</b> brings each particle's colour and alpha into the material. The <b>Dynamic Parameter</b> node brings up to four extra per-particle numbers (here: <i>Erode</i>). That's how one material can look different on every particle."}
+  ],
+  graphs:[],
+  steps:[
+    {t:"Make the pack folder and its sub-folders", goal:"/Content/Emberfall with six sub-folders, and a separate BakeSources folder that will never ship.", do:[
+      `Open your Unreal project (a blank project with no Starter Content is best: nothing in it can sneak into your pack).`,
+      `In the <b>Content Browser</b> click <b>Content</b> on the left → right-click empty space → <b>New Folder</b> → type <code>Emberfall</code> → ${K("Enter")}.`,
+      `Double-click <b>Emberfall</b>. Make six folders the same way: <code>Blueprints</code>, <code>FX</code>, <code>Maps</code>, <code>Materials</code>, <code>Meshes</code>, <code>Textures</code>. Inside <b>Materials</b> make <code>Functions</code>, <code>Master</code>, <code>Instances</code>. Inside <b>FX</b> make <code>EffectTypes</code>.`,
+      `Go back to <b>Content</b> and make one more folder <u>next to</u> Emberfall (not inside it): <code>BakeSources</code>. Lesson 6 puts its source simulations here.`
+    ], see:`Content › Emberfall with six sub-folders, and BakeSources beside it.`,
+    why:`When you migrate the pack later, only <code>/Emberfall</code> is copied. Anything outside it (BakeSources) stays home, so buyers never get your scratch files.`,
+    shots:[SH("l5-s01","The pack folder with its six sub-folders. BakeSources sits beside it, outside the pack.")]},
+
+    {t:"Material function 1: a soft round dot (MF_Ember_SoftDot)", goal:"A function with one input (Density) and one output (Mask): a soft circle that fades to the sprite's edge.", do:[
+      `Open <b>Materials › Functions</b>. Right-click empty space → <b>Material</b> → <b>Material Function</b> → name it <code>MF_Ember_SoftDot</code> → ${K("Enter")}, then double-click it.`,
+      MN("Function Input","function input","on the left") + ` In <b>Details</b> set <b>Input Name</b> to <code>Density</code> and <b>Input Type</b> to <b>Function Input Scalar</b>.`,
+      MN("RadialGradientExponential","radialgradientexponential","in the middle"),
+      MW("Density (Function Input)","Output","RadialGradientExponential","Density"),
+      `Click the <b>Output Result</b> node that is already in the graph. In <b>Details</b> set <b>Output Name</b> to <code>Mask</code>.`,
+      MW("RadialGradientExponential","Result","Mask (Output)","Input") + ` Click <b>Save</b> (top-left).`
+    ], see:`Three nodes in a row: Density → RadialGradientExponential → Mask.`,
+    why:`RadialGradientExponential is an engine function: 1 in the middle of the sprite, fading to 0 at the edge. Density controls how hard the edge is (higher = smaller, sharper dot). Wrapping it in your own function means the master and any later material call the same thing.`,
+    shots:[SH("l5-s02","MF_Ember_SoftDot: one input, one engine function, one output.")]},
+
+    {t:"Material function 2: erosion (MF_Ember_Erode)", goal:"A function that eats a mask away as Erode goes from 0 to 1, with a soft edge (Opacity) and a thin edge band (Edge).", do:[
+      `In <b>Functions</b> make another Material Function named <code>MF_Ember_Erode</code> and open it.`,
+      `Add three <b>Function Input</b> nodes down the left (all <b>Function Input Scalar</b>), named <code>Mask</code>, <code>Erode</code> and <code>Softness</code>.`,
+      MN("Subtract","subtract","to the right of the inputs") + ` ` + MW("Mask","Output","Subtract","A") + ` ` + MW("Erode","Output","Subtract","B"),
+      MN("Divide","divide","to the right of Subtract") + ` ` + MW("Subtract","Result","Divide","A") + ` ` + MW("Softness","Output","Divide","B"),
+      MN("Saturate","saturate","to the right of Divide") + ` ` + MW("Divide","Result","Saturate","Input") + ` Click the existing <b>Output Result</b> node, set its <b>Output Name</b> to <code>Opacity</code>, and wire Saturate into it.`,
+      `Now the edge band, in a second row underneath: add <b>Abs</b> (wire Subtract's result into it) → <b>Divide</b> (B = Softness) → <b>Saturate</b> → <b>OneMinus</b>. Add a second <b>Function Output</b> (search <code>function output</code>), name it <code>Edge</code>, and wire OneMinus into it. Save.`
+    ], see:`Two rows: the top ends in Opacity, the bottom in Edge. Numbered boxes in the picture match the node names.`,
+    why:`<b>Opacity = saturate((Mask − Erode) ÷ Softness).</b> Where the mask is thinner than the Erode value, the pixel disappears; Softness blurs the cut. Thin wisps vanish first and the thick core last, which is exactly how real smoke thins out. Edge is 1 right on the cut line (useful for a burning rim).`,
+    shots:[SH("l5-s03","MF_Ember_Erode: Opacity on the top row, Edge on the bottom row.")]},
+
+    {t:"The master material, part 1: masks and switches (M_Ember_Particle)", goal:"A translucent, unlit master that can use either the soft dot or a flipbook, with optional erosion.", do:[
+      `In <b>Materials › Master</b> right-click → <b>Material</b> → <code>M_Ember_Particle</code> → open it. Click empty graph space and in <b>Details</b> set <b>Blend Mode</b> = <b>Translucent</b>, <b>Shading Model</b> = <b>Unlit</b>. Scroll to <b>Usage</b> and tick <b>Used with Niagara Sprites</b>, <b>Used with Niagara Ribbons</b> and <b>Used with Niagara Mesh Particles</b>.`,
+      `Hold ${K("S")} and click empty space to add a <b>Scalar Parameter</b>; name it <code>SoftDotDensity</code>, Default Value <code>2</code>. Drag <b>MF_Ember_SoftDot</b> from the Content Browser into the graph and wire SoftDotDensity → its <b>Density</b>.`,
+      MN("TextureSampleParameterSubUV","subuv","above the soft dot") + ` Name it <code>Flipbook</code>. In Details tick <b>Blend</b> (it cross-fades between frames).`,
+      `Right-click → search <code>static switch parameter</code> → add <b>StaticSwitchParameter</b>, name it <code>UseFlipbook</code>. Wire Flipbook's <b>A</b> into its <b>True</b>, MF_Ember_SoftDot's <b>Mask</b> into its <b>False</b>. This is the <b>shape</b> switch.`,
+      `Add a second StaticSwitchParameter with the <u>same name</u> <code>UseFlipbook</code> (same name = same switch). Wire Flipbook's <b>RGB</b> into True. Hold ${K("3")} and click to add a <b>Constant3Vector</b>, set it to white (1,1,1), wire it into False. This is the <b>colour</b> switch.`,
+      `Right-click → <code>dynamic parameter</code> → <b>Dynamic Parameter</b>. In Details open <b>Param Names</b> and rename index 0 to <code>Erode</code>, index 1 to <code>EdgeGlow</code>. Set its <b>Default Value</b> R to <code>0</code> (so Erode is 0 unless a particle says otherwise).`,
+      `Add a Scalar Parameter <code>ErodeSoftness</code> (default <code>0.15</code>). Drag in <b>MF_Ember_Erode</b>. Wire the shape switch → <b>Mask</b>, Dynamic Parameter <b>Erode</b> → <b>Erode</b>, ErodeSoftness → <b>Softness</b>.`,
+      `Add a third StaticSwitchParameter <code>UseErosion</code>: True = MF_Ember_Erode <b>Opacity</b>, False = the shape switch.`
+    ], see:`The left half of the graph, as in the picture: soft dot and flipbook feeding UseFlipbook, then the erosion function and UseErosion.`,
+    why:`<b>Static switches</b> are decided when the shader compiles, so an instance that turns a feature off pays nothing for it. That's why one master can serve sparks (no flipbook, no erosion) and smoke (both) without the sparks getting slower.`,
+    shots:[SH("l5-s04a","Left half of M_Ember_Particle after Graph → Auto Layout. Numbers match the parameter names.")]},
+
+    {t:"The master material, part 2: colour, depth fade and output", goal:"Particle colour × flipbook colour × Tint × EmissiveBoost into Emissive, and a soft opacity that fades where it meets walls and floors.", do:[
+      `Add <b>Particle Color</b> (search <code>particle color</code>). ` + MN("Multiply","multiply","to the right of UseErosion") + ` Wire UseErosion → A and Particle Color <b>A</b> (alpha) → B. This is the opacity before depth fade.`,
+      `Add a Scalar Parameter <code>DepthFadeDistance</code> (default <code>40</code>) and a <b>Depth Fade</b> node. Wire the Multiply → Depth Fade <b>Opacity</b>, DepthFadeDistance → <b>Fade Distance</b>.`,
+      `Add StaticSwitchParameter <code>UseDepthFade</code>: True = Depth Fade's output, False = the Multiply. Wire UseDepthFade into the result node's <b>Opacity</b>.`,
+      `Colour chain: Multiply (Particle Color <b>RGB</b> × the colour switch) → Multiply (× a <b>Vector Parameter</b> named <code>Tint</code>, default white; hold ${K("V")} and click) → Multiply (× Scalar Parameter <code>EmissiveBoost</code>, default <code>1</code>) → Multiply (× UseDepthFade) → <b>Emissive Color</b>.`,
+      `Click <b>Apply</b>, then <b>Save</b>. Tidy with right-click empty graph → <b>Auto Layout</b> if you like.`
+    ], see:`Emissive Color and Opacity both wired, no errors in the Stats panel.`,
+    why:`The last Multiply puts the opacity into the colour too. For <b>Additive</b> instances (which ignore Opacity) that's what makes them fade; for translucent ones it keeps edges clean. <b>Depth Fade</b> removes the hard line where a big sprite cuts into the floor.`,
+    shots:[SH("l5-s04b","Right half: Tint, EmissiveBoost, Depth Fade and the result node.")]},
+
+    {t:"Instances: one master, nine looks", goal:"Material instances for glow, sparks, dust, floor glow, smoke and fire, each with its own switches and numbers.", do:[
+      `Right-click <b>M_Ember_Particle</b> → <b>Create Material Instance</b>. Rename it <code>MI_Ember_Glow</code> and drag it into <b>Materials › Instances</b>.`,
+      `Open it. Tick a parameter's checkbox to override it, then type the value. For MI_Ember_Glow: SoftDotDensity <code>2.3</code>, UseFlipbook off, UseErosion off, UseDepthFade off. Under <b>Material Property Overrides</b> tick <b>Blend Mode</b> and choose <b>Additive</b>.`,
+      `Make the rest the same way (values from the table). Smoke and Fire get their flipbook textures in Lesson 6; leave Flipbook empty for now.` + TABLE(["Instance","Blend","Switches on","Numbers"],[
+        ["MI_Ember_Glow","Additive","–","SoftDotDensity 2.3"],
+        ["MI_Ember_Spark","Additive","–","SoftDotDensity 4.5, EmissiveBoost 3"],
+        ["MI_Ember_Dust","(Translucent)","UseDepthFade","SoftDotDensity 1.4, DepthFadeDistance 60"],
+        ["MI_Ember_FloorGlow","(Translucent)","UseDepthFade","SoftDotDensity 1.6"],
+        ["MI_Ember_Smoke","(Translucent)","UseFlipbook, UseErosion, UseDepthFade","ErodeSoftness 0.25, DepthFadeDistance 60"],
+        ["MI_Ember_Fire","Additive","UseFlipbook, UseDepthFade","EmissiveBoost 1.4, Tint (1, 0.6, 0.35)"]])
+    ], see:`Six instances in Materials › Instances. Changing a number in one updates its preview instantly, without a shader compile.`,
+    pro:`The pack also has special-purpose masters for rings, ribbons, the rift core, the dissolve and props (M_Ember_Ring, M_Ember_Trail, M_Ember_RiftCore, M_Ember_Dissolve, M_Ember_Prop). They're the Module 1 maths materials, renamed and moved into the pack.`,
+    shots:[SH("l5-s05","MI_Ember_Smoke: the switches and numbers that turn the master into flipbook smoke.")]}
+  ],
+  check:`<b>You should have:</b> /Content/Emberfall with its sub-folders, two material functions, the master M_Ember_Particle (Translucent, Unlit, three Niagara usage boxes ticked, three static switches) and six instances. Nothing in the pack folder that a buyer wouldn't need.`,
+  cards:[
+    ["What does Fab want the top of your Content folder to look like?","One folder named after the product (here <code>Emberfall</code>) holding everything, and no empty or unused folders or assets."],
+    ["Name the prefixes for a Niagara system, a material instance, a material function and a texture.","<code>NS_</code> (community convention; Epic's naming page uses <code>FXS_</code>), <code>MI_</code>, <code>MF_</code>, <code>T_</code>. Whichever you choose, be consistent."],
+    ["Why use static switches in the master instead of separate materials?","Each instance compiles only the branches it switches on, so a cheap spark doesn't pay for flipbook or erosion code, and one master stays the single place to fix things."],
+    ["What does the Dynamic Parameter node do?","Reads up to four per-particle numbers that Niagara writes with the <b>Dynamic Material Parameters</b> module, e.g. Erode."],
+    ["Write the erosion formula.","Opacity = saturate((Mask − Erode) ÷ Softness)."],
+    ["Why set the Dynamic Parameter's default Erode to 0?","Without the Niagara module the default is used. A default of 1 would erode every sprite to nothing."],
+    ["Why multiply opacity into the emissive colour?","Additive materials ignore Opacity, so the fade has to be in the colour."],
+    ["Where do bake sources and test maps go?","In a folder beside the pack (e.g. BakeSources), never inside it."]
+  ],
+  boss:{
+    title:"Boss fight: a master from memory",
+    brief:`Memory mode on, timer running. In a fresh folder, rebuild MF_Ember_Erode and a cut-down master with UseFlipbook and UseErosion, then make two instances: a soft additive glow and an eroding flipbook.`,
+    goal:25,
+    items:[["Both material functions rebuilt and saved",""],["Master is Translucent + Unlit with the Niagara usage boxes ticked",""],["Two static switches and the Dynamic Parameter wired correctly",""],["Two instances that look different without recompiling","Change a number: no shader compile bar."]],
+    stretch:[["Burning rim","Use MF_Ember_Erode's Edge output × EdgeGlow (Dynamic Parameter index 1) to add a hot rim where smoke erodes."],["Soft particles on ribbons","Check the master works on a ribbon too (Used with Niagara Ribbons)."]]
+  }
+},
+
+/* ---------------------------------------------------------------- L6 */
+{
+  id:"l6", num:6, mod:2, short:"Bake flipbooks",
+  title:"Bake your own smoke and fire flipbooks with the Niagara Baker",
+  kick:"Lesson 6 · Source simulations, Niagara Baker, 8×8 atlases",
+  time:"60–80 min",
+  intro:`Hero smoke and fire in games are usually <b>flipbooks</b>: a grid of 64 frames of a real simulation, played back on a few sprites. You'll make yours inside Unreal: a heavy source effect with hundreds of particles, rendered frame by frame by the <b>Niagara Baker</b> into one 2048 × 2048 texture. Your effects then show 64 baked frames of rich motion while drawing just a handful of sprites.`,
+  use:`<b>Used for:</b> smoke, fire, explosions, magic puffs, dust clouds: anything too expensive to simulate live, but that should look rich.`,
+  learn:["Bake sources","Fake lighting in colour","Niagara Baker","Scene Capture binding","Orthographic framing","8×8 atlas","Texture settings"],
+  concepts:[
+    {h:"Expensive once, cheap forever", p:"The source effect can use 260 particles and slow forces; it only runs while baking. The game effect shows the result with 3–16 sprites. That trade is the whole point of flipbooks."},
+    {h:"Bake the light in", p:"Unlit smoke looks flat. The smoke source colours particles brighter the higher (and further right) they sit, so the bake has a lit top and a shadowed underside. That shading survives into the texture for free."},
+    {h:"Alpha comes from opacity", p:"Source Binding <b>SceneColor (HDR) in RGB, Inv Opacity in A</b> records colour in RGB and how solid each pixel is in alpha. That alpha is exactly the Mask your master material erodes."},
+    {h:"Frames × size = texture", p:"8 × 8 frames of 256 × 256 px = a 2048 × 2048 atlas. 64 frames is smooth at the 2–3 s lifetimes used here; the SubUV Animation module plays them across each particle's life."}
+  ],
+  graphs:[],
+  steps:[
+    {t:"Build the smoke source simulation (NS_Bake_Smoke)", goal:"A one-shot puff of 260 particles that billows out and rises over about 2.3 s, in the BakeSources folder.", do:[
+      NEWSYS("BakeSources","NS_Bake_Smoke","Puffs") + ` ` + ES("Once"),
+      AM("Spawn Burst Instantaneous","Emitter Update","spawn burst") + ` ` + SV("Spawn Burst Instantaneous","Spawn Count","260"),
+      AM("Shape Location","Particle Spawn","shape location") + ` ` + SD("Shape Location","Shape Primitive","Box / Plane","Sphere") + ` ` + SV("Shape Location","Sphere Radius","35"),
+      `In <b>Initialize Particle</b>: Lifetime Mode <b>Random</b>, Lifetime Min <code>2.1</code>, Max <code>2.4</code>; Sprite Size Mode <b>Random Uniform</b>, Min <code>15</code>, Max <code>32</code>; Sprite Rotation Mode <b>Random</b>.`,
+      AM("Add Velocity","Particle Spawn","add velocity") + ` ` + EXPR("Add Velocity","Velocity","normalize(Particles.Position + float3(0.001,0.002,0.003)) * (50.0 + 2.8 * length(Particles.Position)) + float3(0, 0, 40)"),
+      `Particle Update: add <b>Curl Noise Force</b> (Noise Strength <code>90</code>), <b>Acceleration Force</b> (0, 0, <code>45</code>), <b>Drag</b> (<code>1.4</code>). ${SOLVE}`,
+      AM("Color","Particle Update","color") + ` ` + EXPR("Color","Color","float4(float3(1,1,1) * (0.30 + 0.70 * saturate(0.45 + Particles.Position.z / 170.0 + Particles.Position.y / 380.0)), 0.5)"),
+      AM("Scale Sprite Size","Particle Update","scale sprite size") + ` Its <b>Uniform Curve Sprite Scale</b> is already a curve: set keys (time, value) (0, 1), (0.35, 1.8), (1, 2.3).`,
+      AM("Scale Color","Particle Update","scale color") + ` ` + CURVE("Scale Color","Scale Alpha","(0, 0), (0.08, 1), (0.55, 0.75), (1, 0)")
+    ], see:`In the preview, a white puff that bursts out, swells and fades in about 2.3 s, brighter on top.`,
+    why:`The Velocity expression pushes each particle straight out from the centre, faster the further out it starts, so the puff grows from inside like a real billow. The Color expression is the "baked light": brighter with height.`,
+    shots:[SH("l6-s01","The smoke source stack. Add Velocity is selected; its expression is in the Details panel.")]},
+
+    {t:"Give the source a plain soft material", goal:"A translucent unlit material just for baking: soft dot shape × particle colour, alpha from particle alpha.", do:[
+      `In <b>BakeSources</b> make a Material <code>M_Bake_Source</code>: Blend Mode <b>Translucent</b>, Shading Model <b>Unlit</b>, tick <b>Used with Niagara Sprites</b>.`,
+      `Drag in <b>MF_Ember_SoftDot</b> (Density: a Constant <code>1.6</code>). Particle Color <b>RGB</b> → <b>Emissive Color</b>. Particle Color <b>A</b> × SoftDot <b>Mask</b> → <b>Opacity</b>. Save.`,
+      `Back in NS_Bake_Smoke click <b>Sprite Renderer</b> and set <b>Material</b> to <code>M_Bake_Source</code>.`
+    ], see:`The puff looks like soft cotton wool in the preview, no square sprite edges.`,
+    why:`This material lives in BakeSources, not in the pack: buyers get the baked texture, not the tool you made it with.`,
+    shots:[SH("l6-s02","Sprite Renderer selected: M_Bake_Source on the bake source.")]},
+
+    {t:"Open the Niagara Baker", goal:"The Baker tab open next to System Overview, showing Live Sim and Baked Sim previews.", do:[
+      `In the Niagara editor's toolbar click <b>Baker</b>. A <b>Baker</b> tab opens beside <b>System Overview</b>.`,
+      `The left preview is <b>Live Sim</b> (your effect now); the right one, <b>Baked Sim</b>, stays a checkerboard until you bake. Below them is the Baker's <b>Settings</b> panel and a small timeline.`
+    ], see:`Two square previews and a Settings panel underneath.`,
+    shots:[SH("l6-s03","The Baker button and tab. Live Sim on the left, Baked Sim on the right.")]},
+
+    {t:"Record colour and opacity: Source Binding", goal:"The Baker captures colour into RGB and solidity into alpha.", do:[
+      `In the Baker's <b>Settings</b> click the <b>Source Binding</b> dropdown (it says <i>None</i>).`,
+      `Click the small arrow beside <b>Scene Capture Source</b> to open that group, then pick <b>SceneColor (HDR) in RGB, Inv Opacity in A</b>.`
+    ], see:`Source Binding reads <i>SceneCaptureSource - SceneColor (HDR) in RGB, Inv Opacity in A</i>.`,
+    why:`The other groups record a single particle attribute or a G-buffer channel (normals, depth): useful for other jobs, like baking normal maps for lit smoke.`,
+    shots:[SH("l6-s04","Source Binding → Scene Capture Source → SceneColor (HDR) in RGB, Inv Opacity in A.")]},
+
+    {t:"Frame the camera: Front view and Orthographic Width", goal:"A straight side-on orthographic view where the whole puff fills the frame without touching the edges.", do:[
+      `Above the Live Sim preview click the view dropdown (it says <i>Perspective</i>) → <b>Front</b>.`,
+      `Click the <b>eye</b> icon next to it. The panel that drops down holds the camera: <b>Location</b>, <b>Rotation</b> and <b>Orthographic Width</b>.`,
+      `Scrub the Baker timeline to the frame where the effect is biggest. Lower <b>Orthographic Width</b> until the effect almost touches the frame, then raise it a little. Move <b>Location Z</b> so the effect sits centred. (The fire in the picture uses width <code>140</code>, Z <code>46</code>.)`
+    ], see:`At the biggest frame the effect fills about 90% of the Live Sim square, with dark margin all round.`,
+    pro:`Any part of the effect that leaves the frame gets cut off with a hard straight edge in the flipbook. Check the biggest frame, not the first one.`,
+    shots:[SH("l6-s05","Front view; the eye menu holds the camera settings.")]},
+
+    {t:"Size, atlas and time range", goal:"64 frames of 256 px in a 2048 atlas, covering exactly the life of the puff.", do:[
+      `In <b>Settings</b>: <b>Frame Size</b> <code>256</code> × <code>256</code>; tick <b>Atlas Texture Size</b> and set <code>2048</code> × <code>2048</code>.`,
+      `In the Baker timeline row: <b>Time Range</b> <code>0.0</code> to <code>2.3</code> (smoke). <b>Frames Per Dimension</b> <code>8</code> × <code>8</code>.`
+    ], see:`The counter beside Playback Rate reads <i>… / 64 f</i>.`,
+    why:`The Baker's defaults are 8 × 8 frames in a 1024 atlas; 2048 gives each frame 256 px, enough for close-up fire. The time range should start when the effect appears and end just as it has faded. Baking empty frames wastes texture space; ending too early makes the puff pop off.`,
+    shots:[SH("l6-s06","Frame Size 256, Atlas 2048, Frames Per Dimension 8 × 8. This picture is the fire bake, which uses Time Range 2.0–4.0.")]},
+
+    {t:"Bake, then check the Baked Sim", goal:"A baked texture asset next to the system, and Baked Sim playing it back.", do:[
+      `Click <b>Bake</b> (the first button in the Baker's toolbar). It takes a few seconds.`,
+      `Watch the <b>Baked Sim</b> preview: it now plays your flipbook. Compare it with Live Sim: same motion, same shape.`,
+      `A texture named like <code>NS_Bake_Smoke_BakedAtlas_Texture2D_0</code> appears in BakeSources.`
+    ], see:`Baked Sim shows the puff animating, on a black background.`,
+    shots:[SH("l6-s07a","After Bake: Baked Sim plays the 64 frames back.")]},
+
+    {t:"Move it into the pack and name it", goal:"T_Ember_Smoke_8x8 in Emberfall › Textures, set up as an effects texture.", do:[
+      `Drag the baked texture from BakeSources onto <b>Emberfall › Textures</b> → <b>Move Here</b>. Rename it <code>T_Ember_Smoke_8x8</code>.`,
+      `Double-click it. In Details check <b>sRGB</b> is ticked and <b>Compression Settings</b> is <i>Default (DXT1/5, BC1/3 on DX11)</i>. Set <b>Texture Group</b> to <b>Effects</b>. Save.`,
+      `Open <b>MI_Ember_Smoke</b> and set <b>Flipbook</b> to T_Ember_Smoke_8x8.`
+    ], see:`The texture editor shows the 8 × 8 grid: puffs growing and thinning frame by frame, 2048 × 2048, DXT5.`,
+    why:`The <code>_8x8</code> suffix tells you (and buyers) the grid size you must type into the SubUV settings. DXT5 keeps the alpha channel.`,
+    shots:[SH("l6-s08","The baked smoke atlas in the texture editor: 2048², DXT5, sRGB.")]},
+
+    {t:"Repeat for fire (NS_Bake_Fire → T_Ember_Fire_8x8)", goal:"A looping flame source baked into a second atlas.", do:[
+      NEWSYS("BakeSources","NS_Bake_Fire","Flames") + ` Build it like the smoke source, but <b>Loop Behavior Infinite</b>, <b>Spawn Rate</b> <code>420</code>, Sphere Radius <code>12</code>, Lifetime 0.6–1.1, Sprite Size 9–20, Curl Noise <code>220</code>, Acceleration (0, 0, <code>420</code>), Drag <code>2.2</code>, Scale Sprite Size curve 1 → 0.9 (35%) → 0.25.`,
+      EXPR("Color","Color","float4(lerp(lerp(float3(4.0,2.4,0.9), float3(2.2,0.7,0.12), saturate(Particles.NormalizedAge*2.5)), float3(0.5,0.08,0.02), saturate(Particles.NormalizedAge*2.0-0.8)), saturate(Particles.NormalizedAge*12.0)*(1.0-Particles.NormalizedAge))"),
+      `Baker: same Source Binding, Front view, Orthographic Width <code>140</code>, Location Z <code>46</code>, Frame Size 256, Atlas 2048, <b>Time Range 2.0 to 4.0</b>, 8 × 8. Bake.`,
+      `Move and rename the result to <code>T_Ember_Fire_8x8</code> in Textures and plug it into <b>MI_Ember_Fire</b>.`
+    ], see:`Baked Sim shows a flickering flame; the atlas has 64 different flame shapes.`,
+    why:`Fire is baked from 2 s in, once the loop is already running; baking from 0 would show it starting up. The colour goes white-yellow → orange → dark red as each tongue ages, and fades in fast and out slowly.`,
+    shots:[SH("l6-s07","The fire bake: Baked Sim plays back after clicking Bake.")]}
+  ],
+  check:`<b>You should have:</b> NS_Bake_Smoke and NS_Bake_Fire in BakeSources (not in the pack), and T_Ember_Smoke_8x8 and T_Ember_Fire_8x8 (2048², 8 × 8, Effects group) in Emberfall › Textures, used by MI_Ember_Smoke and MI_Ember_Fire.`,
+  cards:[
+    ["Why bake a flipbook instead of simulating smoke live?","The source can use hundreds of particles and slow forces once; the game shows 64 baked frames on a handful of sprites."],
+    ["Which Source Binding gives colour plus usable alpha?","Scene Capture Source → <b>SceneColor (HDR) in RGB, Inv Opacity in A</b>."],
+    ["Frame Size 256 and 8 × 8 frames: what atlas size?","2048 × 2048 (8 × 256)."],
+    ["How do you stop the effect being clipped by the frame edge?","Front view, check the <b>biggest</b> frame, then set Orthographic Width (eye menu) with a margin."],
+    ["Why bake fire from 2.0 s instead of 0?","So the loop is already running; frame 1 shouldn't be the fire starting up."],
+    ["How do you get lighting into unlit smoke?","Colour particles brighter with height in the source. The shading is baked into the frames."],
+    ["Why does the bake material stay out of the pack?","Buyers need the baked texture, not your tools. Shipping unused assets breaks Fab's rules."]
+  ],
+  boss:{
+    title:"Boss fight: a dust-puff flipbook",
+    brief:`Memory mode on. Make NS_Bake_Dust (brown, flatter, low and wide) and bake it to T_Ember_DustTest_8x8 at 256 px / 8 × 8 without clipping on any frame.`,
+    goal:25,
+    items:[["Source system built from Minimal with a one-shot burst",""],["Source Binding and Front ortho camera set",""],["No frame clipped at the edge","Scrub every row."],["Texture named, moved and set to the Effects group",""]],
+    stretch:[["Normal-map bake","Bake a second atlas with a Buffer Visualization normal binding and try lighting the smoke with it."],["Motion vectors","Research Niagara Baker's motion-vector bindings for smoother frame blending."]]
+  }
+},
+
+/* ---------------------------------------------------------------- L7 */
+{
+  id:"l7", num:7, mod:2, short:"Flipbook effects",
+  title:"Fire, smoke and an explosion built on your flipbooks",
+  kick:"Lesson 7 · SubUV Animation, User parameters, erosion over life, the full pack",
+  time:"90–120 min",
+  intro:`Now the textures earn their keep. A fire loop for torches and braziers, a tall smoke column bent by wind, and a one-shot explosion that stacks seven layers. You'll drive the flipbooks with <b>SubUV Animation</b>, expose <b>Tint</b> and <b>Scale</b> so buyers can restyle each effect without opening it, and make smoke <b>erode</b> away as it ages instead of just fading.`,
+  use:`<b>Used for:</b> environment fire and smoke, destruction, spell impacts. These are the three effects buyers look for first in a fire pack.`,
+  learn:["SubUV Animation","Sub UV on the renderer","User.Tint and User.Scale","Flicker with sine","Wind as a User vector","Erode over life","Layered explosion"],
+  concepts:[
+    {h:"Two places must agree", p:"The <b>SubUV Animation</b> module picks which frame each particle shows. The <b>Sprite Renderer</b>'s <b>Sub UV</b> section tells the GPU how the texture is split. Both say 8 × 8, or the frames come out wrong."},
+    {h:"Few, big, slow", p:"Flipbook fire works with <b>16–24 big sprites</b>, not hundreds of small ones: each sprite already contains a whole flame. A small glow sprite with a flickering light sells the heat."},
+    {h:"Expose what buyers change", p:"<code>User.Tint</code> and <code>User.Scale</code> appear in the Details panel of every placed effect. Multiply sizes, radii and speeds by Scale, and colours by Tint, so one asset becomes many."},
+    {h:"Erode, don't just fade", p:"Fading alpha makes smoke go see-through evenly. Raising <b>Erode</b> over life eats the thin parts first and leaves the dense core, which looks like real smoke dispersing."}
+  ],
+  graphs:[
+    {kind:"stack", title:"NS_Ember_FireLoop: four emitters", hint:"a torch / brazier fire", emitters:[
+      {id:"fl", name:"Flames", tag:"CPU · local space · 24 / s", sections:[
+        {s:"Emitter Update", mods:[{id:"es",n:"Emitter State",v:[["Life Cycle","Self"],["Loop","Infinite"]]},{id:"sr",n:"Spawn Rate",v:[["SpawnRate","24"]]}]},
+        {s:"Particle Spawn", mods:[{id:"ip",n:"Initialize Particle",v:[["Lifetime","0.8–1.1"],["Color","User.Tint"],["Size","110–160 × Scale"],["Position Offset","0, 0, 55"]]},{id:"sl",n:"Shape Location",v:[["Sphere Radius","20 × Scale"]]},{id:"av",n:"Add Velocity",v:[["Velocity","(0,0,45) × Scale"]]}]},
+        {s:"Particle Update", mods:[{id:"so",n:"Solve Forces and Velocity"},{id:"sub",n:"SubUV Animation",v:[["Mode","Linear"],["Setup","Manual 8 × 8"]]},{id:"sc",n:"Scale Color",v:[["Scale Alpha","0 → 1 → 1 → 0"]]}]},
+        {s:"Render", mods:[{id:"rn",n:"Sprite Renderer",v:[["Material","MI_Ember_Fire"],["Sub Image Size","8 × 8"],["Sub UV Blending","on"]]}]}]},
+      {id:"gl", name:"Glow", tag:"1 immortal sprite + light", sections:[
+        {s:"Emitter Update", mods:[{id:"sb",n:"Spawn Burst Instantaneous",v:[["Count","1"],["Loop Count Limit","on"]]}]},
+        {s:"Particle Spawn", mods:[{id:"ip",n:"Initialize Particle",v:[["Size","170 × Scale"]]},{id:"la",n:"Light Attributes",v:[["Light Radius","650 × Scale"]]}]},
+        {s:"Particle Update", mods:[{id:"ps",n:"Particle State",v:[["Kill when lifetime elapsed","off"]]},{id:"co",n:"Color",v:[["Color","Tint × flicker (sin)"]]}]},
+        {s:"Render", mods:[{id:"rn",n:"Sprite + Light Renderer",v:[["Material","MI_Ember_Glow"]]}]}]},
+      {id:"em", name:"Embers", tag:"tiny, fast, rising", sections:[
+        {s:"Particle Update", mods:[{id:"cn",n:"Curl Noise Force",v:[["Strength","120"]]},{id:"ac",n:"Acceleration Force",v:[["Z","110"]]},{id:"dr",n:"Drag",v:[["Drag","1"]]}]}]},
+      {id:"sm", name:"Smoke", tag:"3 / s · flipbook + erosion", sections:[
+        {s:"Particle Spawn", mods:[{id:"ip",n:"Initialize Particle",v:[["Lifetime","2.5–3.5"],["Size","50–80"],["Position Offset","0, 0, 110"]]}]},
+        {s:"Particle Update", mods:[{id:"co",n:"Color",v:[["Color","orange → grey"]]},{id:"sz",n:"Scale Sprite Size",v:[["Curve","1 → 2.2"]]},{id:"sub",n:"SubUV Animation"},{id:"dmp",n:"Dynamic Material Parameters",v:[["Erode","curve 0 → 0.85"]]}]},
+        {s:"Render", mods:[{id:"rn",n:"Sprite Renderer",v:[["Material","MI_Ember_Smoke"]]}]}]}
+    ], cap:"Big slow flipbook flames, one glow sprite carrying the light, small fast embers, and a little smoke on top: four steps of size and speed."}
+  ],
+  steps:[
+    {t:"Create NS_Ember_FireLoop and its User parameters", goal:"An empty system in Emberfall › FX with User.Tint (white) and User.Scale (1), set to the Loop effect type with a 1 s warmup.", do:[
+      NEWSYS("Emberfall › FX","NS_Ember_FireLoop","Flames") + ` ` + ES("Infinite"),
+      UP("Tint","Linear Color","1, 1, 1, 1") + ` ` + UP("Scale","Float","1.0"),
+      `Click the system's <b>Properties</b> row (top-left box in System Overview). In Details set <b>Warmup Time</b> to <code>1</code> so the fire is already burning when the level starts. (Effect Types come in Lesson 8.)`,
+      AE("Glow") + ` Add <code>Embers</code> and <code>Smoke</code> the same way, and set each one's Emitter State to Self / Infinite.`
+    ], see:`Four emitter boxes in System Overview and two User parameters in the bottom-left tab.`,
+    shots:[SH("l7-s01","NS_Ember_FireLoop: Flames, Glow and Embers (Smoke is off to the right). Each column is the stack diagram above."), SH("l7-s04","User Parameters: Tint and Scale.")]},
+
+    {t:"Flames: big flipbook sprites", goal:"About 20 tall flame sprites rising slowly from a point, each playing all 64 frames over its life.", hl:{g:0,n:["fl.es","fl.sr","fl.ip","fl.sl","fl.av","fl.so","fl.sub","fl.sc"]}, do:[
+      `Click <b>Properties</b> in the Flames box and tick <b>Local Space</b> (the fire moves with whatever it's attached to).`,
+      AM("Spawn Rate","Emitter Update","spawn rate") + ` ` + SV("Spawn Rate","SpawnRate","24"),
+      AM("Shape Location","Particle Spawn","shape location") + ` Shape Primitive <b>Sphere</b>. ` + EXPR("Shape Location","Sphere Radius","20.0 * User.Scale"),
+      `<b>Initialize Particle:</b> Lifetime Mode Random, 0.8 to 1.1. ` + LINK("Initialize Particle","Color","Tint") + ` Sprite Size Mode <b>Random Uniform</b>; make <b>Uniform Sprite Size Min</b> and <b>Max</b> expressions (▾ → New Expression): <code>110.0 * User.Scale</code> and <code>160.0 * User.Scale</code>. Tick <b>Use Position Offset</b> and type (0, 0, <code>55</code>).`,
+      AM("Add Velocity","Particle Spawn","add velocity") + ` ` + EXPR("Add Velocity","Velocity","float3(0, 0, 45) * User.Scale") + ` ${SOLVE}`,
+      AM("SubUV Animation","Particle Update","subuv animation") + ` ` + `Leave <b>SubUV Animation Mode</b> on <b>Linear</b>. ` + SD("SubUV Animation","Define SubUV Setup Manually","Automatic (From Renderer SubImage Size)","Manual") + ` Then set <b>Manual SubImage Size</b> to <code>8</code>, <code>8</code> and tick <b>Is SubUV Blending Enabled On Renderer</b>.`,
+      AM("Scale Color","Particle Update","scale color") + ` ` + CURVE("Scale Color","Scale Alpha","(0, 0), (0.12, 1), (0.7, 1), (1, 0)")
+    ], see:`Grey-white squares at first (no material yet), playing frames as they rise.`,
+    why:`Linear mode maps each particle's normalized age to frames 0–63, so every flame plays the whole bake once over its life. <b>Manual</b> setup means the module doesn't need to read the renderer, so its warning goes away.`,
+    shots:[SH("l7-s02","SubUV Animation in Flames: Manual, 8 × 8, blending on.")]},
+
+    {t:"Flames renderer: MI_Ember_Fire and Sub UV", goal:"The flipbook shows correctly, cross-fading between frames.", do:[
+      `Click <b>Sprite Renderer</b> in Flames. Set <b>Material</b> to <code>MI_Ember_Fire</code>.`,
+      `Scroll Details to <b>Sub UV</b>: set <b>Sub Image Size</b> to <code>8</code>, <code>8</code> and tick <b>Sub UV Blending Enabled</b>.`
+    ], see:`Real flame shapes licking upward in the preview.`,
+    shots:[SH("l7-s03","Sprite Renderer → Material = MI_Ember_Fire, Sub UV 8 × 8 with blending.")]},
+
+    {t:"Glow, Embers and Smoke", goal:"A flickering glow that lights the floor, sparks drifting up, and a few puffs of flipbook smoke on top.", hl:{g:0,n:["gl.sb","gl.ip","gl.la","gl.ps","gl.co","gl.rn","em.cn","em.ac","em.dr","sm.ip","sm.co","sm.sz","sm.sub","sm.rn"]}, do:[
+      `<b>Glow:</b> ` + AM("Spawn Burst Instantaneous","Emitter Update","spawn burst") + ` Count <code>1</code>, tick <b>Use Loop Count Limit</b>. In <b>Particle State</b> untick <b>Kill Particles When Lifetime Has Elapsed</b> (the sprite lives forever). Initialize Particle: Uniform size <code>170.0 * User.Scale</code>, Position Offset (0, 0, 45).`,
+      `<b>Glow colour flicker:</b> ` + AM("Color","Particle Update","color") + ` ` + EXPR("Color","Color","User.Tint * float4(2.2, 0.75, 0.18, 0.22) * (0.82 + 0.18 * sin(Engine.Time * 23.0) * sin(Engine.Time * 7.3))"),
+      `<b>Glow light:</b> add <b>Light Attributes</b> (Particle Spawn), Radius → <b>Apply</b>, Light Radius <code>650.0 * User.Scale</code>. Add a <b>Light Renderer</b> (the <b>+</b> on the Render group) and untick <b>Use Inverse Squared Falloff</b>. Sprite material: <code>MI_Ember_Glow</code>.`,
+      `<b>Embers:</b> Spawn Rate <code>14</code>, Sphere Radius <code>18</code>, Lifetime 1–2, size 1.8–3.6, Color <code>User.Tint * float4(7.0, 2.4, 0.6, 1.0)</code>, Position Offset (0,0,40). Update: Curl Noise <code>120</code>, Acceleration (0, 0, 110), Drag <code>1</code>, Solve, Scale Color fade. Material <code>MI_Ember_Spark</code>.`,
+      `<b>Smoke:</b> Spawn Rate <code>3</code>, Lifetime 2.5–3.5, size 50–80, Random rotation, Position Offset (0,0,110), Add Velocity (0,0,70) × Scale. Update: Color = <code>float4(lerp(float3(0.85, 0.40, 0.16), float3(0.15, 0.14, 0.14), saturate(Particles.NormalizedAge * 3.0)) * User.Tint.rgb, 1.0)</code>, Curl Noise <code>25</code>, Scale Sprite Size 1 → 2.2, SubUV Animation (as Flames), Scale Color alpha 0 → 0.35 (0.3) → 0. Renderer: <code>MI_Ember_Smoke</code>, Sub UV 8 × 8.`
+    ], see:`In a level: flames, a warm pool of flickering light on the floor, embers drifting up, a little smoke above.`,
+    why:`Two sines multiplied at different speeds (23 and 7.3) never line up, so the flicker never visibly repeats. The light is on <b>one immortal</b> sprite: one light instead of twenty is a big saving.`,
+    shots:[SH("l7-s05","NS_Ember_FireLoop on its pedestal in the showcase map: flames, floor light, embers.")]},
+
+    {t:"NS_Ember_SmokeColumn with a wind User parameter", goal:"A tall, slow smoke column that leans with User.Wind.", do:[
+      NEWSYS("Emberfall › FX","NS_Ember_SmokeColumn","Smoke") + ` ` + ES("Infinite") + ` Add User.Tint, User.Scale and a <b>Vector</b> User parameter <code>Wind</code> = (60, 0, 0). System Warmup Time <code>4</code>.`,
+      `In the Smoke emitter: Spawn Rate <code>7</code>; Sphere Radius <code>35 × Scale</code>; Lifetime 6.5–8.5; size 110–170 × Scale, Random rotation; Add Velocity <code>float3(0, 0, 230) * User.Scale</code>.`,
+      AM("Acceleration Force","Particle Update","acceleration force") + ` ` + LINK("Acceleration Force","Acceleration","Wind") + ` Add Curl Noise (<code>30</code>) and Drag (<code>0.12</code>), then fix the Solve error.`,
+      `Same Color expression as the fire's smoke, Scale Sprite Size 1 → 3.4, SubUV Animation, Scale Color alpha 0 → 0.6 (0.15) → 0.45 (0.6) → 0, material MI_Ember_Smoke with Sub UV 8 × 8.`,
+      `Click the emitter's <b>Properties</b> and set <b>Calculate Bounds Mode</b> to <b>Fixed</b>, Fixed Bounds Min (−500, −500, −100), Max (1400, 500, 2200).`
+    ], see:`A column of smoke rising 15–20 m and bending to +X. Changing Wind in the level's Details bends it live.`,
+    why:`Low drag plus a constant push gives the long, lazy rise of a chimney or burning building. Fixed bounds are needed because the column is far taller than the emitter's start, and they save the per-frame bounds calculation.`,
+    shots:[SH("l7-s06","NS_Ember_SmokeColumn in the showcase map, leaning with the wind.")]},
+
+    {t:"Erode the smoke over its life", goal:"Smoke that breaks up and thins from its edges as it ages, not just fades out.", hl:{g:0,n:["sm.dmp"]}, do:[
+      `In the Smoke emitter: ` + AM("Dynamic Material Parameters","Particle Update","dynamic material") + ` Because MI_Ember_Smoke has a Dynamic Parameter, the module shows its names: <b>Erode</b>, <b>EdgeGlow</b>…`,
+      `Untick everything except <b>Erode</b>. ` + CURVE("Dynamic Material Parameters","Erode","(0, 0), (0.35, 0.15), (1, 0.85)"),
+      `Add the same module and curve to the Smoke emitter in NS_Ember_FireLoop (and later NS_Ember_Explosion).`,
+      `Make sure <b>MI_Ember_Smoke</b> has <b>UseErosion</b> ticked and <b>ErodeSoftness</b> <code>0.25</code>.`
+    ], see:`Puffs that start round and soft, then get ragged and full of holes before they vanish.`,
+    why:`The Dynamic Material Parameters module writes into the material's <b>Dynamic Parameter</b> node per particle. Erode compares against the flipbook's alpha, so thin wisps (low alpha) disappear long before the dense middle.`,
+    shots:[SH("l7-s08","Dynamic Material Parameters on Smoke: the Erode curve rising over normalized age.")]},
+
+    {t:"NS_Ember_Explosion: seven layers in one second", goal:"A one-shot explosion: flash + light, flipbook fireball, eroding smoke, sparks, a ground ring and rock debris.", do:[
+      NEWSYS("Emberfall › FX","NS_Ember_Explosion","Flash") + ` Add User.Tint and User.Scale. Every emitter: Life Cycle Self, Loop <b>Once</b>, Spawn Burst Instantaneous.`,
+      `<b>Flash</b>: 1 sprite, life 0.18 s, size 900 × Scale, Color <code>User.Tint * float4(8.0, 4.0, 1.4, 1.0)</code>, Scale Color fade, MI_Ember_Glow, Light Attributes (radius 1400 × Scale) + Light Renderer.`,
+      `<b>Fireball</b>: 16 sprites, Sphere 40 × Scale, life 0.8–1.2, size 170–270 × Scale, random rotation. Add Velocity: <code>(normalize(Particles.Position - Engine.Owner.Position + float3(0.001, 0.002, 0.003)) * 380.0 + float3(0, 0, 140)) * User.Scale</code>. Drag <code>4.5</code>, Acceleration (0,0,140), Scale Sprite Size 0.55 → 1 (0.3) → 1.3, SubUV Animation, Scale Color, <b>MI_Ember_Fire</b>.`,
+      `<b>Smoke</b>: 14 sprites at Spawn Time <code>0.08</code>, life 2.5–3.5, size 220–320 × Scale, outward velocity 220 (+160 up), drag 2, the smoke Color expression, SubUV, the Erode curve, <b>MI_Ember_Smoke</b>.`,
+      `<b>Sparks</b> (90, Add Velocity in Cone 1400 × Scale, cone 80°, Gravity, Drag 1.2, Scale Sprite Size by Speed up to 7, velocity-aligned MI_Ember_Spark), <b>Ring</b> (1 flat sprite, 1800 × Scale growing 0.05 → 1, MI_Ember_Ring, laid flat as in Lesson 1) and <b>Debris</b> (10 <b>SM_Ember_RockChunk</b> mesh particles, Collision, MI_Ember_Rock).`
+    ], see:`In Play: a white flash that lights the floor, a fireball that blooms and rolls upward into dark smoke, sparks raining down, a ring racing out and rocks bouncing.`,
+    why:`The same layering rules as Lesson 1 (huge-instant, big-fast, tiny-fast, big-slow), but now the big layers are flipbooks: 30 sprites total that read like hundreds.`,
+    shots:[SH("l7-s07","NS_Ember_Explosion in Play, about 0.3 s after the hit.",1280,720)]},
+
+    {t:"Bring the rest of the pack in", goal:"All eleven effects in Emberfall › FX, renamed to the pack convention and using pack materials only.", do:[
+      `Rebuild (or move and rename) your Module 1 effects into the pack: <code>NS_Ember_GroundSlam</code>, <code>NS_Ember_BladeTrail</code>, <code>NS_Ember_Rift</code>, <code>NS_Ember_Dissolve</code>.`,
+      `Add the four small ones, built the same way: <code>NS_Ember_HitSpark</code> (flash, sparks, puff), <code>NS_Ember_Fireball</code> (looping core + light, flames, ribbon trail, embers), <code>NS_Ember_FireballImpact</code> (flash, fire burst, smoke), <code>NS_Ember_AmbientEmbers</code> (GPU, box spawn, User.Density).`,
+      `Open every renderer and check its material is an <code>MI_Ember_…</code> or <code>M_Ember_…</code> asset from <b>your</b> pack folder, never one from Module 1's old folders or the engine.`,
+      `Give every system User.Tint (and User.Scale where it makes sense).`
+    ], see:`Eleven NS_Ember_ systems in FX. Right-click the Emberfall folder → <b>Migrate…</b> shows only Emberfall assets (plus engine references, which aren't copied).`,
+    shots:[SH("l9-s04","Migrate's asset report lists everything the pack depends on. Only /Game/Emberfall is in it.")]}
+  ],
+  check:`<b>You should have:</b> NS_Ember_FireLoop, NS_Ember_SmokeColumn and NS_Ember_Explosion working in a level with the baked flipbooks, smoke that erodes as it ages, and eleven NS_Ember_ systems in FX, each with User.Tint.`,
+  cards:[
+    ["Which two places must both say 8 × 8 for a flipbook?","The <b>SubUV Animation</b> module (Manual SubImage Size) and the <b>Sprite Renderer</b>'s Sub UV → Sub Image Size."],
+    ["What does SubUV Animation Mode Linear do?","Plays frames 0–63 across each particle's normalized age, once."],
+    ["Why use one immortal sprite for the fire's light?","One light instead of one per flame: lights are expensive."],
+    ["How does a buyer bend the smoke column?","Change the <b>Wind</b> User parameter on the placed effect; Acceleration Force is linked to User.Wind."],
+    ["How does Niagara drive the material's Erode?","The <b>Dynamic Material Parameters</b> module, with a curve over normalized age."],
+    ["Why erode instead of only fading alpha?","Erosion removes thin parts first, so smoke breaks up like real smoke; fading makes it uniformly see-through."],
+    ["How do you make a fire already burning when the level loads?","System <b>Warmup Time</b> (e.g. 1 s)."],
+    ["What makes the flicker never repeat visibly?","Two sines at unrelated speeds multiplied together (sin(23t) × sin(7.3t))."]
+  ],
+  boss:{
+    title:"Boss fight: a campfire variant",
+    brief:`Memory mode on, timer running. Duplicate nothing: build NS_Ember_Campfire from scratch, smaller and redder, with User.Tint and User.Scale, flipbook flames, a flickering light, embers and eroding smoke.`,
+    goal:35,
+    items:[["Flipbook flames playing all 64 frames","SubUV Animation and Sub UV both 8 × 8."],["One flickering light from an immortal sprite",""],["Smoke erodes over its life",""],["Tint and Scale change the whole effect from the level's Details",""]],
+    stretch:[["Random start frame","Use SubUV Animation's Random Start Frame so neighbouring flames never match."],["Wind on the fire","Link the flames' acceleration to a User.Wind too."]]
+  }
+},
+
+/* ---------------------------------------------------------------- L8 */
+{
+  id:"l8", num:8, mod:2, short:"Performance & hook-ups",
+  title:"Make it cheap, safe and easy to use",
+  kick:"Lesson 8 · CPU vs GPU, bounds, Effect Types, pooling, Blueprints, profiling",
+  time:"60–75 min",
+  intro:`A pack that looks great but tanks a buyer's frame rate gets refunded. This lesson adds what separates a professional pack from a hobby one: the right simulation target per emitter, fixed bounds, an <b>Effect Type</b> budget on every system, pooling for effects that fire often, ready-made Blueprints that show how to trigger everything, and a measured cost you can write on the product page.`,
+  use:`<b>Used for:</b> every shipped effect. Budgets and pooling are what let a game run forty impacts in one fight.`,
+  learn:["CPU vs GPU","Local space","Fixed bounds","Effect Types","Scalability tiers","Warmup","Pooling","Trigger Blueprint","Projectile Blueprint","stat Niagara"],
+  concepts:[
+    {h:"CPU or GPU?", p:"<b>CPU</b> for few-particle gameplay effects (impacts, fire, trails): cheap to start, can do collision and lights easily, can be read by Blueprints. <b>GPU</b> for thousands of particles (ambient embers, rift wisps, dissolve): huge counts, but they need <b>fixed bounds</b>. Epic notes a 1-particle GPU sim costs about as much as a 64-particle one, so tiny emitters belong on the CPU. Profile when unsure."},
+    {h:"Bounds decide visibility", p:"Unreal hides an effect when its bounding box leaves the screen. Dynamic bounds are recalculated every frame (CPU cost); GPU emitters can't calculate them at all. A fixed box that covers the whole effect is cheaper and always correct."},
+    {h:"Effect Types are budgets", p:"An <b>Effect Type</b> asset says, per quality level (Low → Cinematic), how far away an effect may be and how many copies may run. Excess copies are culled automatically. Three types cover this pack: Impact, Loop, Ambient."},
+    {h:"Pool what fires often", p:"Spawning a new component each hit costs time. <b>Pooling</b> keeps finished effects and reuses them. <b>Pool Prime Size</b> makes them up front, so the first hit doesn't hitch."}
+  ],
+  graphs:[],
+  steps:[
+    {t:"Pick CPU or GPU and fix the bounds", goal:"Every emitter on the right Sim Target; every GPU emitter (and the big smoke) with fixed bounds.", do:[
+      `In NS_Ember_FireLoop click the <b>Properties</b> row of <b>Flames</b>. In Details you'll see <b>Local Space</b>, <b>Sim Target</b> (CPUSim / GPUComputeSim) and <b>Calculate Bounds Mode</b>.`,
+      `Flames stays <b>CPUSim</b> with Local Space ticked. Set <b>Calculate Bounds Mode</b> to <b>Fixed</b> and open <b>Fixed Bounds</b>: Min (−150, −150, −50), Max (150, 150, 400).`,
+      `Go through every system with this table:` + TABLE(["Emitter","Sim Target","Bounds"],[["Ambient embers","GPU","Fixed ±1600 XY, −100…1400 Z"],["Rift wisps","GPU","Fixed"],["Dissolve embers","GPU","Fixed ±300, up to 400"],["Smoke column","CPU","Fixed (−500…1400, ±500, −100…2200)"],["Everything else","CPU","Dynamic is fine for short one-shots"]])
+    ], see:`No <i>"Missing fixed bounds"</i> warnings anywhere in the pack.`,
+    why:`Local Space makes particles move with the actor (a torch on a moving cart). The ambient embers fill a whole room, which is exactly what the GPU is good at.`,
+    shots:[SH("l8-s01","Flames → Properties: Local Space, CPUSim and Fixed bounds.")]},
+
+    {t:"Make three Effect Types", goal:"NET_Ember_Impact, NET_Ember_Loop and NET_Ember_Ambient in FX › EffectTypes, with limits per quality level.", do:[
+      `In <b>FX › EffectTypes</b> right-click → <b>FX</b> → <b>Niagara Effect Type</b>. Name it <code>NET_Ember_Impact</code> and open it.`,
+      `Set <b>Update Frequency</b> to <b>Low</b> and <b>Cull Reaction</b> to <b>Kill and Clear</b>.`,
+      `Open <b>System Scalability Settings</b> → <b>Settings</b>. Click <b>+</b> twice for two entries. Open <b>Index [0]</b>: click <b>Low</b> and <b>Medium</b> in the quality bar so only those are blue. Tick <b>Max Distance</b> <code>3000</code>, <b>Max Effect Type Instances</b> <code>12</code>, <b>Max System Instances</b> <code>6</code>.`,
+      `Open <b>Index [1]</b>: select <b>High</b>, <b>Epic</b>, <b>Cinematic</b>. Max Distance <code>6000</code>, Max Effect Type Instances <code>32</code>, Max System Instances <code>12</code>. Save.`,
+      `Make the other two the same way:` + TABLE(["Effect Type","Update Frequency","Cull Reaction","Low–Medium","High–Cinematic"],[
+        ["NET_Ember_Impact","Low","Kill and Clear","3000 · 12 · 6","6000 · 32 · 12"],
+        ["NET_Ember_Loop","Medium","Asleep and Clear","2500 · 6 · 4","5000 · 16 · 8"],
+        ["NET_Ember_Ambient","Medium","Asleep","3500 · 2 · 1","8000 · 4 · 2"]]) + `<small>Numbers are Max Distance · Max Effect Type Instances · Max System Instances.</small>`
+    ], see:`Two scalability entries, one for Low–Medium and one for High–Cinematic.`,
+    why:`On a low-end PC a fight spawning 40 impacts now draws at most 12, and nothing over 30 m away. A culled loop (Asleep and Clear) drops its particles and starts again when you come back. Plain <b>Asleep</b> keeps old particles, so an effect with one immortal glow sprite would come back with two.`,
+    shots:[SH("l8-s03","NET_Ember_Impact: Low and Medium selected in Index [0], with the distance and instance caps.")]},
+
+    {t:"Assign Effect Types and warmups", goal:"Every system points at one of the three Effect Types; loops warm up so they never pop in.", do:[
+      `Open each system, click its <b>Properties</b> row. In <b>System Properties → System</b> set <b>Effect Type</b>:` + TABLE(["Effect Type","Systems","Warmup"],[["NET_Ember_Impact","HitSpark, GroundSlam, FireballImpact, Explosion","0"],["NET_Ember_Loop","FireLoop, SmokeColumn, Rift, BladeTrail, Fireball, Dissolve","FireLoop 1 s, SmokeColumn 4 s, Rift 1 s"],["NET_Ember_Ambient","AmbientEmbers","3 s"]]),
+      `Set <b>Warmup Time</b> as in the table. Unreal shows the tick count and delta under it.`
+    ], see:`Effect Type filled in on all eleven systems.`,
+    pro:`Epic's Niagara best-practice page says to <b>avoid warmup</b> where you can: it simulates all those ticks in one frame when the effect activates. Keep it short and only on loops that are placed in the level and must not visibly start up (fire, smoke). Never warm up one-shots or anything spawned during gameplay.`,
+    shots:[SH("l8-s02","NS_Ember_FireLoop → System Properties: Effect Type NET_Ember_Loop, warmup about 1 s.")]},
+
+    {t:"LODs: fewer particles on lower quality levels", goal:"Every multi-particle emitter spawns 40% on Low, 65% on Medium, 85% on High and 100% on Epic/Cinematic; detail-only emitters are off on Low.", do:[
+      `Open <b>NS_Ember_FireLoop</b>. Click <b>Scalability</b> in the toolbar: the editor switches to Scalability mode (the toolbar now shows only a blue <b>Scalability</b> button, and a <b>Preview Low / Medium / High / Epic / Cinematic</b> bar appears over the graph).`,
+      `Click the <b>Flames</b> box. The <b>Scalability Context</b> panel (right) shows a quality bar and <b>Scalability Overrides</b>. Open <b>Scalability Overrides</b> and click the <b>+</b> next to <b>Overrides</b> three times.`,
+      `Open <b>Index [0]</b>. In its quality bar click <b>Medium</b>, <b>High</b>, <b>Epic</b> and <b>Cinematic</b> so only <b>Low</b> stays blue. Tick <b>Override Spawn Count Scale</b>, then tick <b>Spawn Count Scale</b> and type <code>0.4</code>.`,
+      `<b>Index [1]</b>: only <b>Medium</b> blue, the same ticks, <code>0.65</code>. <b>Index [2]</b>: only <b>High</b> blue, <code>0.85</code>. Epic and Cinematic get no override, so they keep 100%. Click <b>Scalability</b> again to go back to the normal toolbar, and save.`,
+      `Repeat on every emitter that spawns more than one particle (sparks, dust, fire, smoke, wisps, ambient embers). Leave single sprites, lights and ribbons alone: 40% of one particle is zero.` + TABLE(["System","Scaled emitters","Off on Low"],[
+        ["HitSpark","Sparks, Puff","–"],["GroundSlam","Sparks, Dust","Debris"],["FireballImpact","Fire, Smoke, Sparks","–"],["Explosion","Fireball, Smoke, Sparks","Debris"],
+        ["Fireball","Flames","Embers"],["BladeTrail","–","Embers"],["Rift","Wisps","–"],["FireLoop","Flames, Smoke","Embers"],
+        ["SmokeColumn","Smoke","–"],["AmbientEmbers","Embers","–"],["Dissolve","Embers","–"]]),
+      `<b>Off on Low:</b> still in Scalability mode, click the detail emitter (here <b>Embers</b>). In the top quality bar of <b>Scalability Context</b> click <b>Low</b> so it turns grey; the other four stay blue. The emitter now doesn't exist at all on Low.`,
+      `Test it: Play (${K("Alt","P")}), open the console (${K("`")}) and type <code>sg.EffectsQuality 0</code> (Low). Then type <code>fx.Niagara.DumpComponents</code> and read the counts in the Output Log. Repeat with <code>1</code>, <code>2</code>, <code>3</code>. Finish with <code>sg.EffectsQuality 3</code> so the editor goes back to Epic.`
+    ], see:`Particle counts drop with the quality level. In the worked example: Rift wisps 524 → 436 → 335 → 207, ambient embers 667 → 569 → 431 → 271 (Epic → High → Medium → Low), and debris and fire embers show <i>Disabled</i> on Low.`,
+    why:`Fab's VFX rule 4.3.3.6 asks that effects seen at several distances have <b>LODs</b>. The Effect Type decides <i>whether</i> an effect runs; scalability overrides decide <i>how much</i> of it runs. <code>sg.EffectsQuality</code> is the player's Effects setting: 0 Low, 1 Medium, 2 High, 3 Epic.`,
+    shots:[SH("l8-s08","Scalability mode, Flames selected: Index [0] is Low only with Spawn Count Scale 0.4."), SH("l8-s08b","Embers selected: Low is grey, so the emitter is off on Low.")]},
+
+    {t:"Pool the effects that fire often", goal:"HitSpark, FireballImpact and Explosion reuse finished components instead of creating new ones.", do:[
+      `Open <b>NS_Ember_HitSpark</b>, click <b>Properties</b>, and type <code>pool</code> in the Details search box.`,
+      `Under <b>Performance</b> leave <b>Max Pool Size</b> at <code>32</code> and set <b>Pool Prime Size</b> to <code>8</code>.`,
+      `Do the same with Pool Prime Size <code>4</code> on FireballImpact and <code>2</code> on Explosion.`,
+      `In Blueprints, spawn them with <b>Spawn System at Location</b> and leave <b>Pooling Method</b> on <b>Auto Release</b>.`
+    ], see:`Max Pool Size 32, Pool Prime Size 8 on HitSpark.`,
+    why:`Priming makes 8 hit sparks while the level loads, so the first eight hits in a fight cost nothing extra. That avoids the classic hitch on the very first impact.`,
+    shots:[SH("l8-s07","Searching \"pool\" in System Properties: Max Pool Size and Pool Prime Size.")]},
+
+    {t:"A trigger pedestal Blueprint (BP_Ember_FXPedestal)", goal:"A display pedestal that plays its effect, and re-fires it when the player walks in.", do:[
+      `In <b>Blueprints</b> make a Blueprint Class → <b>Actor</b> → <code>BP_Ember_FXPedestal</code>. Add components: <b>Static Mesh</b> <code>Pedestal</code> (SM_Ember_Pedestal), <b>Niagara Particle System</b> <code>FX</code>, <b>Text Render</b> <code>Label</code>, <b>Box Collision</b> <code>Trigger</code>.`,
+      `Add a float variable <code>RetriggerInterval</code> (default 3), click the eye icon to make it editable per instance.`,
+      `In the Event Graph right-click → <code>add custom event</code> → <b>Add Custom Event…</b> → name it <code>Retrigger</code>. Drag <b>FX</b> from the Components list into the graph (Get FX), drag off its pin → <code>reset system</code> → <b>Reset System</b>. Wire Retrigger → Reset System.`,
+      `Right-click → <b>Event ActorBeginOverlap</b>. Drag off its white pin → type <code>retrigger</code> → <b>Retrigger</b>. Click <b>Compile</b>, then <b>Save</b>.`,
+      `On BeginPlay, a <b>Set Timer by Function Name</b> (Function Name <code>Retrigger</code>, Time = RetriggerInterval, Looping) replays one-shots every few seconds when RetriggerInterval is above 0.`
+    ], see:`Compile succeeds with no warnings. In Play, walking onto a pedestal replays its effect.`,
+    pro:`Watch for a greyed-out event node with <i>"This node is disabled and will not be called"</i>: that's a placeholder, not your event. Delete it and add a real Custom Event.`,
+    shots:[SH("l8-s04","Overlap → Retrigger → Reset System, compiled successfully.")]},
+
+    {t:"A projectile that spawns its impact (BP_Ember_ProjectileLauncher)", goal:"A launcher that fires BP_Ember_Projectile on a timer; the projectile carries NS_Ember_Fireball and spawns NS_Ember_FireballImpact where it hits.", do:[
+      `<b>BP_Ember_Projectile</b>: a Sphere Collision root, a <b>Niagara Particle System</b> (NS_Ember_Fireball) and a <b>Projectile Movement</b> component (Initial Speed <code>1800</code>, Gravity Scale <code>0</code>).`,
+      `In its graph: <b>Event Hit</b> → <b>Spawn System at Location</b> (System Template <code>NS_Ember_FireballImpact</code>, Location = Hit Location) → <b>Destroy Actor</b>.`,
+      `<b>BP_Ember_ProjectileLauncher</b>: a Scene Component <code>Muzzle</code>, float <code>Interval</code> = 2. BeginPlay → <b>Set Timer by Function Name</b> (<code>Fire</code>, Interval, Looping). Custom event <b>Fire</b> → <b>Get World Transform</b> (Muzzle) → <b>SpawnActor BP_Ember_Projectile</b>. Compile, save.`
+    ], see:`In Play, a fireball flies from the launcher every 2 s and bursts on the wall.`,
+    why:`Buyers learn fastest from a working example they can copy. The projectile pattern (looping effect on the actor, one-shot spawned at the hit) is the one most games need.`,
+    shots:[SH("l8-s05","BP_Ember_ProjectileLauncher: BeginPlay timer → Fire → spawn the projectile at the Muzzle.")]},
+
+    {t:"Measure it: stat Niagara", goal:"A real number for the product page.", do:[
+      `Open your showcase map (Lesson 9) or any level with all effects running. Press ${K("Alt","P")} to Play.`,
+      `Press ${K("`")} (the key under Esc) to open the console, type <code>stat Niagara</code>, ${K("Enter")}.`,
+      `Read <b>InclusiveAvg</b> for <b>System Simulation Tick [CNC]</b> and <b>Niagara Manager Tick [GT]</b>, and add the top lines up. Type <code>stat none</code> to hide it.`,
+      `For a per-effect breakdown open <b>Tools → Debug → Niagara Debugger</b> while playing.`
+    ], see:`A green table of Niagara timings. With all eleven effects running here, the busiest lines are well under 1 ms.`,
+    why:`"Runs at about 0.5 ms of Niagara game-thread time with everything playing" is a statement buyers trust, as long as you say on what hardware.`,
+    pro:`<b>Scaling up later:</b> for hundreds of identical hits (bullets on walls), look at <b>Niagara Data Channels</b>: gameplay writes hit positions into a channel and <u>one</u> system draws them all, instead of one component per hit. They're a 5.x feature built for exactly that.`,
+    shots:[SH("l8-s06","stat Niagara in Play with the whole showcase running.")]}
+  ],
+  check:`<b>You should have:</b> right Sim Targets and fixed bounds on GPU emitters, three Effect Types assigned to all eleven systems, warmups on the loops, pooling primed on the frequent one-shots, two working example Blueprints, and a measured stat Niagara number.`,
+  cards:[
+    ["When do you choose GPU simulation?","Large counts (hundreds to thousands) that don't need collision with complex logic or Blueprint reads: ambient embers, wisps."],
+    ["Why do GPU emitters need fixed bounds?","The GPU can't report particle positions back to calculate bounds, so Unreal needs a box to know when the effect is on screen."],
+    ["What do Effect Type scalability settings limit?","Per quality level: max distance, max instances of this effect type, max instances of this system (plus visibility culling and budgets)."],
+    ["Kill and Clear vs Asleep and Clear?","Kill and Clear removes culled one-shots for good; Asleep and Clear clears a culled loop and restarts it when it's back in range (plain Asleep keeps old particles, which duplicates immortal sprites)."],
+    ["How do you give a Niagara effect LODs?","Toolbar <b>Scalability</b> mode, then each emitter's <b>Scalability Overrides</b>: Spawn Count Scale per quality level (e.g. Low 0.4, Medium 0.65, High 0.85), and the emitter's quality bar with Low greyed out for detail-only emitters."],
+    ["What does Pool Prime Size do?","Creates that many pooled components in advance so the first uses don't hitch."],
+    ["Which console command shows Niagara timings?","<code>stat Niagara</code> (in Play)."],
+    ["What are Niagara Data Channels for?","Sending many gameplay events (e.g. hit positions) to one system that draws them all, instead of a component per event."],
+    ["What does Local Space do?","Particles move with the component, e.g. fire on a moving cart."]
+  ],
+  boss:{
+    title:"Boss fight: the budget pass",
+    brief:`Memory mode on. Make a fresh Effect Type NET_Test with two scalability entries, assign it to three effects, prime pooling on one, and measure stat Niagara before and after spawning 30 copies.`,
+    goal:20,
+    items:[["Two quality entries with distance and instance caps",""],["Assigned to three systems",""],["Pooling primed on a one-shot",""],["Numbers written down before and after",""]],
+    stretch:[["Significance","Add a Significance Handler (Distance) and limit to the 4 closest loops."],["Insights","Capture a Trace and find the Niagara tracks in Unreal Insights."]]
+  }
+},
+
+/* ---------------------------------------------------------------- L9 */
+{
+  id:"l9", num:9, mod:2, short:"Package & present",
+  title:"Package and present the pack for Fab",
+  kick:"Lesson 9 · Showcase map, validation, migrate test, thumbnails, preview video, docs",
+  time:"60–90 min",
+  intro:`The last 10% is what buyers actually see first: an overview map that shows every effect on its own labelled pedestal, clean thumbnails, a short video, a clear description, and a pack that opens in a blank project with zero errors. Fab requires an overview map for VFX packs and a preview video on the product page, and rejects packs with unused folders or redirectors.`,
+  use:`<b>Used for:</b> any marketplace listing, a portfolio piece, or handing effects to another team.`,
+  learn:["Overview map","Thumbnails","Validate Assets","Redirectors","Migrate test","Level Sequence","Movie Render Queue","README + version notes"],
+  concepts:[
+    {h:"The overview map sells it", p:"Every effect on a labelled pedestal, in a dark scene where light and glow read well, with nothing a buyer can't open. Lighting built, no errors in the log."},
+    {h:"Test like a buyer", p:"Migrate the pack folder into a <b>brand-new blank project</b> (that project, zipped with only Config, Content and the .uproject, is what you upload), open the map, press Play. If anything references something outside your folder, it shows up here, not in a refund request."},
+    {h:"Video is required", p:"Fab wants a preview video on the product page. A 10–30 s Level Sequence through the overview map, rendered with Movie Render Queue at 1920 × 1080, is enough."},
+    {h:"Say exactly what's in it", p:"Effect list, engine version, what's exposed (Tint, Scale, Wind, Density), performance numbers and hardware, and version notes. Clear docs cut support emails."}
+  ],
+  graphs:[],
+  steps:[
+    {t:"Build the overview map (L_Ember_Showcase)", goal:"A dark map in Emberfall › Maps with every effect on its own labelled pedestal.", do:[
+      `In <b>Maps</b>: <b>File → New Level → Empty Level</b>, save as <code>L_Ember_Showcase</code>.`,
+      `Add a large floor (Plane, scale 120), a <b>Directional Light</b> (intensity 2, pitch −40), <b>Sky Light</b>, <b>Sky Atmosphere</b>, <b>Exponential Height Fog</b> and a <b>Post Process Volume</b> with <b>Infinite Extent (Unbound)</b> ticked and manual exposure.`,
+      `Drag in one <b>BP_Ember_FXPedestal</b> per effect in rows 12 m apart. For each: set <b>FX → Asset</b> to the effect, type its name in <b>Label → Text</b>, and set <b>RetriggerInterval</b> (3 for one-shots, 0 for loops).`,
+      `Add <b>NS_Ember_AmbientEmbers</b> in the middle, BP_Ember_ProjectileLauncher aimed at a wall, BP_Ember_Dissolver on its pedestal, a big Text Render title, and put them all in an Outliner folder <code>Showcase</code>. Save.`
+    ], see:`A dark night scene with glowing pedestals, a rift, fire, smoke, a dissolving rock and embers in the air.`,
+    shots:[SH("l9-s01","L_Ember_Showcase: the rift, the dissolving rock, the fire loop and the smoke column, with embers everywhere.")]},
+
+    {t:"Thumbnails that show the effect", goal:"Each NS_ asset's Content Browser thumbnail shows the effect, not a grey icon.", do:[
+      `Open a system. In the <b>Preview</b> viewport, click the view-options icon (top-right of the preview) and untick <b>Background</b> so the effect sits on plain grey.`,
+      `Scrub or wait until the effect looks its best, frame it with the mouse (right-drag to orbit, wheel to zoom).`,
+      `Click <b>Thumbnail</b> in the toolbar. Save the system. Repeat for every NS_ asset.`
+    ], see:`The Content Browser shows little pictures of each effect.`,
+    why:`Buyers browse your folder in the Content Browser. Thumbnails make it feel finished.`,
+    shots:[SH("l9-s02","The Thumbnail button captures the current preview into the asset's thumbnail.")]},
+
+    {t:"Validate, fix redirectors, remove leftovers", goal:"Zero validation errors, zero redirectors, no empty or unused folders or assets in the pack.", do:[
+      `In the Content Browser right-click the <b>Emberfall</b> folder → <b>Update Redirector References</b>. This removes the hidden redirector files that renames and moves leave behind.`,
+      `Right-click <b>Emberfall</b> again → <b>Validate Assets in Folder</b>. Read the Message Log: it should end with no errors or warnings.`,
+      `Delete any empty folder and any asset nothing uses (right-click an asset → <b>Reference Viewer</b> shows what uses it).`,
+      `Open the showcase map and check the <b>Output Log</b> for red or yellow lines after pressing Play.`
+    ], see:`Validation passes; Message Log shows no errors.`,
+    shots:[SH("l9-s03","Right-click the pack folder → Validate Assets in Folder. (Update Redirector References is in the same menu.)")]},
+
+    {t:"Migrate test into a blank project", goal:"The pack opens in a brand-new blank project with no missing references.", do:[
+      `Make a new <b>Blank</b> project (no Starter Content), named the same as your pack folder, e.g. <code>Emberfall</code>, in the same engine version.`,
+      `In your work project right-click <b>Emberfall</b> → <b>Migrate…</b>. The <b>Asset Report</b> lists everything that will be copied: check it's all under /Game/Emberfall (the Engine branch is <i>not</i> copied; those assets exist in every project).`,
+      `Click OK and choose the new project's <b>Content</b> folder.`,
+      `Open the new project, open <b>L_Ember_Showcase</b>, press Play, then run Validate Assets in Folder there too.`
+    ], see:`Everything works in the blank project and its Content holds only the Emberfall folder.`,
+    why:`This is the exact layout Fab asks for: a project whose Content contains one folder named after the product, and nothing else.`,
+    shots:[SH("l9-s04","Migrate's Asset Report: only /Game/Emberfall plus engine references, which aren't copied.")]},
+
+    {t:"A camera move for the preview video", goal:"LS_Ember_Showreel: a 12-second dolly past the pedestals.", do:[
+      `In the Level Editor toolbar click the <b>clapperboard</b> icon → <b>Add Level Sequence</b> → save as <code>LS_Ember_Showreel</code> in Maps.`,
+      `In the Sequencer click the camera icon (<b>Create a new camera</b>). A Cine Camera Actor is added with a <b>Camera Cut</b> track.`,
+      `Set the sequence end to frame <code>360</code> (30 fps = 12 s). With the camera piloted, put keys (${K("S")} on the Transform track or the + key buttons) at frames 0, 90, 180, 270, 360, moving along the row of pedestals.`,
+      `Scrub to check that every effect is in shot for a moment and nothing pops in or out.`
+    ], see:`Scrubbing the timeline moves the viewport past the pedestals.`,
+    shots:[SH("l9-s05","LS_Ember_Showreel: camera binding with transform keys and the camera cut.")]},
+
+    {t:"Render it with Movie Render Queue", goal:"A 1920 × 1080 MP4 preview video.", do:[
+      `<b>Window → Cinematics → Movie Render Queue</b>. Click <b>+ Add</b> and pick LS_Ember_Showreel.`,
+      `Click the job's <b>Unsaved Config</b>. Under <b>Output</b> set Output Resolution <code>1920 × 1080</code>. Add <b>Settings → PNG Sequence</b> (or another image format). Under <b>Anti-aliasing</b> raise <b>Engine Warm Up Count</b> to <code>60</code> so effects are already running at frame 1.`,
+      `Click <b>Render (Local)</b>. Frames go to your project's <i>Saved/MovieRenders</i>.`,
+      `Turn the frames into an MP4 with any video tool, e.g. <code>ffmpeg -framerate 30 -i LS_Ember_Showreel.%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18 Emberfall_Showreel_1080p.mp4</code>.`
+    ], see:`A 12-second 1080p video of the pack, a few MB.`,
+    why:`Without warm-up frames, particle systems start empty on frame 1 and the video opens on a blank scene. Fab's limits: video 1920 × 1080, up to 300 MB, MP4/MOV/WEBM.`,
+    shots:[SH("l9-s06","Movie Render Queue with the showreel job, ready for Render (Local).")]},
+
+    {t:"Write the README and version notes", goal:"A short document buyers read before they open anything.", do:[
+      `Write a README (and paste the same text into the Fab description): what's inside (a table of the eleven effects, one line each), the engine version it was built and tested in, how to use an effect (drag it in, or Spawn System at Location), what each User parameter does, and the stat Niagara number <b>with the hardware</b>.`,
+      `Add <b>version notes</b>: "1.0 (UE 5.8): first release." Fab lets you upload per engine version when functionality differs; keep one line per version.`,
+      `Take 5+ gallery images at 1920 × 1080 (each under 3 MB) from the showcase map: wide shot, close-ups of the best effects, and one image of the Content Browser folder.`
+    ], see:`README, gallery images and the video in a folder outside the project.`,
+    shots:[SH("l9-s04","The migrate report doubles as your contents list: every asset that ships.")]}
+  ],
+  check:`<b>You should have:</b> L_Ember_Showcase with every effect on a labelled pedestal, thumbnails, a clean validation, a blank project containing only /Content/Emberfall that plays without errors, a 1080p preview video, gallery images and a README with version notes.`,
+  cards:[
+    ["What does Fab require for a VFX pack's map?","An overview/demo map that shows the effects, with no errors."],
+    ["How do you remove redirectors?","Right-click the folder → <b>Update Redirector References</b>."],
+    ["Why migrate into a blank project before upload?","To prove nothing references assets outside the pack folder, the way a buyer will open it."],
+    ["What do engine warm-up frames do in Movie Render Queue?","Run the level before recording, so particle systems are already going at frame 1."],
+    ["Fab's gallery image and video sizes?","Images 1920 × 1080 under 3 MB each; video 1920 × 1080, up to 300 MB, MP4/MOV/WEBM."],
+    ["What must the README state about performance?","The measured number and the hardware and engine version it was measured on."],
+    ["Where does the Engine branch in the Migrate report go?","Nowhere: engine content isn't copied; every project already has it."]
+  ],
+  boss:{
+    title:"Boss fight: ship it",
+    brief:`No memory mode for this one. Do the full release pass on your pack: validate, update redirectors, migrate into a blank project, play the showcase there, render the showreel and fill in the 📦 Pack checklist.`,
+    goal:45,
+    items:[["Migrate test passes with no missing references",""],["Showreel MP4 at 1920 × 1080",""],["README with effects table, engine version, User params, performance + hardware",""],["Every item on the 📦 Pack checklist ticked",""]],
+    stretch:[["Second engine version","Open the pack in the next engine version, fix anything that changed, and note it in the version notes."],["Short trailer","Cut a 30 s trailer with music you made yourself."]]
+  }
+}
+];
+LESSONS.push(...M2);
+
+const MODULES = {1:"Foundations by real effects", 2:"Ship a VFX pack"};
+const MODULE_INTRO = {2:"One real product, start to finish: <b>Emberfall VFX</b>, eleven fire and ember effects. You build the pack's folder structure and one master material, bake your own smoke and fire flipbooks with the Niagara Baker, build fire, smoke and an explosion on them, add budgets, pooling and example Blueprints, and finish with an overview map, a preview video and a pack that opens cleanly in a blank project, ready for Fab. Every step has a real Unreal Engine 5.8 screenshot."};
+
+const PACK = {
+  mod:2, short:"Pack checklist",
+  title:"Emberfall VFX: ship it",
+  intro:`Tick these off before you upload. The rules come from Fab's technical requirements and publishing guide (Fab's page last updated 21 September 2026, read November 2026). They change, so open the sources below and re-check before you submit.`,
+  sections:[
+    {h:"Contents", tag:"what the buyer gets", items:[
+      ["11 Niagara systems, named NS_Ember_…","HitSpark, GroundSlam, FireballImpact, Explosion, Fireball, BladeTrail, Rift, FireLoop, SmokeColumn, AmbientEmbers, Dissolve."],
+      ["2 baked flipbooks (T_Ember_Smoke_8x8, T_Ember_Fire_8x8), 2048², Effects texture group","Made with the Niagara Baker from your own source simulations."],
+      ["2 material functions, the master M_Ember_Particle + 5 special masters, 12 instances",""],
+      ["2 meshes (rock chunk, pedestal), 3 Effect Types, 5 example Blueprints, the LS_Ember_Showreel sequence",""],
+      ["Overview map L_Ember_Showcase with every effect on a labelled pedestal","Fab requires an overview map for VFX products.", SH("l9-s01","The overview map.")]
+    ]},
+    {h:"Project & folder rules", tag:"Fab technical requirements", items:[
+      ["One top folder in Content named after the product: /Content/Emberfall","No other folders or files directly under Content."],
+      ["The zip holds one content-only project: Config, Content and the .uproject only","No Binaries, Intermediate, Saved, Plugins or C++. Plugins the pack doesn't use set to Enabled=False in the .uproject."],
+      ["Paths at most 140 characters; English letters, numbers and underscores only; no vague folder names (Assets, NewFolder)",""],
+      ["No Level Blueprints and no required .ini changes (asset-pack rule)","The showcase uses Blueprint actors, not the Level Blueprint."],
+      ["Overview map: lighting built (or only Movable lights) and no errors",""],
+      ["No empty folders, no unused assets, no redirectors","Update Redirector References, then Validate Assets in Folder.", SH("l9-s03","Validate Assets in Folder.")],
+      ["Migrate test: opens and plays in a blank project with no missing references","", SH("l9-s04","Only /Game/Emberfall in the migrate report.")],
+      ["No errors or warnings in the Output Log when the overview map plays",""],
+      ["Naming follows Epic's prefixes (NS_, M_, MI_, MF_, T_, SM_, BP_, L_)",""],
+      ["Supports at least one of the three latest engine versions, and the first submission includes the latest","Separate uploads per engine version if behaviour differs."],
+      ["Textures power-of-two (2048² here), effects use material instances",""],
+      ["No emitter named \"Particle Emitter\" (unless the system has only one)","Every emitter here has a job name: Flash, Sparks, Smoke…"]
+    ]},
+    {h:"Performance", tag:"what makes it professional", items:[
+      ["Every system has an Effect Type (Impact / Loop / Ambient)",""],
+      ["Effects seen at several distances scale down (LODs): spawn-count scale per quality level, detail emitters off on Low","Fab VFX rule 4.3.3.6. Checked with sg.EffectsQuality 0–3 and fx.Niagara.DumpComponents."],
+      ["Warmup only where needed (placed loops), kept short","Epic's best practice: avoid warmup."],
+      ["GPU emitters use fixed bounds; no bounds warnings",""],
+      ["Frequent one-shots pooled with a primed pool",""],
+      ["stat Niagara measured with everything running, and written in the description with the hardware",""]
+    ]},
+    {h:"Listing", tag:"fab.com product page", items:[
+      ["Preview video: 1920 × 1080, up to 300 MB, MP4 / MOV / WEBM","Required on the product page.", SH("l9-s06","Movie Render Queue job.")],
+      ["Gallery: at least 1920 × 1080, each under 3 MB, 25 MB total","Wide shot, close-ups, the folder."],
+      ["Documentation in English (web page, txt/pdf, video or in-editor)",""],
+      ["Licence: Standard (Personal + Professional tiers) for a paid listing; CC-BY only for free","Fab's revenue share is 88% to the seller."],
+      ["Description: effects table, User parameters (Tint, Scale, Wind, Density), performance + hardware, engine version, version notes",""],
+      ["Everything original: no Starter Content, no marketplace or third-party assets; nothing GPL/AGPL/LGPL/CC BY-SA inside","Declare any third-party fonts, graphics or sounds."],
+      ["AI: tag the listing CreatedWithAI if a material portion is AI-generated","Fab distribution agreement §18k."]
+    ]},
+    {h:"Before you click submit", items:[
+      ["Re-read Fab's current rules (links below)",""],
+      ["Project under 15 GB unzipped (this pack is about 18 MB of content)",""],
+      ["Open the migrated project one last time and press Play",""]
+    ]}
+  ],
+  sources:[
+    ["Fab technical requirements","https://www.fab.com/technical-requirements"],
+    ["Fab: asset file format and structure requirements","https://dev.epicgames.com/documentation/en-us/fab/asset-file-format-and-structure-requirements-in-fab"],
+    ["Fab: publishing assets for sale or free download","https://dev.epicgames.com/documentation/fab/publishing-assets-for-sale-or-free-download-in-fab"],
+    ["Fab: licences and pricing","https://dev.epicgames.com/documentation/en-us/fab/licenses-and-pricing-in-fab"],
+    ["Fab distribution agreement (revenue share, AI tagging)","https://www.fab.com/distribution-agreement"],
+    ["Epic: recommended asset naming conventions","https://dev.epicgames.com/documentation/en-us/unreal-engine/recommended-asset-naming-conventions-in-unreal-engine-projects"],
+    ["Epic: Niagara scalability and best practices","https://dev.epicgames.com/documentation/en-us/unreal-engine/scalability-and-best-practices-for-niagara"],
+    ["Epic: performance budgeting with Effect Types","https://dev.epicgames.com/documentation/unreal-engine/performance-budgeting-using-effect-types-in-niagara-for-unreal-engine"],
+    ["Epic: Niagara Flipbook Baker quick start","https://dev.epicgames.com/documentation/en-us/unreal-engine/niagara-flipbook-baker-quick-start-guide-in-unreal-engine"]
+  ]
+};
 
 /* ===================== STATE + SAVE ===================== */
 let S = {done:{}, notes:{}, memory:false, timers:{}};
@@ -1211,9 +1862,13 @@ function keysFor(L){
   return k;
 }
 function pct(L){ const k = keysFor(L); return k.filter(x=>S.done[x]).length / k.length; }
+const packKeys = ()=> hasPack() ? PACK.sections.flatMap((sec,si)=>sec.items.map((_,i)=>`pack.${si}.${i}`)) : [];
 function refreshProgress(){
   let all = [], got = 0;
   LESSONS.forEach(L=>{ const k = keysFor(L); all = all.concat(k); });
+  all = all.concat(packKeys());
+  const pa = document.querySelector(`nav a[data-l="pack"]`);
+  if(pa){ const pk = packKeys(), pq = pk.filter(x=>S.done[x]).length / pk.length; pa.querySelector(".bar i").style.width = (pq*100)+"%"; pa.classList.toggle("done", pq===1); }
   got = all.filter(x=>S.done[x]).length;
   const p = all.length ? got/all.length : 0;
   document.getElementById("ringArc").style.strokeDashoffset = 138.2 * (1 - p);
@@ -1232,14 +1887,22 @@ function refreshProgress(){
 }
 
 /* ===================== NAV ===================== */
+const modsUsed = ()=>[...new Set(LESSONS.map(L=>L.mod||1))].sort((a,b)=>a-b);
+const hasPack = ()=> typeof PACK !== "undefined" && PACK;
 function buildNav(){
   let h = `<div class="grp">Start</div><a class="l" href="#home" data-l="home"><span class="nb">★</span><span>How this works + shortcuts</span></a>`;
-  h += `<div class="grp">Module 1 · Foundations by real projects</div>`;
-  LESSONS.forEach(L=>{
-    h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+  modsUsed().forEach(m=>{
+    h += `<div class="grp">Module ${m} · ${MODULES[m]||""}</div>`;
+    LESSONS.filter(L=>(L.mod||1)===m).forEach(L=>{
+      h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+    });
+    if(hasPack() && PACK.mod === m) h += `<a class="l" href="#pack" data-l="pack"><span class="nb">📦</span><span style="flex:1">${PACK.short}<div class="bar"><i></i></div></span></a>`;
   });
-  h += `<div class="grp">Coming next</div>`;
-  ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+2}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  if(ROADMAP.length){
+    h += `<div class="grp">Coming next</div>`;
+    const next = Math.max(...modsUsed()) + 1;
+    ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+next}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  }
   document.getElementById("nav").innerHTML = h;
 }
 
@@ -1320,7 +1983,7 @@ function homeView(){
     <div class="kick">Fast track · Unreal Engine ${COURSE.engine} · module names checked in a 5.8 editor</div>
     <h2>Niagara VFX by building effects you'd actually ship</h2>
     <p>No "fountain of sprites" exercises. Every lesson is a layered production effect: a ground-slam impact, an energy blade trail, a rift tearing open the floor, then a dissolve effect turned into a reusable, budgeted tool driven by Blueprints. Every material is built from maths nodes by you, with no packs and no Starter Content.</p>
-    <div class="chips"><span class="chip g">4 lessons in Module 1</span><span class="chip">~5–6 hours total</span><span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">4 boss fights</span></div>
+    <div class="chips">${modsUsed().map(m=>`<span class="chip g">Module ${m}: ${LESSONS.filter(L=>(L.mod||1)===m).length} lessons</span>`).join("")}<span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">${LESSONS.length} boss fights</span>${hasPack()?`<span class="chip g">📦 ends in a sellable pack</span>`:""}</div>
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn pri" href="#${startL.id}">${pct(startL)>0?"Continue":"Start"}: Lesson ${startL.num} →</a><button class="btn" onclick="openReview()">Run the review deck</button></div>
   </section>
 
@@ -1333,13 +1996,16 @@ function homeView(){
   </div>
   <p class="cap" style="margin-top:12px">🧠 <b>Memory mode</b> (sidebar) blurs every graph and step detail. Click a blurred block to peek at just that one. Lesson 2 and 3 reuse the M_FX_Glow material from Lesson 1, so do them in order. Your ticks, notes and boss times save automatically: in this browser, or to <code>progress.json</code> when you run the page with <code>serve.py</code>.</p>
 
-  <h3 class="sec">Module 1 <span class="tag">foundations by real projects</span></h3>
+  ${modsUsed().map(m=>`
+  <h3 class="sec">Module ${m} <span class="tag">${MODULES[m]||""}</span></h3>
+  ${MODULE_INTRO[m]?`<p class="cap">${MODULE_INTRO[m]}</p>`:""}
   <div class="road">
-    ${LESSONS.map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
-  </div>
+    ${LESSONS.filter(L=>(L.mod||1)===m).map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
+    ${hasPack() && PACK.mod===m ? `<a class="mod" href="#pack" style="color:inherit;border-color:rgba(255,209,102,.45)"><div class="mk" style="color:#ffd166">📦 Final deliverable</div><h4>${PACK.title}</h4><ul>${PACK.sections.map(s=>`<li>${s.h}</li>`).join("")}</ul></a>`:""}
+  </div>`).join("")}
 
-  <h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
-  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+  ${ROADMAP.length?`<h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
+  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>`:""}
 
   <h3 class="sec">The basic moves <span class="tag">read once before Lesson 1</span></h3>
   ${basicsHTML()}
@@ -1374,8 +2040,10 @@ function lessonView(L){
   <h3 class="sec">Core ideas <span class="tag">read first</span></h3>
   <div class="concepts">${L.concepts.map(c=>`<div class="concept"><h4>${c.h}</h4><p>${c.p}</p></div>`).join("")}</div>
 
-  <h3 class="sec">The diagrams <span class="tag">what you're building</span></h3>
-  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}
+  ${L.layout?`<h3 class="sec">The trim sheet layout <span class="tag">your kit's map</span></h3><div class="concept">${L.layout}</div>`:""}
+  ${L.graphs&&L.graphs.length?`<h3 class="sec">The diagrams <span class="tag">what you're building</span></h3>
+  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}`:""}
+  ${(L.mod||1)>1?`<p class="cap" style="margin-top:14px">📸 Every step below has a real Unreal Engine 5.8 screenshot. Yellow boxes name the part of the editor that step uses. Click a picture to enlarge it.</p>`:""}
 
   <h3 class="sec">Build it <span class="tag">tick when it works in Unreal</span></h3>
   <details class="basics" ${L.num===1?"open":""}><summary>🖱️ The basic moves: Content Browser, material editor, Niagara stack, Blueprints (read once)</summary>${basicsHTML()}</details>
@@ -1388,6 +2056,7 @@ function lessonView(L){
         ${s.goal?`<div class="goal"><b>Goal:</b> ${s.goal}</div>`:""}
         ${s.hl?`<button class="btn where" data-hl="${s.hl.g}|${s.hl.n.join(",")}">📍 Show where this goes</button>`:""}
         <ol class="do">${s.do.map(x=>`<li>${x}</li>`).join("")}</ol>
+        ${(s.shots||[]).map(shotHTML).join("")}
         ${s.see?`<div class="see"><b>You should see:</b> ${s.see}</div>`:""}
         ${s.why?`<div class="why">${s.why}</div>`:""}${s.pro?`<div class="pro">${s.pro}</div>`:""}
       </div></div>
@@ -1420,8 +2089,25 @@ function lessonView(L){
 
   <div class="navrow">
     ${prev?`<a class="btn" href="#${prev.id}">← Lesson ${prev.num}: ${prev.short}</a>`:`<a class="btn" href="#home">← Overview</a>`}
-    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:`<a class="btn pri" href="#home">Module 1 done → Overview</a>`}
+    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:hasPack()?`<a class="btn pri" href="#pack">📦 ${PACK.short} →</a>`:`<a class="btn pri" href="#home">Course done → Overview</a>`}
   </div>`;
+}
+
+/* ===================== SCREENSHOTS =====================
+   step.shots = [{src:"shots/l5-s03.jpg", w:1600, h:900, cap:"…", marks:[[x0,y0,x1,y1,"3"], …]}]
+   marks are pixel boxes in the original image (top-left origin); the label usually names the action number. */
+function shotHTML(s){
+  const W = s.w || 1600, H = s.h || 900;
+  const marks = (s.marks||[]).map(m=>{
+    const [x0,y0,x1,y1,lab] = m;
+    return `<span class="mk" style="left:${(x0/W*100).toFixed(2)}%;top:${(y0/H*100).toFixed(2)}%;width:${((x1-x0)/W*100).toFixed(2)}%;height:${((y1-y0)/H*100).toFixed(2)}%">${lab?`<b>${esc(lab)}</b>`:""}</span>`;
+  }).join("");
+  return `<figure class="shot"><div class="sw" data-full="${esc(s.src)}"><img src="${esc(s.src)}" width="${W}" height="${H}" loading="lazy" alt="${esc(s.cap||"Screenshot")}">${marks}</div>${s.cap?`<figcaption>${s.cap}</figcaption>`:""}</figure>`;
+}
+function openShot(sw){
+  const lb = document.getElementById("lightbox");
+  lb.querySelector(".lbin").innerHTML = sw.outerHTML;
+  lb.classList.add("on");
 }
 
 function basicsHTML(){
@@ -1443,6 +2129,23 @@ function showWhere(btn){
   back.textContent = "↩ Back to step " + btn.closest(".step").querySelector(".st small").textContent;
   back.onclick = ()=>{ btn.closest(".step").scrollIntoView({block:"center", behavior:"smooth"}); back.remove(); };
   clearTimeout(hlT); hlT = setTimeout(()=>nodes.forEach(n=>n.classList.remove("hl")), 6000);
+}
+
+/* ===================== PACK CHECKLIST =====================
+   PACK = {mod:2, short:"Pack checklist", title:"…", intro:"html", sections:[{h:"…", items:[["label","detail html", shot?]]}], sources:[["label","url"]]} */
+function packView(){
+  const ck = k => S.done[k] ? "checked" : "";
+  return `
+  <section class="hero" style="background:radial-gradient(1200px 300px at 0% 0%,rgba(255,209,102,.13),transparent 60%),var(--panel)">
+    <div class="kick" style="color:#ffd166">📦 Final deliverable · Module ${PACK.mod}</div>
+    <h2>${PACK.title}</h2>
+    <p>${PACK.intro}</p>
+  </section>
+  ${PACK.sections.map((sec,si)=>`
+    <h3 class="sec">${sec.h}${sec.tag?` <span class="tag">${sec.tag}</span>`:""}</h3>
+    <div class="boss" style="padding-bottom:12px">${sec.items.map((it,i)=>{const k=`pack.${si}.${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}">${it[0]}${it[1]?`<small>${it[1]}</small>`:""}</label></div>${it[2]?shotHTML(it[2]):""}`;}).join("")}</div>`).join("")}
+  ${PACK.sources&&PACK.sources.length?`<h3 class="sec">Sources <span class="tag">rules change: check before you submit</span></h3><div class="concept"><ul style="margin:0;padding-left:18px">${PACK.sources.map(s=>`<li><a href="${esc(s[1])}" target="_blank" rel="noopener">${s[0]}</a></li>`).join("")}</ul></div>`:""}
+  <div class="navrow"><a class="btn" href="#home">← Overview</a></div>`;
 }
 
 /* ===================== TIMER ===================== */
@@ -1473,8 +2176,9 @@ function route(){
   const bb = document.getElementById("backBtn"); if(bb) bb.remove();
   const id = (location.hash || "#home").slice(1);
   const L = LESSONS.find(x=>x.id===id);
-  main.innerHTML = L ? lessonView(L) : homeView();
-  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:"home")));
+  const isPack = id === "pack" && hasPack();
+  main.innerHTML = L ? lessonView(L) : isPack ? packView() : homeView();
+  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:isPack?"pack":"home")));
   document.getElementById("side").classList.remove("open");
   if(L){
     document.title = `L${L.num} ${L.short} · Niagara VFX Fast Track`;
@@ -1503,6 +2207,9 @@ document.addEventListener("change", e=>{
   if(t.checked && st){ const n = st.nextElementSibling; if(n && !n.classList.contains("done")) n.scrollIntoView({block:"nearest", behavior:"smooth"}); }
 });
 document.addEventListener("click", e=>{
+  if(e.target.closest("#lightbox")){ document.getElementById("lightbox").classList.remove("on"); return; }
+  const sw = e.target.closest(".shot .sw");
+  if(sw && (!document.body.classList.contains("memory") || sw.closest(".mem.peek"))){ openShot(sw); return; }
   const wb = e.target.closest(".where");
   if(wb && (!document.body.classList.contains("memory") || wb.closest(".mem.peek"))){ showWhere(wb); return; }
   const mem = e.target.closest(".mem");

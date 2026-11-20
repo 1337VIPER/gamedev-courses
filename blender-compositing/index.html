@@ -179,6 +179,17 @@ details.basics summary{cursor:pointer;padding:12px 0;font-weight:650;color:#fff}
 .bcard{background:#1d1f23;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:#c6c9d0}
 .bcard > b{display:block;color:#fff;margin-bottom:4px}
 .bcard > b i{font-style:normal;color:var(--acc);margin-right:6px}
+/* screenshots */
+figure.shot{margin:10px 0 6px}
+.shot .sw{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:zoom-in;background:#111;line-height:0}
+.shot img{display:block;width:100%;height:auto}
+.shot .mk{position:absolute;border:2.5px solid #ffd166;border-radius:5px;box-shadow:0 0 0 2px rgba(0,0,0,.55),0 0 18px rgba(255,209,102,.35);pointer-events:none}
+.shot .mk b{position:absolute;top:-11px;left:-11px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#ffd166;color:#1a1400;font:800 12px/22px system-ui,sans-serif;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.shot figcaption{font-size:.8rem;color:var(--mut);margin-top:5px}
+#lightbox{position:fixed;inset:0;background:rgba(5,6,8,.9);display:none;align-items:center;justify-content:center;z-index:60;padding:16px;cursor:zoom-out}
+#lightbox.on{display:flex}
+#lightbox .lbin{width:min(1600px,100%)}
+#lightbox .sw{cursor:zoom-out}
 .shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .shots figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .shots img{display:block;width:100%;height:auto}
@@ -236,6 +247,7 @@ body.memory .memnote{display:block}
 <main id="main"></main>
 </div>
 
+<div id="lightbox" aria-hidden="true"><div class="lbin"></div></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mq">
   <div class="mbox" id="mbox">
     <div class="from" id="mfrom"></div>
@@ -900,9 +912,8 @@ const LESSONS = [
 ];
 
 const ROADMAP = [
-  {m:"Module 2 · Multi-pass power", items:["Multilayer EXR + File Output: render once, regrade forever","Light Groups: relight a finished render per lamp (Cycles)","Vector Blur: motion blur in post from the Vector pass"]},
   {m:"Module 3 · Keying and tracking your own footage", items:["Key a phone video of yourself (Keying, Despill, Dilate/Erode cleanup)","Track it and pin a CG object onto it (Movie Clip, Plane Track Deform)"]},
-  {m:"Module 4 · Stylised and game looks", items:["Pixel-art and dithered retro filters","Toon shading from the Diffuse/Shadow passes","Kuwahara oil-paint and watercolour bleeding"]},
+  {m:"Module 4 · Stylised and game looks", items:["Pixel-art and dithered retro filters","Toon shading from the Diffuse and Shadow passes","Oil-paint and watercolour bleeding"]},
   {m:"Module 5 · Pipeline", items:["Compositor node groups as Video Sequencer strip modifiers (5.3)","Batch-finishing a turntable or trailer sequence"]}
 ];
 
@@ -921,6 +932,495 @@ const KEYS = [
   ["Drag socket to Group Input's empty dot","Expose it as a field on the effect panel"]
 ];
 
+
+
+
+/* ===================== MODULE 2 ===================== */
+const MODULES = {1:"Foundations by real projects", 2:"Ship a sellable look library"};
+const MODULE_INTRO = {
+  2:`Module 2 turns you into a look-development compositor working the way studios do: a scene-referred master render, passes and light groups, physically sensible finishing, then a polished, documented <b>library of Scene Effect assets</b> you can sell. Every step has a real Blender 5.3 screenshot with numbered marks that match the numbered actions. The effects were render-tested, and the beauty rebuild and light-group maths were checked against Cycles' own render to within 0.00001%.`
+};
+const SH = {"l5-s01": {"src": "shots/l5-s01.jpg", "w": 612, "h": 692, "cap": "Properties › Render tab, widened. Cycles, Max Samples 128, and the Render Denoise box unticked.", "marks": [[268, 68, 606, 92, "2"], [268, 364, 597, 384, "3"], [58, 434, 141, 455, "4"]]}, "l5-s02": {"src": "shots/l5-s02.jpg", "w": 612, "h": 692, "cap": "Render tab › Color Management: View AgX, Look None, Exposure 0, Gamma 1.", "marks": [[122, 539, 238, 561, "2"], [122, 562, 238, 583, "3"], [387, 509, 598, 553, "4"]]}, "l5-s03": {"src": "shots/l5-s03.jpg", "w": 1600, "h": 900, "cap": "View set to False Color. Every brightness level gets its own colour; the white crystal and the red pool under it are clipping.", "marks": [[1110, 724, 1224, 746, "1"], [10, 161, 974, 704, "2"]]}, "l5-s04a": {"src": "shots/l5-s04a.jpg", "w": 612, "h": 692, "cap": "View Layer tab › Passes › Data.", "marks": [[267, 288, 380, 372, "2"], [267, 428, 416, 452, "3"]]}, "l5-s04b": {"src": "shots/l5-s04b.jpg", "w": 612, "h": 692, "cap": "Further down: Light passes and Cryptomatte.", "marks": [[265, 204, 350, 398, "4"], [265, 444, 416, 488, "5"], [265, 566, 345, 589, "6"]]}, "l5-s05": {"src": "shots/l5-s05.jpg", "w": 612, "h": 692, "cap": "Rim Light › Object Data (green bulb) tab.", "marks": [[457, 159, 597, 181, "2"], [261, 206, 576, 228, "3"], [261, 242, 576, 264, "4"], [261, 344, 576, 366, "5"]]}, "l5-s06": {"src": "shots/l5-s06.jpg", "w": 612, "h": 692, "cap": "View Layer tab › Passes › Light Groups with the four groups.", "marks": [[575, 527, 597, 547, "1"], [46, 527, 565, 616, "2"]]}, "l5-s07": {"src": "shots/l5-s07.jpg", "w": 612, "h": 692, "cap": "Key Light › Object tab › Shading › Light Group set to Key.", "marks": [[38, 467, 108, 487, "2"], [58, 542, 142, 562, "2"], [260, 570, 597, 594, "3"]]}, "l5-s07w": {"src": "shots/l5-s07w.jpg", "w": 612, "h": 692, "cap": "World tab › Settings › Light Group set to Sky.", "marks": [[262, 554, 577, 574, "5"]]}, "l5-s08": {"src": "shots/l5-s08.jpg", "w": 612, "h": 692, "cap": "Output tab › Output: Multi-Layer EXR, Float (Full), ZIP.", "marks": [[44, 470, 578, 490, "1"], [271, 542, 596, 562, "2"], [432, 564, 596, 584, "3"], [271, 586, 596, 606, "4"]]}, "l5-s09": {"src": "shots/l5-s09.jpg", "w": 1600, "h": 900, "cap": "Compositing workspace: the LL Exposure & Balance effect, its nodes, and its fields in Properties › Compositor & Effects.", "marks": [[601, 496, 751, 577, "2"], [847, 496, 997, 786, "3"], [354, 496, 504, 642, "4"], [1353, 125, 1592, 264, "5"]]}, "l6-s01": {"src": "shots/l6-s01.jpg", "w": 1600, "h": 504, "cap": "Render Layers inside the effect, with unused outputs hidden (Ctrl+H).", "marks": [[260, 303, 456, 374, "2"], [1411, 303, 1530, 369, "3"]]}, "l6-s02": {"src": "shots/l6-s02.jpg", "w": 1600, "h": 504, "cap": "Diffuse = (Direct + Indirect) × Color.", "marks": [[708, 59, 890, 327, "2"], [1012, 59, 1194, 327, "3"]]}, "l6-s03": {"src": "shots/l6-s03.jpg", "w": 1600, "h": 504, "cap": "The same pair for Glossy and Transmission.", "marks": [[747, 191, 1013, 341, "2"], [747, 340, 1013, 489, "3"]]}, "l6-s04": {"src": "shots/l6-s04.jpg", "w": 1600, "h": 504, "cap": "Every part added together (Mix nodes collapsed with H to fit).", "marks": [[734, 142, 1181, 336, "1"], [1206, 215, 1321, 279, "2"]]}, "l6-s05": {"src": "shots/l6-s05.jpg", "w": 1600, "h": 900, "cap": "An Exposure node per part, exposed as stops in a Components panel. Specular +1.5, Diffuse −0.5.", "marks": [[684, 448, 781, 646, "1"], [575, 629, 672, 750, "2"], [1108, 183, 1592, 327, "4"]]}, "l6-s06": {"src": "shots/l6-s06.jpg", "w": 1600, "h": 504, "cap": "LL Relight Mixer: one Exposure and one tint per light group, summed.", "marks": [[343, 102, 529, 232, "1"], [532, 102, 645, 286, "2"], [655, 102, 769, 293, "3"], [793, 131, 1124, 272, "4"], [343, 247, 457, 437, "5"]]}, "l6-s07": {"src": "shots/l6-s07.jpg", "w": 1600, "h": 900, "cap": "Rim +1.5 stops and orange, Key −1 stop. No re-render.", "marks": [[1068, 135, 1592, 327, "1"], [180, 52, 1040, 326, "2"]]}, "l7-s01": {"src": "shots/l7-s01.jpg", "w": 1600, "h": 504, "cap": "LL Denoise: noisy Image + Denoising Albedo + Denoising Normal.", "marks": [[399, 62, 597, 184, "1"], [651, 62, 772, 197, "2"], [884, 106, 1005, 282, "3"], [651, 386, 772, 470, "4"]]}, "l7-s02": {"src": "shots/l7-s02.jpg", "w": 1600, "h": 504, "cap": "LL Bloom: Glare's Glare output mixed (not added) back in.", "marks": [[621, 184, 749, 442, "1"], [890, 90, 1018, 276, "2"], [352, 90, 480, 196, "3"]]}, "l7-s03": {"src": "shots/l7-s03.jpg", "w": 1600, "h": 504, "cap": "LL Lens: distortion and dispersion, plus a soft vignette.", "marks": [[548, 77, 629, 167, "1"], [548, 227, 753, 370, "2"], [548, 387, 629, 455, "3"], [795, 227, 988, 392, "4"], [1018, 77, 1100, 193, "5"]]}, "l7-s04": {"src": "shots/l7-s04.jpg", "w": 1600, "h": 504, "cap": "LL Film Grain: grain cells locked to the frame width, not to pixels.", "marks": [[503, 227, 593, 302, "1"], [503, 343, 593, 432, "2"], [643, 248, 858, 323, "3"], [893, 248, 983, 323, "4"], [1033, 100, 1123, 229, "5"]]}, "l7-s05": {"src": "shots/l7-s05.jpg", "w": 612, "h": 692, "cap": "Compositor & Effects: the stack, collapsed, top to bottom.", "marks": [[86, 101, 598, 289, "1"]]}, "l7-s06": {"src": "shots/l7-s06.jpg", "w": 1600, "h": 504, "cap": "The Compositing workspace's asset shelf: Blender's own free effects (Bloom, Film Grain, Vignette…).", "marks": [[0, 398, 1042, 504, "1"]]}, "l8-s01": {"src": "shots/l8-s01.jpg", "w": 1600, "h": 504, "cap": "Node editor sidebar (N) › Group tab.", "marks": [[1428, 60, 1562, 82, "1"], [1428, 83, 1562, 130, "2"], [1428, 130, 1562, 152, "3"], [1428, 219, 1517, 239, "4"], [1338, 330, 1530, 354, "5"]]}, "l8-s02": {"src": "shots/l8-s02.jpg", "w": 1600, "h": 504, "cap": "Same tab, scrolled to the selected socket's settings.", "marks": [[1428, 238, 1564, 292, "1"], [1428, 290, 1564, 312, "2"], [1428, 313, 1564, 374, "3"]]}, "l8-s03": {"src": "shots/l8-s03.jpg", "w": 612, "h": 692, "cap": "LL Lens on the effect panel: inputs grouped into Lens and Vignette panels.", "marks": [[42, 311, 600, 517, "3"]]}, "l8-s04": {"src": "shots/l8-s04.jpg", "w": 1313, "h": 474, "cap": "Asset Browser (Current File): your catalogs and previews.", "marks": [[8, 34, 236, 56, "1"], [8, 66, 236, 226, "2"], [243, 27, 997, 292, "3"]]}, "l8-s05": {"src": "shots/l8-s05.jpg", "w": 1313, "h": 474, "cap": "Selected asset: metadata, preview and tags in the Asset Browser sidebar.", "marks": [[460, 29, 564, 158, "1"], [1078, 34, 1307, 208, "2"], [1078, 217, 1307, 360, "3"], [1078, 369, 1307, 474, "4"]]}, "l8-s06": {"src": "shots/l8-s06.jpg", "w": 1313, "h": 474, "cap": "The save-catalogs button next to All.", "marks": [[186, 68, 208, 88, "2"]]}, "l9-s01": {"src": "shots/l9-s01.jpg", "w": 1600, "h": 900, "cap": "LL Before After as the last effect: raw render left, finished frame right.", "marks": [[1028, 530, 1584, 606, "1"], [4, 158, 980, 708, "2"]]}, "l9-s02": {"src": "shots/l9-s02.jpg", "w": 844, "h": 851, "cap": "README.md stored inside the .blend (Scripting workspace › Text Editor).", "marks": []}, "l9-s03": {"src": "shots/l9-s03.jpg", "w": 520, "h": 470, "cap": "File › Clean Up › Purge Unused Data.", "marks": [[26, 2, 54, 24, "1"], [26, 379, 232, 403, "2"], [256, 379, 392, 403, "3"]]}, "l9-s04": {"src": "shots/l9-s04.jpg", "w": 612, "h": 375, "cap": "A clean file: Add Scene Effect › Look Library › your catalogs.", "marks": [[184, 136, 362, 154, "2"], [362, 130, 544, 217, "3"]]}, "l9-s05": {"src": "shots/l9-s05.jpg", "w": 1600, "h": 320, "cap": "The Compositing asset shelf with your LL effects next to the built-ins.", "marks": [[490, 190, 1072, 276, "4"]]}};
+const shot = (n, extra) => Object.assign({}, SH[n], extra||{});
+
+const STEPS2 = {
+/* ============================== L5 ============================== */
+l5:[
+ {t:"Switch the set to Cycles with clean settings", goal:"A versioned working file rendering with Cycles, without the built-in denoiser.", shots:[shot("l5-s01")], do:[
+   `Open your <code>compositing_set.blend</code> from Module 1. <b>File → Save As</b> and name it <code>lookdev_v001.blend</code>. (Studios never overwrite: every save gets a new number.)`,
+   D("Properties › Render tab","EEVEE","Cycles") + ` (mark 2)`,
+   `Under <b>Sampling › Render</b>: ` + V("Max Samples","Max Samples","128","4096") + ` (mark 3)`,
+   `Just below, <b>untick Denoise</b> under Sampling › Render (mark 4). You'll denoise in the compositor in Lesson 7, where it can use the albedo and normal passes.`
+ ], pro:`<b>Wider Properties:</b> the screenshots show the Properties editor widened. Hover the boundary between the 3D viewport and Properties until the cursor becomes ↔, then drag left.`},
+
+ {t:"Scene-referred colour: AgX, Look None", goal:"The render stays as real light; only the display is tone-mapped.", shots:[shot("l5-s02")], do:[
+   `Scroll to the bottom of the Render tab and click the <b>Color Management</b> header to open it.`,
+   `<b>View</b> says <i>AgX</i> (mark 2). Leave it. That's Blender's default and a good, safe choice.`,
+   `<b>Look</b> says <i>None</i> (mark 3). Leave it for library work. Looks are a creative choice for the buyer, not something to bake in.`,
+   `<b>Exposure 0</b> and <b>Gamma 1</b> (mark 4). Never grade here. All grading happens in the compositor.`
+ ], why:`<b>Scene-referred:</b> the render stores light (a sun-lit wall can be 10× brighter than "white"). The compositor works on those real values, and the <i>View Transform</i> squeezes them onto your screen at the very end. That's why bloom and grading look physical in comp. Other options in 5.3: <b>ACES 2.0</b> for studio pipelines, <b>Khronos PBR Neutral</b> for product colour accuracy, <b>Standard</b> only for graphics that must match exact sRGB values.`},
+
+ {t:"Judge exposure with False Color", goal:"Read brightness as colours instead of guessing by eye.", shots:[shot("l5-s03")], do:[
+   D("Color Management › View","AgX","False Color") + ` (mark 1)`,
+   `Press ${K("F12")}. Each brightness band now has its own colour (mark 2). Look for <b>red/white</b>: those are clipped highlights with no detail left (here the crystal and the hot spot under it, which is fine for a light source). Deep blue/black means crushed shadows.`,
+   `Your <b>subject</b> (the statue) should sit in the middle bands. If it doesn't, change light strengths, not the Exposure slider.`,
+   `Switch <b>View</b> back to <b>AgX</b>.`
+ ], why:`<b>Industry habit:</b> lighters check exposure with false colour or a waveform before anything else, because eyes adapt and monitors lie.`},
+
+ {t:"Turn on every pass the library needs", goal:"One render that carries everything the library's effects read.", shots:[shot("l5-s04a"), shot("l5-s04b")], do:[
+   `Properties → <b>View Layer</b> tab (stack-of-photos icon) → <b>Passes</b>.`,
+   `<b>Data</b>: tick <b>Depth</b>, <b>Mist</b> and <b>Normal</b> (mark 2).`,
+   `<b>Data</b>: tick <b>Denoising Data</b> (mark 3).`,
+   `Scroll down to <b>Light</b>: under Diffuse, Glossy and Transmission tick <b>Direct</b>, <b>Indirect</b> and <b>Color</b>, 9 boxes in all (mark 4).`,
+   `<b>Other</b>: tick <b>Emission</b> and <b>Environment</b> (mark 5).`,
+   `<b>Cryptomatte</b>: tick <b>Object</b> (mark 6).`
+ ], why:`<b>Light passes</b> split the image into how light arrived (direct or bounced) and what the surface coloured it. Adding them back together rebuilds the image exactly, which Lesson 6 proves.`},
+
+ {t:"Add a rim light", goal:"A warm back light, so relighting has something to work with.", shots:[shot("l5-s05")], do:[
+   `Mouse over the 3D viewport: ${K("Shift","A")} → <b>Light → Area</b>. Press ${K("F2")} → <code>Rim Light</code>. ${K("N")} → Item: Location <code>1.6</code>, <code>1.8</code>, <code>2.8</code>; Rotation <code>63.5</code>, <code>0</code>, <code>138.4</code>.`,
+   `Properties → green bulb <b>Object Data</b> tab: the type is <b>Area</b> (mark 2).`,
+   COL("the light","Color","1.0","0.62","0.35","FFCFA0") + ` (mark 3)`,
+   V("the light","Power","1500") + ` (mark 4)`,
+   V("the light","Size","1.5") + ` (mark 5)`
+ ]},
+
+ {t:"Create four light groups", goal:"Key, Rim, Sky, Glow: one render layer of light each.", shots:[shot("l5-s06")], do:[
+   `View Layer tab → scroll to <b>Passes › Light Groups</b> → click <b>+</b> four times (mark 1).`,
+   `Double-click each new row and rename them <code>Key</code>, <code>Rim</code>, <code>Sky</code>, <code>Glow</code> (mark 2). <b>Exact spelling matters</b>: the Relight Mixer you'll sell looks for these names.`
+ ]},
+
+ {t:"Put every light into its group", goal:"Each light source writes into one light group.", shots:[shot("l5-s07"), shot("l5-s07w")], do:[
+   `Click <b>Key Light</b> in the Outliner, then Properties → orange square <b>Object</b> tab.`,
+   `Open <b>Shading</b>, then its <b>Light Group</b> subpanel (mark 2).`,
+   `Click the <b>Light Group</b> field and choose <code>Key</code> (mark 3).`,
+   `Same for <b>Rim Light</b> → <code>Rim</code> and for the <b>Crystal</b> → <code>Glow</code> (glowing objects are lights too).`,
+   `Properties → <b>World</b> tab → <b>Settings › Light Group</b> → <code>Sky</code> (mark 5).`
+ ], why:`<b>Checked in 5.3:</b> Key + Rim + Sky + Glow added together equals the full render to within 0.00001%, so nothing is lost by splitting light up.`},
+
+ {t:"Output: the master multilayer EXR", goal:"Render once, comp forever: every pass in one float file.", shots:[shot("l5-s08")], do:[
+   `Properties → <b>Output</b> tab (printer icon) → <b>Output</b> panel: path <code>//renders/master_v001</code> (mark 1). <code>//</code> means "next to the .blend".`,
+   D("Output","Image","Multi-Layer EXR") + ` (Media Type, mark 2)`,
+   `<b>Color Depth</b>: click <b>Float (Full)</b> (mark 3).`,
+   `<b>Codec</b>: keep <b>ZIP</b> (lossless, mark 4).`,
+   `Press ${K("F12")}. In the render window choose <b>Image → Save As</b>, and save into your <code>renders</code> folder as <code>master_v001.exr</code>.`
+ ], why:`<b>Why EXR:</b> it keeps values above 1 and every pass, so any later grade has the full data. Checked in 5.3: all passes, light groups included, come back through an Image node. <b>DWAA</b> is the lossy codec studios use for smaller review files.`},
+
+ {t:"Your first library asset: LL Exposure & Balance", goal:"Exposure in stops plus white balance, done in linear light.", hl:{g:0,n:["ex","wb","gi"]}, shots:[shot("l5-s09")], do:[
+   `Properties → <b>Compositor &amp; Effects</b> → <b>Add Scene Effect → Scene Effect</b> (click <b>New</b> if shown) → rename it <code>LL Exposure &amp; Balance</code>. Go to the <b>Compositing</b> workspace. <i>LL</i> is the library's prefix: pick your own short brand prefix.`,
+   `${K("Shift","A")} → <code>exposure</code> → <b>Exposure</b>, dropped onto the Group Input → Group Output wire (mark 2).`,
+   `${K("Shift","A")} → <code>color balance</code> → drop it after Exposure. ` + D("Color Balance","Lift/Gamma/Gain","White Point") + ` (mark 3)`,
+   `Drag Exposure's <b>Exposure</b> socket onto Group Input's empty dot. Do the same with Color Balance's <b>Input › Temperature</b> and <b>Tint</b> (mark 4).`,
+   `The effect panel shows the three fields (mark 5). New effect inputs start at 0: type Exposure <code>0</code>, Temperature <code>6500</code>, Tint <code>10</code> for neutral. Then try Temperature <code>5600</code> and Exposure <code>0.3</code>.`
+ ], see:`Checked in 5.3: a lower Temperature tells the effect the light was warmer, so it cools the image, the same as setting white balance on a camera.`}
+],
+
+/* ============================== L6 ============================== */
+l6:[
+ {t:"New effect: LL Beauty Rebuild", goal:"An effect that reads the render's light passes.", hl:{g:0,n:["rl","go"]}, shots:[shot("l6-s01")], do:[
+   `Compositor &amp; Effects → <b>Add Scene Effect → Scene Effect</b> → <b>New</b> → rename <code>LL Beauty Rebuild</code>. Click inside its panel, then open the <b>Compositing</b> workspace.`,
+   A("Render Layers","render layers","below Group Input") + ` (mark 2). When everything is wired later, select it and press ${K("Ctrl","H")} to hide the outputs you don't use, as in the screenshots.`,
+   `Leave <b>Group Output</b> where it is (mark 3). This effect ignores Group Input because it builds the picture from passes.`
+ ]},
+
+ {t:"Diffuse = (Direct + Indirect) × Color", goal:"The diffuse part of the image, rebuilt.", hl:{g:0,n:["da","dm"]}, shots:[shot("l6-s02")], do:[
+   A("Mix Color","mix color","to the right of Render Layers") + ` ` + D("it","Mix","Add") + ` Type Factor <code>1</code>.`,
+   C("Render Layers","Diffuse Direct","Add","A") + ` ` + C("Render Layers","Diffuse Indirect","Add","B") + ` Label it <code>Diffuse light</code> (${K("N")} → Node → Label) (mark 2).`,
+   A("Mix Color","mix color","to the right") + ` ` + D("it","Mix","Multiply") + ` Factor <code>1</code>. ` + C("Diffuse light","Result","Multiply","A") + ` ` + C("Render Layers","Diffuse Color","Multiply","B") + ` (mark 3)`
+ ], why:`<b>Light × colour:</b> Cycles stores how much light hit a surface separately from the surface's colour. Multiplying them gives what the camera saw.`},
+
+ {t:"The same for Glossy and Transmission", goal:"Specular and see-through light, rebuilt the same way.", hl:{g:0,n:["ga","gm","ta","tm"]}, shots:[shot("l6-s03")], do:[
+   `Click the <b>Diffuse light</b> node, ${K("Shift")}-click <b>× Diffuse colour</b>, press ${K("Shift","D")} and drop the copies below.`,
+   `Rewire the copies to <b>Glossy Direct</b>, <b>Glossy Indirect</b> and <b>Glossy Color</b>, and rename the labels (mark 2).`,
+   `Copy again for <b>Transmission</b> Direct, Indirect and Color (mark 3).`
+ ]},
+
+ {t:"Add everything back together, and prove it", goal:"A rebuilt image identical to the real render.", hl:{g:0,n:["s1","go"]}, shots:[shot("l6-s04")], do:[
+   `Four <b>Mix Color</b> nodes set to <b>Add</b> (Factor 1), in a chain: Diffuse + Glossy, + Transmission, + Render Layers <b>Emission</b>, + <b>Environment</b> (mark 1).`,
+   C("last Add","Result","Group Output","Image") + ` (mark 2)`,
+   `Proof: press ${K("F12")}, then untick and tick this effect's <b>Render</b> box and re-render. The picture must not change.`
+ ], see:`Checked in 5.3: the rebuild matched Cycles' own image to within 0.00001% (mean difference 0.0000001).`, pro:`<b>Tidy:</b> select a node and press ${K("H")} to collapse it, as in the screenshot. Big graphs stay readable.`},
+
+ {t:"A stop control for every part", goal:"Push specular or diffuse after the render, in photographic stops.", shots:[shot("l6-s05")], do:[
+   `Insert an <b>Exposure</b> node after each part: the three Multiply nodes, Emission and Environment (mark 1).`,
+   `Drag each Exposure node's <b>Exposure</b> socket onto Group Input's empty dot. In ${K("N")} → Group, name them <code>Diffuse</code>, <code>Specular</code>, <code>Transmission</code>, <code>Emission</code>, <code>Environment</code> (mark 2).`,
+   `Group tab → <b>+ → Panel</b> → name it <code>Components</code> and drag the five sockets into it.`,
+   `On the effect panel (mark 4) type Specular <code>1.5</code> and Diffuse <code>-0.5</code>, then press ${K("F12")}.`
+ ], see:`A shinier, more metallic bronze with no re-render. That's the point of passes.`},
+
+ {t:"LL Relight Mixer from light groups", goal:"One stop dial and one colour filter per light group.", hl:{g:1,n:["rl","ke","kt","s1","gi"]}, shots:[shot("l6-s06")], do:[
+   `New Scene Effect <code>LL Relight Mixer</code> with a <b>Render Layers</b> node. Its outputs include <b>Combined_Key</b>, <b>Combined_Rim</b>, <b>Combined_Sky</b> and <b>Combined_Glow</b> (mark 1).`,
+   `One <b>Exposure</b> node per group, with each Exposure socket exposed as <code>Key Stops</code>, <code>Rim Stops</code>… (mark 2).`,
+   `After each, a <b>Mix Color</b> set to <b>Multiply</b> (Factor 1). Expose its <b>B</b> as <code>Key Tint</code>, <code>Rim Tint</code>… and set their defaults to white (mark 3).`,
+   `Three <b>Mix Color Add</b> nodes sum the four → Group Output (mark 4).`,
+   `Group tab: make panels <code>Key</code>, <code>Rim</code>, <code>Sky</code>, <code>Glow</code> and drag each stops/tint pair into its panel (mark 5).`
+ ]},
+
+ {t:"Relight without rendering again", goal:"A dramatic warm rim and a softer key, set in seconds.", shots:[shot("l6-s07")], do:[
+   `Untick <b>Render</b> on LL Beauty Rebuild. The two pass tools are alternatives, so use one at a time.`,
+   `On LL Relight Mixer (mark 1): Rim Stops <code>1.5</code>, Rim Tint RGB <code>1.0</code>, <code>0.7</code>, <code>0.45</code>, Key Stops <code>-1</code>. If any Tint shows black, set it to white first.`,
+   `Press ${K("F12")} (mark 2).`
+ ], why:`<b>Industry use:</b> lighting directors give notes like "less key, more rim" after the render farm finishes. Light groups answer them in minutes instead of hours.`}
+],
+
+/* ============================== L7 ============================== */
+l7:[
+ {t:"LL Denoise with albedo and normal data", goal:"Clean frames that keep texture detail.", hl:{g:0,n:["rl","dn","bl"]}, shots:[shot("l7-s01")], do:[
+   `New Scene Effect <code>LL Denoise</code> with a <b>Render Layers</b> node (mark 1). Render › Denoise is off and Denoising Data is on (Lesson 5).`,
+   A("Denoise","denoise","to the right of Render Layers") + ` ` + C("Render Layers","Image","Denoise","Image") + ` ` + C("Render Layers","Denoising Albedo","Denoise","Albedo") + ` ` + C("Render Layers","Denoising Normal","Denoise","Normal") + ` Set <b>Prefilter</b> to <i>Accurate</i> and keep <b>HDR</b> ticked (mark 2).`,
+   `A <b>Mix Color</b> (Mix): A ← Render Layers Image, B ← Denoise Image, Result → Group Output (mark 3).`,
+   `Expose the Mix <b>Factor</b> as <code>Blend</code>, default <code>1</code> (mark 4).`
+ ], why:`<b>Data passes</b> tell the denoiser what is texture and what is noise, so it keeps detail. <b>Accurate</b> prefilter cleans the albedo/normal passes first.`},
+
+ {t:"LL Bloom that conserves energy", goal:"Glow that moves light around instead of adding light.", hl:{g:1,n:["gl","mx","gi"]}, shots:[shot("l7-s02")], do:[
+   `New Scene Effect <code>LL Bloom</code>. Add <b>Glare</b>: Image ← Group Input Image. Type <b>Bloom</b>, Threshold <code>0</code>, Quality <b>High</b> (mark 1).`,
+   `A <b>Mix Color</b> (Mix): A ← Group Input Image, B ← Glare's <b>Glare</b> output (the glow only), Result → Group Output (mark 2).`,
+   `Expose the Mix Factor as <code>Amount</code> (default 0.06, Min 0, Max 0.3) and Glare's <b>Size</b> as <code>Size</code> (0.75) (mark 3).`
+ ], why:`<b>Measured in 5.3 on the demo scene:</b> Glare's own Image output had 1.95× the original's total light; adding the glow at 0.08 gave +7.6%; mixing at 0.08 gave −0.4%. A real lens scatters light, it doesn't create it, so <b>mix, don't add</b>.`},
+
+ {t:"LL Lens: distortion, dispersion, vignette", goal:"One matched lens package with four sliders.", hl:{g:2,n:["ld","el","mr","vm"]}, shots:[shot("l7-s03")], do:[
+   `New Scene Effect <code>LL Lens</code>. Add <b>Lens Distortion</b> on the wire, tick <b>Fit</b>, and expose Distortion (default −0.02) and Dispersion (0.015) (mark 1).`,
+   `<b>Ellipse Mask</b> (Size 0.95, 0.8) → <b>Blur</b> (mark 2).`,
+   `<b>Combine XYZ</b>: X and Y ← an exposed <code>Softness</code> (200) → Blur Size (mark 3).`,
+   `<b>RGB to BW</b> → <b>Map Range</b>. <b>Math Subtract</b> 1 − exposed <code>Vignette</code> (0.3) → Map Range To Min (mark 4).`,
+   `<b>Mix Color Multiply</b>: A ← Lens Distortion, B ← Map Range → Group Output. Make panels <code>Lens</code> and <code>Vignette</code> (mark 5).`
+ ], pro:`<b>Overscan:</b> on a real job, render about 5% bigger, distort, then crop. Fit (zooming in to hide the corners) is the quick version.`},
+
+ {t:"LL Film Grain locked to the frame", goal:"Grain that looks the same at 1080p and 4K.", hl:{g:3,n:["ic","dv","vs","wn","go2"]}, shots:[shot("l7-s04")], do:[
+   `New Scene Effect <code>LL Film Grain</code>. <b>Image Coordinates</b> with Image ← Group Input. You'll use its <b>Uniform</b> output (mark 1).`,
+   `<b>Math Divide</b>: <code>960</code> ÷ exposed <code>Grain Size</code> (default 1) (mark 2).`,
+   `<b>Vector Math Scale</b> (Uniform × that number) → <b>Vector Math Floor</b> (mark 3).`,
+   `<b>White Noise Texture</b>, Vector ← Floor (mark 4).`,
+   `<b>Mix Color Overlay</b>: Factor ← exposed <code>Strength</code> (0.06), A ← Group Input, B ← noise Value → Group Output (mark 5).`
+ ], why:`<b>Checked in 5.3:</b> Uniform runs from −1 to 1 across the frame width at 640 and 1280 px alike. So 960 ÷ size gives grain cells of "size" pixels at 1920 wide, and the same <i>relative</i> size at any resolution.`},
+
+ {t:"Stack order", goal:"Effects in the order light and lenses really work.", shots:[shot("l7-s05")], do:[
+   `Properties → Compositor &amp; Effects. Click the arrows to collapse each panel, then drag the panels by their grip (⋮⋮) into this order (mark 1): LL Denoise → (Beauty Rebuild / Relight Mixer, unticked) → LL Exposure &amp; Balance → LL Bloom → LL Lens → LL Film Grain.`,
+   `Test: Output tab → Resolution <b>%</b> 100 and 50, render both. The grain looks the same size relative to the frame.`
+ ], why:`<b>Order:</b> clean the signal, fix exposure and colour, then what the lens does (glow, distortion, vignette), and grain last, because film grain sits on top of everything.`},
+
+ {t:"Beat Blender's built-in effects", goal:"Know which of your assets add value before you ask money for them.", shots:[shot("l7-s06")], do:[
+   `Compositing workspace: the <b>asset shelf</b> at the bottom of the compositor (mark 1) holds Blender's own free effects: Bloom, Chromatic Aberration, Film Grain (with film stock presets), Sensor Noise, Sepia, Split Toning, Tune Image, Unsharp Mask and Vignette. They are CC0.`,
+   `Drag each onto your scene and compare with your LL versions. Write one sentence per LL asset saying why it's better or different, e.g. "energy-conserving", "needs no passes", "resolution-locked".`,
+   `If you can't write that sentence, leave the asset out of the paid pack. Never copy or rebrand the built-ins.`
+ ]}
+],
+
+/* ============================== L8 ============================== */
+l8:[
+ {t:"Name, describe and tag every group", goal:"Each asset explains itself.", shots:[shot("l8-s01")], do:[
+   `Click an effect's panel, open the Compositing workspace, press ${K("N")} over the compositor → <b>Group</b> tab. <b>Name</b> with your prefix: <code>LL Bloom</code> (mark 1).`,
+   `<b>Description</b>: what it does, what it needs (passes, light group names) and the version, e.g. <i>v1.0.0</i> (mark 2).`,
+   `<b>Color Tag</b>: pick a category colour (mark 3).`,
+   `<b>Usage</b>: tick <b>Scene Effect</b> (mark 4). Checked in 5.3: it starts unticked, and without it the asset won't appear in <i>Add Scene Effect</i>.`,
+   `In <b>Group Sockets</b> click each input in turn (mark 5) for the next step.`
+ ]},
+
+ {t:"Tooltips, units and safe ranges", goal:"No input that can break the image.", shots:[shot("l8-s02")], do:[
+   `<b>Description</b> of the socket = its tooltip. Say the unit: "in stops", "in pixels at 1920 wide" (mark 1).`,
+   `<b>Subtype</b> <i>Factor</i> for 0–1 amounts (mark 2).`,
+   `<b>Default</b>, <b>Min</b>, <b>Max</b>: the default must look good at once, and the range must never produce black or NaN frames (mark 3).`
+ ]},
+
+ {t:"Group inputs into panels", goal:"Clean effect panels a buyer understands at a glance.", shots:[shot("l8-s03")], do:[
+   `Group tab → <b>+ → Panel</b>, name it, and drag sockets into it.`,
+   `Order sockets most important first.`,
+   `Check the result on the effect panel in Properties (mark 3).`
+ ]},
+
+ {t:"Mark as assets and build catalogs", goal:"A browsable library: Finishing, Looks, Passes & Relight, Utilities.", shots:[shot("l8-s04")], do:[
+   `In the Layout workspace click the 3D viewport's editor-type button (top-left icon) → <b>Asset Browser</b>. Set the library dropdown to <b>Current File</b> (mark 1).`,
+   `Mark each group: Outliner → Display Mode <b>Blender File</b> → Node Groups → right-click → <b>Mark as Asset</b>.`,
+   `In the catalog tree click <b>+</b> next to All → name it <code>Look Library</code>, then right-click it → <b>New Catalog</b> for <code>Finishing</code>, <code>Looks</code>, <code>Passes &amp; Relight</code>, <code>Utilities</code> (mark 2).`,
+   `Drag each asset thumbnail onto its catalog (mark 3).`
+ ]},
+
+ {t:"Metadata, previews and tags", goal:"Thumbnails that sell and search that finds.", shots:[shot("l8-s05")], do:[
+   `Click an asset (mark 1).`,
+   `Sidebar (${K("N")} in the Asset Browser): <b>Description</b>, <b>License</b>, <b>Copyright</b>, <b>Author</b> (mark 2).`,
+   `<b>Preview</b>: render your demo scene with only that effect on, save a PNG, then click the folder icon → <b>Load custom preview</b> → your PNG (mark 3). Show the effect at its best, cropped square.`,
+   `<b>Tags</b>: <b>+</b> for search words such as <i>bloom</i>, <i>relight</i>, <i>cryptomatte</i> (mark 4).`
+ ]},
+
+ {t:"Save into a library folder with its catalog file", goal:"A folder Blender can register as an asset library.", shots:[shot("l8-s06")], do:[
+   `<b>File → Save As</b> into a new folder named after your product, e.g. <code>LookLibrary</code>, as <code>LookLibrary_v1.0.0.blend</code>.`,
+   `Click the <b>save catalogs</b> icon next to <i>All</i> (mark 2). It writes <code>blender_assets.cats.txt</code> next to the .blend.`,
+   `Keep the demo scene in the same file: the studio set with the recommended stack switched on. Buyers learn by opening it.`
+ ], why:`<b>Catalogs</b> live in that text file, not in the .blend. Forget it and buyers see everything under <i>Unassigned</i>.`}
+],
+
+/* ============================== L9 ============================== */
+l9:[
+ {t:"Before/after product images", goal:"The images that sell the pack.", shots:[shot("l9-s01")], do:[
+   `Build <code>LL Before After</code>: a <b>Split</b> node (Rotation 90°) with Render Layers Image on one side and Group Input Image on the other, and an exposed <code>Position</code>. Add it as the <b>last</b> effect (mark 1).`,
+   `Output tab → Resolution <code>2400</code> × <code>1200</code> at 100%. Superhive wants images in a <b>2:1</b> ratio, at least 1200 px wide, and rejects 1920 × 1080. ${K("F12")} → <b>Image → Save As</b> PNG (mark 2).`,
+   `Make <b>at least 5 images</b> (Superhive's minimum): a hero shot plus before/afters, all from your own scenes, with no Blender logo. Selling on Fab as well? Render a second set at 1920 × 1080 or larger.`
+ ]},
+
+ {t:"README, licence and changelog inside the file", goal:"Documentation that can't get lost.", shots:[shot("l9-s02")], do:[
+   `Scripting workspace → Text Editor → <b>New</b> → rename <code>README.md</code>. Cover install, stack order, each effect's requirements and how to get support.`,
+   `Add <code>CHANGELOG.md</code> ("1.0.0: first release"). Ship the same text as files in the zip too, plus <code>LICENSE.txt</code>.`,
+   `Use semantic versions: 1.0.1 = fixes, 1.1.0 = new effects, 2.0.0 = breaking changes.`
+ ]},
+
+ {t:"Purge and save", goal:"No test leftovers in the product.", shots:[shot("l9-s03")], do:[
+   `Click <b>File</b> (mark 1).`,
+   `Hover <b>Clean Up</b> (mark 2).`,
+   `Click <b>Purge Unused Data</b> and confirm (mark 3). Then ${K("Ctrl","S")}.`
+ ]},
+
+ {t:"Clean-room install test", goal:"Prove it works for a stranger.", shots:[shot("l9-s04")], do:[
+   `Copy the product folder somewhere new, as if you'd just downloaded it. <b>Edit → Preferences → File Paths → Asset Libraries → +</b> → pick that folder.`,
+   `<b>File → New → General</b>. Properties → Compositor &amp; Effects → <b>Add Scene Effect</b> → <b>Look Library</b> (mark 2) → your catalogs (mark 3).`,
+   `Add each effect to a fresh scene, following only your README. Fix the README wherever you had to guess.`
+ ], see:`Checked in 5.3: with the folder registered, Add Scene Effect lists Look Library › Finishing, Looks, Passes &amp; Relight and Utilities.`},
+
+ {t:"Zip it and check the shelf", goal:"The final deliverable.", shots:[shot("l9-s05")], do:[
+   `Folder layout: <code>LookLibrary_v1.0.0/</code> containing the .blend, <code>blender_assets.cats.txt</code>, <code>README.md</code>, <code>LICENSE.txt</code>, <code>CHANGELOG.md</code>, and <code>images/</code>.`,
+   `Right-click the folder → <b>Compress to ZIP</b>.`,
+   `Unzip it in a new place and repeat the install test.`,
+   `In the Compositing workspace your assets now sit in the asset shelf next to Blender's (mark 4).`
+ ]}
+]
+};
+
+const GRAPHS2 = {
+ l5:[{title:"LL Exposure & Balance", hint:"stops + white point", w:900, h:260,
+   nodes:[
+    {id:"gi",t:"Group Input",c:"group",x:20,y:20,w:140,o:[["Image","col"],["Exposure","float"],["Temperature","float"],["Tint","float"]]},
+    {id:"ex",t:"Exposure",c:"color",x:220,y:20,w:150,o:[["Image","col"]],i:[["Image","col"],["Exposure","float"]]},
+    {id:"wb",t:"Color Balance",c:"color",x:420,y:20,w:180,p:["White Point"],o:[["Image","col"]],i:[["Image","col"],["Temperature","float"],["Tint","float"]]},
+    {id:"go",t:"Group Output",c:"group",x:660,y:20,w:130,i:[["Image","col"]]}],
+   links:[["gi.Image","ex.Image"],["gi.Exposure","ex.Exposure"],["ex.Image","wb.Image"],["gi.Temperature","wb.Temperature"],["gi.Tint","wb.Tint"],["wb.Image","go.Image"]],
+   cap:"The Temperature and Tint you expose are Color Balance's <b>Input</b> white point. Its Output white point stays 6500 K / 10."}],
+ l6:[{title:"LL Beauty Rebuild", hint:"(direct + indirect) × colour, summed", w:1300, h:420,
+   nodes:[
+    {id:"rl",t:"Render Layers",c:"input",x:20,y:20,w:170,o:[["Diffuse Direct","col"],["Diffuse Indirect","col"],["Diffuse Color","col"],["Glossy Direct","col"],["Glossy Indirect","col"],["Glossy Color","col"],["Transmission Direct","col"],["Transmission Indirect","col"],["Transmission Color","col"],["Emission","col"],["Environment","col"]]},
+    {id:"da",t:"Diffuse light (Add)",c:"color",x:240,y:20,w:150,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"dm",t:"× Diffuse colour",c:"color",x:420,y:20,w:150,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"ga",t:"Glossy light (Add)",c:"color",x:240,y:130,w:150,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"gm",t:"× Glossy colour",c:"color",x:420,y:130,w:150,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"ta",t:"Transm. light (Add)",c:"color",x:240,y:240,w:150,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"tm",t:"× Transm. colour",c:"color",x:420,y:240,w:150,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"s1",t:"Add ×4 (chain)",c:"color",x:640,y:120,w:170,o:[["Result","col"]],i:[["Diffuse","col"],["Glossy","col"],["Transmission","col"],["Emission","col"],["Environment","col"]]},
+    {id:"go",t:"Group Output",c:"group",x:870,y:140,w:130,i:[["Image","col"]]}],
+   links:[["rl.Diffuse Direct","da.A"],["rl.Diffuse Indirect","da.B"],["da.Result","dm.A"],["rl.Diffuse Color","dm.B"],["rl.Glossy Direct","ga.A"],["rl.Glossy Indirect","ga.B"],["ga.Result","gm.A"],["rl.Glossy Color","gm.B"],["rl.Transmission Direct","ta.A"],["rl.Transmission Indirect","ta.B"],["ta.Result","tm.A"],["rl.Transmission Color","tm.B"],["dm.Result","s1.Diffuse"],["gm.Result","s1.Glossy"],["tm.Result","s1.Transmission"],["rl.Emission","s1.Emission"],["rl.Environment","s1.Environment"],["s1.Result","go.Image"]],
+   cap:"The 'Add ×4' box stands for the four Mix Color Add nodes in a chain. Checked: the result equals the Combined image."},
+  {title:"LL Relight Mixer", hint:"one dial + tint per light group", w:1100, h:330,
+   nodes:[
+    {id:"rl",t:"Render Layers",c:"input",x:20,y:20,w:160,o:[["Combined_Key","col"],["Combined_Rim","col"],["Combined_Sky","col"],["Combined_Glow","col"]]},
+    {id:"gi",t:"Group Input",c:"group",x:20,y:170,w:160,o:[["Key Stops","float"],["Key Tint","col"],["Rim Stops","float"],["Rim Tint","col"]]},
+    {id:"ke",t:"Key stops (Exposure)",c:"color",x:240,y:20,w:170,o:[["Image","col"]],i:[["Image","col"],["Exposure","float"]]},
+    {id:"kt",t:"Key tint (Multiply)",c:"color",x:460,y:20,w:170,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"s1",t:"Add ×3 (all groups)",c:"color",x:690,y:60,w:170,o:[["Result","col"]],i:[["Key","col"],["Rim","col"],["Sky","col"],["Glow","col"]]},
+    {id:"go",t:"Group Output",c:"group",x:920,y:80,w:130,i:[["Image","col"]]}],
+   links:[["rl.Combined_Key","ke.Image"],["gi.Key Stops","ke.Exposure"],["ke.Image","kt.A"],["gi.Key Tint","kt.B"],["kt.Result","s1.Key"],["s1.Result","go.Image"]],
+   cap:"Only the Key row is drawn. Rim, Sky and Glow are identical copies feeding the same sum."}],
+ l7:[{title:"LL Denoise", hint:"data passes guide the denoiser", w:900, h:240,
+   nodes:[
+    {id:"rl",t:"Render Layers",c:"input",x:20,y:20,w:170,o:[["Image","col"],["Denoising Albedo","col"],["Denoising Normal","vec"]]},
+    {id:"dn",t:"Denoise",c:"filter",x:250,y:20,w:160,p:["Accurate · HDR"],o:[["Image","col"]],i:[["Image","col"],["Albedo","col"],["Normal","vec"]]},
+    {id:"bl",t:"Mix (Blend)",c:"color",x:470,y:20,w:150,o:[["Result","col"]],i:[["Factor","float"],["A","col"],["B","col"]]},
+    {id:"go",t:"Group Output",c:"group",x:680,y:20,w:130,i:[["Image","col"]]}],
+   links:[["rl.Image","dn.Image"],["rl.Denoising Albedo","dn.Albedo"],["rl.Denoising Normal","dn.Normal"],["rl.Image","bl.A"],["dn.Image","bl.B"],["bl.Result","go.Image"]],
+   cap:"Exposed: Blend (the Mix Factor)."},
+  {title:"LL Bloom (energy-conserving)", hint:"mix the glow, never add it", w:900, h:260,
+   nodes:[
+    {id:"gi",t:"Group Input",c:"group",x:20,y:20,w:140,o:[["Image","col"],["Amount","float"],["Size","float"]]},
+    {id:"gl",t:"Glare",c:"filter",x:220,y:20,w:160,p:["Bloom · High"],o:[["Image","col"],["Glare","col"]],i:[["Image","col"],["Threshold","float","0"],["Size","float"]]},
+    {id:"mx",t:"Mix Color · Mix",c:"color",x:440,y:20,w:160,o:[["Result","col"]],i:[["Factor","float"],["A","col"],["B","col"]]},
+    {id:"go",t:"Group Output",c:"group",x:660,y:20,w:130,i:[["Image","col"]]}],
+   links:[["gi.Image","gl.Image"],["gi.Size","gl.Size"],["gi.Amount","mx.Factor"],["gi.Image","mx.A"],["gl.Glare","mx.B"],["mx.Result","go.Image"]],
+   cap:"B takes Glare's <b>Glare</b> output (the glow alone), not Image."},
+  {title:"LL Lens", hint:"distortion + vignette", w:1100, h:330,
+   nodes:[
+    {id:"ld",t:"Lens Distortion",c:"xform",x:20,y:20,w:170,o:[["Image","col"]],i:[["Image","col"],["Distortion","float"],["Dispersion","float"],["Fit","bool","✓"]]},
+    {id:"el",t:"Ellipse Mask → Blur",c:"filter",x:20,y:190,w:170,o:[["Image","col"]],i:[["Size (Softness)","vec"]]},
+    {id:"mr",t:"RGB to BW → Map Range",c:"util",x:250,y:190,w:190,o:[["Result","float"]],i:[["Value","float"],["To Min (1 − Vignette)","float"]]},
+    {id:"vm",t:"Mix Color · Multiply",c:"color",x:500,y:40,w:170,o:[["Result","col"]],i:[["A","col"],["B","col"]]},
+    {id:"go",t:"Group Output",c:"group",x:730,y:60,w:130,i:[["Image","col"]]}],
+   links:[["ld.Image","vm.A"],["el.Image","mr.Value"],["mr.Result","vm.B"],["vm.Result","go.Image"]],
+   cap:"Simplified: the Ellipse Mask → Blur and RGB to BW → Map Range pairs are each drawn as one box."},
+  {title:"LL Film Grain", hint:"cells locked to frame width", w:1100, h:300,
+   nodes:[
+    {id:"ic",t:"Image Coordinates",c:"util",x:20,y:20,w:160,o:[["Uniform","vec"]],i:[["Image","col"]]},
+    {id:"dv",t:"Math · 960 ÷ Grain Size",c:"util",x:20,y:150,w:190,o:[["Value","float"]],i:[["Grain Size","float"]]},
+    {id:"vs",t:"Scale → Floor",c:"util",x:260,y:40,w:150,o:[["Vector","vec"]],i:[["Vector","vec"],["Scale","float"]]},
+    {id:"wn",t:"White Noise Texture",c:"tex",x:460,y:40,w:170,o:[["Value","float"]],i:[["Vector","vec"]]},
+    {id:"go2",t:"Mix Color · Overlay",c:"color",x:690,y:20,w:170,o:[["Result","col"]],i:[["Factor (Strength)","float"],["A (image)","col"],["B","col"]]}],
+   links:[["ic.Uniform","vs.Vector"],["dv.Value","vs.Scale"],["vs.Vector","wn.Vector"],["wn.Value","go2.B"]],
+   cap:"Then Result → Group Output."}],
+ l8:[], l9:[]
+};
+
+const M2 = [
+{ id:"l5", num:5, mod:2, short:"Scene-referred master", title:"Render once, finish forever: the scene-referred master",
+  kick:"Lesson 5 · Cycles, AgX, False Color, passes, light groups, multilayer EXR", time:"60–75 min",
+  intro:`Professional comp starts before the compositor. You'll set the scene up the way studios do: scene-referred colour with AgX, exposure checked in False Color, every pass the library needs, four named light groups, and a 32-bit multilayer EXR master. Then you'll build the first sellable asset, an exposure and white-balance effect that works in real stops.`,
+  use:`<b>Used for:</b> every look-dev and lighting job. Supervisors ask for a "master EXR with AOVs and light groups" by name.`,
+  learn:["Scene-referred colour","AgX / ACES 2.0","False Color","Data, Light & Crypto passes","Light groups","Multi-Layer EXR","Exposure in stops","White point"],
+  concepts:[
+    {h:"Scene-referred", p:"Pixels store light, not screen colours. The view transform (AgX) is applied only when you look. Comp works on the real light."},
+    {h:"Passes = the render taken apart", p:"Diffuse, glossy, transmission, emission and environment, each as direct and bounced light times colour. Together they rebuild the beauty."},
+    {h:"Light groups", p:"Each light (or glowing object, or the world) renders into its own layer. Sum them and you get the render. Scale them and you relight it."},
+    {h:"Stops, not percentages", p:"+1 stop doubles the light, −1 halves it. Photographers, lighters and colourists all think in stops, so your assets should too."}],
+  graphs:GRAPHS2.l5, steps:STEPS2.l5,
+  check:`<b>You should have:</b> <code>lookdev_v001.blend</code> on Cycles at 128 samples with built-in denoise off; AgX with Look None; every pass and four light groups on; a <code>master_v001.exr</code>; and an <i>LL Exposure &amp; Balance</i> effect with three working fields.`,
+  cards:[
+    ["What does 'scene-referred' mean?","The image stores real light values (can be far above 1); a view transform like AgX maps them to the screen only for display."],
+    ["Where do you set AgX and Look?","Properties → Render → Color Management → View and Look."],
+    ["What is False Color for?","Reading exposure: each brightness band gets a colour, so clipping and crushed shadows are obvious."],
+    ["Which three Light pass types rebuild diffuse?","Diffuse Direct + Diffuse Indirect, times Diffuse Color."],
+    ["How do you put the world into a light group?","World tab → Settings → Light Group."],
+    ["Why a multilayer EXR master?","Float values and all passes in one file: you can regrade or relight forever without rendering again."],
+    ["What does +1 stop do?","Doubles the light (−1 halves it)."],
+    ["Why do new effect inputs need typing?","Inputs added to a Scene Effect start at 0 on the effect panel."]],
+  boss:{title:"Boss fight: a master for a new scene", brief:"Memory mode on. Take any scene of yours and produce a correctly exposed master EXR with all passes and at least three light groups.", goal:25,
+    items:[["Cycles, sensible samples, built-in denoise off",""],["AgX, Look None, checked with False Color",""],["Data + Light + Cryptomatte passes",""],["Three or more light groups, every light assigned",""],["Multi-Layer EXR, Float (Full), versioned name",""]],
+    stretch:[["ACES 2.0 comparison","Render the same master viewed through ACES 2.0 and AgX; note which handles your brightest colours better."],["Shader AOV","Add a Shader AOV (View Layer → Shader AOV) driven by an AOV Output node to export a custom mask, e.g. a rim mask."],["DWAA dailies","Save a second EXR with the DWAA codec and compare file sizes."]]}
+},
+{ id:"l6", num:6, mod:2, short:"Rebuild & relight", title:"Rebuild the beauty from passes, then relight it",
+  kick:"Lesson 6 · Beauty rebuild, per-component stops, light-group relighting", time:"60–75 min",
+  intro:`Two of the most useful tools a compositor has. First you rebuild the image from its light passes, and prove it matches Cycles exactly, so you can push specular or diffuse in stops. Then you build a relight mixer that turns the key down and the rim up after rendering, with colour filters per light.`,
+  use:`<b>Used for:</b> lighting notes after the render, product shots ("more sparkle"), cinematics, and any pipeline that renders once and comps many versions.`,
+  learn:["Light pass maths","Mix Color Add/Multiply","Proving a rebuild","Exposure per component","Panels on effects","Light-group relighting","Tint per light"],
+  concepts:[
+    {h:"Light × colour", p:"Cycles stores lighting and surface colour separately. Multiply them back together and you get what the camera saw."},
+    {h:"Prove it", p:"A rebuild is only trustworthy if switching it on changes nothing. Checked in 5.3: within 0.00001% of the real render."},
+    {h:"Relighting is addition", p:"Light adds up. Each light group is one term of the sum: scale a term and you relight without re-rendering."},
+    {h:"Alternatives, not a chain", p:"Both tools build the image from raw passes, so they replace the incoming image. Use one, and put it before grading."}],
+  graphs:GRAPHS2.l6, steps:STEPS2.l6,
+  check:`<b>You should have:</b> <i>LL Beauty Rebuild</i> with five stop controls in a Components panel and a provably identical rebuild, plus <i>LL Relight Mixer</i> with stops and tints for Key, Rim, Sky and Glow in four panels.`,
+  cards:[
+    ["Formula for a rebuilt component?","(Direct + Indirect) × Color."],
+    ["Which two passes are added without a colour pass?","Emission and Environment."],
+    ["How do you prove a rebuild?","Toggle the effect's Render box and re-render. Nothing may change."],
+    ["Light group outputs on Render Layers are called?","Combined_<GroupName>, e.g. Combined_Key."],
+    ["Why can the Relight Mixer and Beauty Rebuild not be stacked?","Both rebuild the image from raw passes and ignore the incoming image."],
+    ["How do you collapse a node?","Select it and press H."]],
+  boss:{title:"Boss fight: a lighting note, from memory", brief:"Memory mode on. Note: \"Make it moodier: key down a stop, sky cooler, rim brighter and warmer.\" Deliver it from the master without re-rendering.", goal:20,
+    items:[["Relight Mixer built and wired from light groups",""],["Key −1 stop",""],["Sky tinted cooler",""],["Rim brighter and warmer",""],["Rebuild proven identical before changes",""]],
+    stretch:[["Per-light AO trick","Multiply only the Sky group by an Ambient Occlusion pass for contact shadows."],["Specular-only bloom","Feed only the Glossy component into a Glare for sparkle on metal."],["Light group presets","Use a Menu Switch to offer 'Day', 'Dusk', 'Night' tint presets."]]}
+},
+{ id:"l7", num:7, mod:2, short:"Physical finishing", title:"Clean, physically sensible finishing",
+  kick:"Lesson 7 · Denoise with data passes, energy-conserving bloom, lens, resolution-locked grain", time:"60–75 min",
+  intro:`Four finishing effects done the right way, each one measured: denoising guided by albedo and normal passes; bloom that redistributes light instead of adding it; matched lens distortion, dispersion and vignette; and grain that stays the same size at any resolution. Then you'll put them in the right order and check them against Blender's own free effects.`,
+  use:`<b>Used for:</b> final frames in film, games cinematics, archviz and product work. These are the effects buyers apply to every render.`,
+  learn:["Denoise node + data passes","Energy conservation","Glare's Glare output","Lens Distortion + Fit","Vignette maths","Image Coordinates · Uniform","Stack order","Competitive check"],
+  concepts:[
+    {h:"Denoise with guides", p:"Albedo and normal passes tell the denoiser what is texture and what is noise."},
+    {h:"Energy conservation", p:"A lens scatters light, it doesn't make it. Mix the glow in and the total brightness stays (measured: −0.4% vs +7.6% when added)."},
+    {h:"Resolution independence", p:"Effects measured in pixels look different at 4K. Measure in fractions of the frame instead (Uniform coordinates)."},
+    {h:"Order matters", p:"Clean → exposure and colour → lens → grain. The same order light travels: scene, lens, film."}],
+  graphs:GRAPHS2.l7, steps:STEPS2.l7,
+  check:`<b>You should have:</b> <i>LL Denoise</i>, <i>LL Bloom</i>, <i>LL Lens</i> and <i>LL Film Grain</i> in a sensible stack, grain that looks the same at 50% and 100% resolution, and one written sentence per asset on why it beats or differs from Blender's built-ins.`,
+  cards:[
+    ["Which passes guide the Denoise node?","Denoising Albedo and Denoising Normal (View Layer → Data → Denoising Data)."],
+    ["Mix or Add for bloom, and why?","Mix: it keeps the total light. Add creates light that wasn't there."],
+    ["Which Glare output is the glow alone?","Glare (Image is the picture plus glow)."],
+    ["What does Lens Distortion's Fit do?","Zooms in just enough to hide the empty corners."],
+    ["What range does Image Coordinates › Uniform cover across the width?","−1 to 1 at any resolution."],
+    ["Recommended stack order?","Denoise → Exposure & Balance → Bloom → Lens → Grain."],
+    ["Blender's built-in effects are licensed how?","CC0. Don't copy or resell them; make yours different."]],
+  boss:{title:"Boss fight: finishing kit from memory", brief:"Memory mode on. Rebuild all four effects in a new file and stack them correctly.", goal:35,
+    items:[["Denoise with albedo + normal",""],["Bloom that mixes, Amount + Size exposed",""],["Lens with Fit and a soft vignette",""],["Grain locked to the frame width",""],["Correct stack order",""]],
+    stretch:[["Luminance-weighted grain","Use the image brightness (RGB to BW → Map Range) as the Overlay Factor so grain is strongest in the midtones, like real film."],["Anamorphic flare","Add a Streaks Glare (2 streaks, 0°) mixed at a low amount, plus a blue tint."],["Overscan render","Render 5% larger, distort, then Crop/Scale back instead of using Fit."]]}
+},
+{ id:"l8", num:8, mod:2, short:"Package like a pro", title:"Package the library like a professional product",
+  kick:"Lesson 8 · Interface polish, Usage, catalogs, previews, metadata", time:"45–60 min",
+  intro:`A node group becomes a product when a stranger can use it without asking you anything. You'll name and describe every group, give every input a tooltip, unit and safe range, group inputs into panels, then mark everything as assets in catalogs with custom previews, metadata and tags, and save it as a proper asset library.`,
+  use:`<b>Used for:</b> any asset you sell or share in a team. Marketplace reviewers and buyers judge the interface first.`,
+  learn:["Naming conventions","Descriptions as tooltips","Subtypes & ranges","Panels","Usage › Scene Effect","Asset Browser","Catalogs","Custom previews","Metadata & tags"],
+  concepts:[
+    {h:"The interface is the product", p:"Buyers never open your node tree. They see a panel of named fields with tooltips."},
+    {h:"Safe by default", p:"Defaults must look good immediately, and ranges must make broken images impossible."},
+    {h:"Catalogs are a file", p:"<code>blender_assets.cats.txt</code> beside the .blend holds the catalog tree. Ship it."},
+    {h:"Previews sell", p:"A custom preview made from a real render beats Blender's generic node icon every time."}],
+  graphs:GRAPHS2.l8, steps:STEPS2.l8,
+  check:`<b>You should have:</b> every LL group with a prefix name, description with version, colour tag, Usage › Scene Effect, socket tooltips, ranges and panels; all marked as assets in four catalogs with custom previews, licence, copyright, author and tags; saved as <code>LookLibrary_v1.0.0.blend</code> with its catalog file.`,
+  cards:[
+    ["Where is a socket's tooltip set?","N → Group → select the socket → Description."],
+    ["Which checkbox lets a group appear in Add Scene Effect?","Group tab → Usage → Scene Effect (off by default)."],
+    ["Where do catalogs live?","In blender_assets.cats.txt next to the .blend (save it with the catalogs icon)."],
+    ["How do you set a custom preview?","Asset Browser sidebar → Preview → folder icon (Load custom preview)."],
+    ["Which metadata fields does an asset have?","Description, License, Copyright, Author, plus Tags."]],
+  boss:{title:"Boss fight: package an unseen group", brief:"Take one of your Module 1 effects and make it library-ready in under 20 minutes.", goal:20,
+    items:[["Prefixed name, description with version",""],["Tooltips, subtypes, ranges, panels",""],["Usage › Scene Effect",""],["Asset with catalog, preview, metadata, tags",""]],
+    stretch:[["Preview template","Make a reusable preview scene and render all previews with one script."],["Menu inputs","Replace a fiddly number with a Menu socket of named presets."],["Localised names","Keep socket names short; put the long explanation in the tooltip."]]}
+},
+{ id:"l9", num:9, mod:2, short:"Ship it", title:"Ship it: product images, docs, test, zip",
+  kick:"Lesson 9 · Before/after images, README, purge, clean-room test, packaging", time:"45–60 min",
+  intro:`The last mile: product images that show before and after honestly, documentation stored inside the file and beside it, a purged file, a clean-room install test, and a correctly structured zip. Then go through the pack checklist and you're ready to list it.`,
+  use:`<b>Used for:</b> releasing any digital product: marketplaces, studio libraries, open-source packs.`,
+  learn:["Split before/after","README & changelog","Semantic versions","Purge Unused Data","Clean-room test","Zip structure"],
+  concepts:[
+    {h:"Honest images", p:"Same frame, same camera, effect on/off. Buyers trust split before/afters more than glamour shots."},
+    {h:"Docs travel with the file", p:"A README inside the .blend can't get separated from it. Ship a copy beside it too."},
+    {h:"Clean-room testing", p:"Install exactly like a buyer, into a fresh setup, following only your README."},
+    {h:"Versions mean something", p:"1.0.1 fixes, 1.1.0 adds, 2.0.0 breaks. Buyers rely on it for updates."}],
+  graphs:GRAPHS2.l9, steps:STEPS2.l9,
+  check:`<b>You should have:</b> before/after images; README, CHANGELOG and LICENSE; a purged, saved v1.0.0 file; a passed clean-room install; and <code>LookLibrary_v1.0.0.zip</code>. Now work through the 📦 pack checklist.`,
+  cards:[
+    ["Which node makes a before/after wipe?","Split (Position + Rotation, two images)."],
+    ["Where do you purge leftovers?","File → Clean Up → Purge Unused Data."],
+    ["What goes in the zip besides the .blend?","blender_assets.cats.txt, README, LICENSE, CHANGELOG, images."],
+    ["Version for a bug fix after 1.0.0?","1.0.1."],
+    ["What is a clean-room test?","Installing from the zip into a fresh setup, following only your README."]],
+  boss:{title:"Final exam: release v1.1.0", brief:"Add one new effect to your library and release v1.1.0 properly.", goal:40,
+    items:[["New effect built, packaged and catalogued",""],["Version bumped everywhere (file, descriptions, changelog)",""],["New before/after image",""],["Clean-room test passed",""],["Zip rebuilt with the right structure",""]],
+    stretch:[["Video demo","Record a 30-second screen capture applying three effects to a fresh scene."],["Compatibility note","Test on the oldest Blender version you claim to support and state it on the listing."],["Support FAQ","Turn the questions from your own clean-room test into a FAQ section."]]}
+}
+];
+
+const PACK = {
+  mod:2, short:"Pack checklist", title:"Ship the Look Library",
+  intro:`Everything a buyer-ready compositing pack needs, in the order you'll do it. Tick each item when it's true for <i>your</i> product. The example pack built in Module 2 has 11 Scene Effects in 4 catalogs: <b>Passes &amp; Relight</b> (LL Denoise, LL Beauty Rebuild, LL Relight Mixer), <b>Finishing</b> (LL Exposure &amp; Balance, LL Bloom, LL Lens, LL Film Grain), <b>Looks</b> (LL Hero Pop, LL Depth Atmosphere, LL Ink Key Art, from Module 1) and <b>Utilities</b> (LL Before After). All were render-tested in Blender 5.3.`,
+  sections:[
+    {h:"Assets", tag:"what's in the box", items:[
+      ["Every effect has a clear reason to exist","One sentence per asset on how it beats or differs from Blender's built-in (CC0) effects. Drop the ones that don't.", shot("l7-s06")],
+      ["Prefixed names, descriptions with version, colour tags","Superhive asks for logical English names on everything in the file. No <i>Cube.001</i> or <i>NodeTree.003</i>."],
+      ["Usage › Scene Effect ticked on every group","Off by default in 5.3; without it the group won't appear in Add Scene Effect."],
+      ["Every input: tooltip with unit, subtype, default, min/max, panel","Defaults look good immediately; no range produces black or broken frames.", shot("l8-s02")],
+      ["Requirements stated","Which passes, light group names (Key, Rim, Sky, Glow), World mist and camera focus each effect needs."]]},
+    {h:"Library file", tag:"the .blend", items:[
+      ["Marked as assets in catalogs, saved with blender_assets.cats.txt","", shot("l8-s04")],
+      ["Custom previews from real renders, plus metadata and tags","Description, License, Copyright, Author, Tags.", shot("l8-s05")],
+      ["Demo scene inside the file with the recommended stack","Your own scene and assets only. No downloaded HDRIs, textures or models you don't have the rights to redistribute."],
+      ["README and CHANGELOG as internal texts","", shot("l9-s02")],
+      ["Purged and saved as Name_v1.0.0.blend","Orphan data removed and any textures packed (File → External Data → Pack Resources). Superhive's limit is 5 GB per file."]]},
+    {h:"Quality", tag:"before anyone pays", items:[
+      ["Clean-room install test passed","Fresh setup, install from the zip, follow only the README.", shot("l9-s04")],
+      ["Tested on EEVEE and Cycles where it applies","State which effects need Cycles (light passes, light groups, Denoising Data)."],
+      ["Tested at 1080p and 4K","Resolution-dependent effects (grain, blur sizes) still look right."],
+      ["Works in the current Blender release","Superhive requires a working .blend for the current release. Scene Effects need Blender 5.3 or newer; say so on the listing."]]},
+    {h:"Licence", tag:"read the marketplace rules", items:[
+      ["Licence chosen and written in LICENSE.txt and each asset's License field","On Superhive, assets can be Royalty-Free, CC-BY 4.0 or Editorial, and code (add-ons) must be GPL 3.0 or MIT. Mixing is allowed. A node-group pack with no Python code is asset content. If you ever add a helper add-on, that part must be GPL or MIT."],
+      ["No GPL parts if you also sell on Fab","Fab rejects GPL, AGPL, LGPL and CC BY-SA content inside products. Keep a Fab version free of those."],
+      ["Made by you, not by AI","Superhive doesn't allow fully AI-generated products and encourages disclosure of AI use. Every effect and image in this pack is your own node work and your own renders."],
+      ["Every part of the pack is yours to sell","Your own scenes, renders and node work. No copied built-in assets, marketplace content or third-party images."],
+      ["Blender Extensions only for a free 'lite' version","Extensions is free and open-source only (add-ons GPL v3+, bundled assets CC0). It can't sell anything or advertise a commercial version. Sell the full pack on Superhive (or Gumroad)."]]},
+    {h:"Listing", tag:"the shop page", items:[
+      ["At least 5 images, 2:1, 1200 px wide or more","Superhive rejects 1920 × 1080 and Blender logos. Render 2400 × 1200: a hero shot plus before/afters (LL Before After). Fab needs 1920 × 1080 or larger, so make a second set.", shot("l9-s01")],
+      ["Short video demo (30–60 s)","Applying three effects to a fresh scene."],
+      ["Written documentation on the product page itself","Superhive requires written docs on the listing; a video or external link alone isn't enough. Include what it is, what's included, requirements, Blender version and licence (copy from your README)."],
+      ["Price with the fees in mind","Superhive pays 70% (Free plan), 80% (Pro) or 90% (Ultimate), after a merchant fee of 5.5% / 5.0% / 4.0% plus $0.49 per sale. Work out what you actually receive before you set the price."],
+      ["Opt-outs reviewed","Superhive includes products in enterprise/bulk deals by default, some of which supply ML datasets. Opt out if you don't want that."],
+      ["Update policy","Say how updates are delivered and what version numbers mean."],
+      ["Support contact and FAQ",""],
+      ["Zip structure checked","Name_v1.0.0/ → .blend, blender_assets.cats.txt, README, LICENSE, CHANGELOG, images/."]]}
+  ],
+  sources:[
+    ["Superhive: general product guidelines for uploading products (updated Nov 10 2026)","https://support.superhivemarket.com/article/253-general-product-guidelines-for-uploading-products"],
+    ["Superhive: understanding product license types (updated Sep 30 2026)","https://support.superhivemarket.com/article/226-understanding-product-license-types"],
+    ["Superhive: how commission earnings are calculated (updated Nov 19 2026)","https://support.superhivemarket.com/article/32-how-commission-earnings-are-calculated"],
+    ["Superhive: AI policy (updated Oct 27 2026)","https://support.superhivemarket.com/article/311-superhive-market-ai-policy"],
+    ["Superhive: become a creator","https://superhivemarket.com/become-a-creator"],
+    ["Blender Extensions: terms of service (updated Aug 10 2026)","https://extensions.blender.org/terms-of-service/"],
+    ["Blender Extensions: about the platform","https://extensions.blender.org/about/"],
+    ["Fab (Epic's marketplace): check its seller terms before listing there","https://www.fab.com/"]
+  ]
+};
+
+LESSONS.push(...M2);
 /* ===================== STATE + SAVE ===================== */
 let S = {done:{}, notes:{}, memory:false, timers:{}};
 const API = "/api/progress";
@@ -964,9 +1464,13 @@ function keysFor(L){
   return k;
 }
 function pct(L){ const k = keysFor(L); return k.filter(x=>S.done[x]).length / k.length; }
+const packKeys = ()=> hasPack() ? PACK.sections.flatMap((sec,si)=>sec.items.map((_,i)=>`pack.${si}.${i}`)) : [];
 function refreshProgress(){
   let all = [], got = 0;
   LESSONS.forEach(L=>{ const k = keysFor(L); all = all.concat(k); });
+  all = all.concat(packKeys());
+  const pa = document.querySelector(`nav a[data-l="pack"]`);
+  if(pa){ const pk = packKeys(), pq = pk.filter(x=>S.done[x]).length / pk.length; pa.querySelector(".bar i").style.width = (pq*100)+"%"; pa.classList.toggle("done", pq===1); }
   got = all.filter(x=>S.done[x]).length;
   const p = all.length ? got/all.length : 0;
   document.getElementById("ringArc").style.strokeDashoffset = 138.2 * (1 - p);
@@ -985,14 +1489,22 @@ function refreshProgress(){
 }
 
 /* ===================== NAV ===================== */
+const modsUsed = ()=>[...new Set(LESSONS.map(L=>L.mod||1))].sort((a,b)=>a-b);
+const hasPack = ()=> typeof PACK !== "undefined" && PACK;
 function buildNav(){
   let h = `<div class="grp">Start</div><a class="l" href="#home" data-l="home"><span class="nb">★</span><span>How this works + shortcuts</span></a>`;
-  h += `<div class="grp">Module 1 · Foundations by real projects</div>`;
-  LESSONS.forEach(L=>{
-    h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+  modsUsed().forEach(m=>{
+    h += `<div class="grp">Module ${m} · ${MODULES[m]||""}</div>`;
+    LESSONS.filter(L=>(L.mod||1)===m).forEach(L=>{
+      h += `<a class="l" href="#${L.id}" data-l="${L.id}"><span class="nb">${L.num}</span><span style="flex:1">${L.short}<div class="bar"><i></i></div></span></a>`;
+    });
+    if(hasPack() && PACK.mod === m) h += `<a class="l" href="#pack" data-l="pack"><span class="nb">📦</span><span style="flex:1">${PACK.short}<div class="bar"><i></i></div></span></a>`;
   });
-  h += `<div class="grp">Coming next</div>`;
-  ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+2}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  if(ROADMAP.length){
+    h += `<div class="grp">Coming next</div>`;
+    const next = Math.max(...modsUsed()) + 1;
+    ROADMAP.forEach((r,i)=>{ h += `<div class="lock"><span class="nb">${i+next}</span><span>${r.m.split("·")[1].trim()}</span></div>`; });
+  }
   document.getElementById("nav").innerHTML = h;
 }
 
@@ -1057,8 +1569,8 @@ function homeView(){
   <section class="hero">
     <div class="kick">Fast track · Blender ${COURSE.blender} · every effect render-tested in 5.3</div>
     <h2>Compositing by finishing frames you'd actually ship</h2>
-    <p>No "add a blur and look at it" exercises. Every lesson is a real finishing job: a film-grade finishing stack, regrading one object after the render, depth-driven fog, rays and lens blur, then a stylised key-art look packaged as a reusable asset. Everything runs on scenes you build and render yourself, with no downloaded footage, HDRIs or assets. Built on Blender 5.3's new <b>Scene Effects</b> stack.</p>
-    <div class="chips"><span class="chip g">4 lessons in Module 1</span><span class="chip">~3–4 hours total</span><span class="chip">EEVEE, tested renders</span><span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">4 boss fights</span></div>
+    <p>No "add a blur and look at it" exercises. Module 1 builds real finishing jobs: a film-grade finishing stack, regrading one object after the render, depth-driven fog, rays and lens blur, and a stylised key-art look. Module 2 works like a studio look-dev pipeline (scene-referred master, passes, light groups, physical finishing) and ends with a <b>sellable library of Scene Effects</b>. Everything runs on scenes you build and render yourself, with no downloaded footage, HDRIs or assets.</p>
+    <div class="chips">${modsUsed().map(m=>`<span class="chip g">Module ${m}: ${LESSONS.filter(L=>(L.mod||1)===m).length} lessons</span>`).join("")}<span class="chip">${LESSONS.reduce((a,L)=>a+L.cards.length,0)} recall cards</span><span class="chip">${LESSONS.length} boss fights</span>${hasPack()?`<span class="chip g">📦 ends in a sellable pack</span>`:""}</div>
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn pri" href="#${startL.id}">${pct(startL)>0?"Continue":"Start"}: Lesson ${startL.num} →</a><button class="btn" onclick="openReview()">Run the review deck</button></div>
   </section>
 
@@ -1071,13 +1583,16 @@ function homeView(){
   </div>
   <p class="cap" style="margin-top:12px">🧠 <b>Memory mode</b> (sidebar) blurs every graph and step detail. Click a blurred block to peek at just that one. Your ticks, notes and boss times save automatically: in this browser, or to <code>progress.json</code> when you run the page with <code>serve.py</code>.</p>
 
-  <h3 class="sec">Module 1 <span class="tag">foundations by real projects</span></h3>
+  ${modsUsed().map(m=>`
+  <h3 class="sec">Module ${m} <span class="tag">${MODULES[m]||""}</span></h3>
+  ${MODULE_INTRO[m]?`<p class="cap">${MODULE_INTRO[m]}</p>`:""}
   <div class="road">
-    ${LESSONS.map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
-  </div>
+    ${LESSONS.filter(L=>(L.mod||1)===m).map(L=>`<a class="mod" href="#${L.id}" style="color:inherit"><div class="mk">Lesson ${L.num} · ${Math.round(pct(L)*100)}%</div><h4>${L.title}</h4><ul>${L.learn.slice(0,4).map(x=>`<li>${x}</li>`).join("")}</ul></a>`).join("")}
+    ${hasPack() && PACK.mod===m ? `<a class="mod" href="#pack" style="color:inherit;border-color:rgba(255,209,102,.45)"><div class="mk" style="color:#ffd166">📦 Final deliverable</div><h4>${PACK.title}</h4><ul>${PACK.sections.map(s=>`<li>${s.h}</li>`).join("")}</ul></a>`:""}
+  </div>`).join("")}
 
-  <h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
-  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>
+  ${ROADMAP.length?`<h3 class="sec">Coming next <span class="tag">ask for the next module when you finish</span></h3>
+  <div class="road">${ROADMAP.map(r=>`<div class="mod lockd"><div class="mk">${r.m.split("·")[0].trim()}</div><h4>${r.m.split("·")[1].trim()}</h4><ul>${r.items.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>`:""}
 
   <h3 class="sec">The basic moves <span class="tag">read once before Lesson 1</span></h3>
   ${basicsHTML()}
@@ -1112,8 +1627,10 @@ function lessonView(L){
   <h3 class="sec">Core ideas <span class="tag">read first</span></h3>
   <div class="concepts">${L.concepts.map(c=>`<div class="concept"><h4>${c.h}</h4><p>${c.p}</p></div>`).join("")}</div>
 
-  <h3 class="sec">The node graphs <span class="tag">what you're building</span></h3>
-  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}
+  ${L.layout?`<h3 class="sec">The trim sheet layout <span class="tag">your kit's map</span></h3><div class="concept">${L.layout}</div>`:""}
+  ${L.graphs&&L.graphs.length?`<h3 class="sec">The node graphs <span class="tag">what you're building</span></h3>
+  ${L.graphs.map((g,i)=>graphHTML(g,i)).join("")}`:""}
+  ${(L.mod||1)>1?`<p class="cap" style="margin-top:14px">📸 Every step below has a real Blender 5.3 screenshot. Yellow boxes are numbered by the action that adds that part. Click a picture to enlarge it.</p>`:""}
 
   <h3 class="sec">Build it <span class="tag">tick when it works in Blender</span></h3>
   <details class="basics" ${L.num===1?"open":""}><summary>🖱️ The basic moves: how to add, place, wire and type in the node editor (read once)</summary>${basicsHTML()}</details>
@@ -1126,6 +1643,7 @@ function lessonView(L){
         ${s.goal?`<div class="goal"><b>Goal:</b> ${s.goal}</div>`:""}
         ${s.hl?`<button class="btn where" data-hl="${s.hl.g}|${s.hl.n.join(",")}">📍 Show where these nodes go</button>`:""}
         <ol class="do">${s.do.map(x=>`<li>${x}</li>`).join("")}</ol>
+        ${(s.shots||[]).map(shotHTML).join("")}
         ${s.see?`<div class="see"><b>You should see:</b> ${s.see}</div>`:""}
         ${s.why?`<div class="why">${s.why}</div>`:""}${s.pro?`<div class="pro">${s.pro}</div>`:""}
       </div></div>
@@ -1159,8 +1677,25 @@ function lessonView(L){
 
   <div class="navrow">
     ${prev?`<a class="btn" href="#${prev.id}">← Lesson ${prev.num}: ${prev.short}</a>`:`<a class="btn" href="#home">← Overview</a>`}
-    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:`<a class="btn pri" href="#home">Module 1 done → Overview</a>`}
+    ${next?`<a class="btn pri" href="#${next.id}">Lesson ${next.num}: ${next.short} →</a>`:hasPack()?`<a class="btn pri" href="#pack">📦 ${PACK.short} →</a>`:`<a class="btn pri" href="#home">Course done → Overview</a>`}
   </div>`;
+}
+
+/* ===================== SCREENSHOTS =====================
+   step.shots = [{src:"shots/l5-s03.jpg", w:1600, h:900, cap:"…", marks:[[x0,y0,x1,y1,"3"], …]}]
+   marks are pixel boxes in the original image (top-left origin); the label usually names the action number. */
+function shotHTML(s){
+  const W = s.w || 1600, H = s.h || 900;
+  const marks = (s.marks||[]).map(m=>{
+    const [x0,y0,x1,y1,lab] = m;
+    return `<span class="mk" style="left:${(x0/W*100).toFixed(2)}%;top:${(y0/H*100).toFixed(2)}%;width:${((x1-x0)/W*100).toFixed(2)}%;height:${((y1-y0)/H*100).toFixed(2)}%">${lab?`<b>${esc(lab)}</b>`:""}</span>`;
+  }).join("");
+  return `<figure class="shot"><div class="sw" data-full="${esc(s.src)}"><img src="${esc(s.src)}" width="${W}" height="${H}" loading="lazy" alt="${esc(s.cap||"Screenshot")}">${marks}</div>${s.cap?`<figcaption>${s.cap}</figcaption>`:""}</figure>`;
+}
+function openShot(sw){
+  const lb = document.getElementById("lightbox");
+  lb.querySelector(".lbin").innerHTML = sw.outerHTML;
+  lb.classList.add("on");
 }
 
 function basicsHTML(){
@@ -1182,6 +1717,23 @@ function showWhere(btn){
   back.textContent = "↩ Back to step " + btn.closest(".step").querySelector(".st small").textContent;
   back.onclick = ()=>{ btn.closest(".step").scrollIntoView({block:"center", behavior:"smooth"}); back.remove(); };
   clearTimeout(hlT); hlT = setTimeout(()=>nodes.forEach(n=>n.classList.remove("hl")), 6000);
+}
+
+/* ===================== PACK CHECKLIST =====================
+   PACK = {mod:2, short:"Pack checklist", title:"…", intro:"html", sections:[{h:"…", items:[["label","detail html", shot?]]}], sources:[["label","url"]]} */
+function packView(){
+  const ck = k => S.done[k] ? "checked" : "";
+  return `
+  <section class="hero" style="background:radial-gradient(1200px 300px at 0% 0%,rgba(255,209,102,.13),transparent 60%),var(--panel)">
+    <div class="kick" style="color:#ffd166">📦 Final deliverable · Module ${PACK.mod}</div>
+    <h2>${PACK.title}</h2>
+    <p>${PACK.intro}</p>
+  </section>
+  ${PACK.sections.map((sec,si)=>`
+    <h3 class="sec">${sec.h}${sec.tag?` <span class="tag">${sec.tag}</span>`:""}</h3>
+    <div class="boss" style="padding-bottom:12px">${sec.items.map((it,i)=>{const k=`pack.${si}.${i}`; return `<div class="ck"><input type="checkbox" class="cb" id="${k}" data-k="${k}" ${ck(k)}><label for="${k}">${it[0]}${it[1]?`<small>${it[1]}</small>`:""}</label></div>${it[2]?shotHTML(it[2]):""}`;}).join("")}</div>`).join("")}
+  ${PACK.sources&&PACK.sources.length?`<h3 class="sec">Sources <span class="tag">rules change: check before you submit</span></h3><div class="concept"><ul style="margin:0;padding-left:18px">${PACK.sources.map(s=>`<li><a href="${esc(s[1])}" target="_blank" rel="noopener">${s[0]}</a></li>`).join("")}</ul></div>`:""}
+  <div class="navrow"><a class="btn" href="#home">← Overview</a></div>`;
 }
 
 /* ===================== TIMER ===================== */
@@ -1212,8 +1764,9 @@ function route(){
   const bb = document.getElementById("backBtn"); if(bb) bb.remove();
   const id = (location.hash || "#home").slice(1);
   const L = LESSONS.find(x=>x.id===id);
-  main.innerHTML = L ? lessonView(L) : homeView();
-  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:"home")));
+  const isPack = id === "pack" && hasPack();
+  main.innerHTML = L ? lessonView(L) : isPack ? packView() : homeView();
+  document.querySelectorAll("nav a.l").forEach(a=>a.classList.toggle("on", a.dataset.l === (L?L.id:isPack?"pack":"home")));
   document.getElementById("side").classList.remove("open");
   if(L){
     document.title = `L${L.num} ${L.short} · Compositing Fast Track`;
@@ -1242,6 +1795,9 @@ document.addEventListener("change", e=>{
   if(t.checked && st){ const n = st.nextElementSibling; if(n && !n.classList.contains("done")) n.scrollIntoView({block:"nearest", behavior:"smooth"}); }
 });
 document.addEventListener("click", e=>{
+  if(e.target.closest("#lightbox")){ document.getElementById("lightbox").classList.remove("on"); return; }
+  const sw = e.target.closest(".shot .sw");
+  if(sw && (!document.body.classList.contains("memory") || sw.closest(".mem.peek"))){ openShot(sw); return; }
   const wb = e.target.closest(".where");
   if(wb && (!document.body.classList.contains("memory") || wb.closest(".mem.peek"))){ showWhere(wb); return; }
   const mem = e.target.closest(".mem");
